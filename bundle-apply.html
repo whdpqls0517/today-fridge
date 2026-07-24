@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>보따리 신청 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./today-fridge.css"><link rel="stylesheet" href="./css/bundle-apply.css">
+</head>
+<body>
+  <main class="apply-page">
+    <header><button type="button" data-apply-back aria-label="상품으로 돌아가기">‹</button><h1>보따리 신청</h1><i></i></header>
+    <section class="apply-product" id="apply-product"></section>
+    <form id="bundle-apply-form">
+      <section class="apply-section"><div class="apply-heading"><span>1</span><div><h2>수량을 선택해 주세요</h2><p>남은 수량 안에서 신청할 수 있어요.</p></div></div><div class="quantity-control"><button type="button" data-quantity="-1">−</button><strong id="apply-quantity">1</strong><button type="button" data-quantity="1">＋</button></div></section>
+      <section class="apply-section"><div class="apply-heading"><span>2</span><div><h2>수령 희망일</h2><p>가능한 날짜 중 하루를 선택해 주세요.</p></div></div><div class="date-options" id="apply-date-options"></div></section>
+      <section class="apply-section"><div class="apply-heading"><span>3</span><div><h2>수령 방식</h2><p>방문 예정 시간대만 알려주시면 돼요.</p></div></div><div class="choice-grid"><label><input type="radio" name="pickupTime" value="오후 7시 이전" checked><span><b>유인 수령</b><small>오후 7시 이전</small></span></label><label><input type="radio" name="pickupTime" value="오후 7시 이후"><span><b>무인 수령</b><small>오후 7시 이후</small></span></label></div></section>
+      <section class="apply-section"><div class="apply-heading"><span>4</span><div><h2>결제 방식</h2><p id="payment-help">원하는 결제 방식을 선택해 주세요.</p></div></div><div class="choice-grid"><label id="onsite-choice"><input type="radio" name="paymentType" value="onsite" checked><span><b>현장결제</b><small>수령 시 키오스크 결제</small></span></label><label><input type="radio" name="paymentType" value="transfer"><span><b>계좌이체</b><small>입금 확인 후 수령 가능</small></span></label></div><label class="depositor-field" id="depositor-field" hidden><span>입금자명 <small>미입력 시 주문자명과 동일</small></span><input id="depositor-name" maxlength="20" placeholder="주문자와 다를 경우만 입력"></label></section>
+      <section class="amount-box"><div><span>결제 예정 금액</span><strong id="apply-amount">0원</strong></div><p>수량과 결제 방식을 다시 확인해 주세요.</p></section>
+      <label class="agreement"><input id="apply-agreement" type="checkbox" required><span>신청 마감 이후에는 고객이 직접 취소할 수 없으며, 계좌이체 주문은 입금 확인 후 수령증에 표시되는 것에 동의합니다.</span></label>
+      <button class="apply-submit" type="submit">신청하기</button>
+      <p class="apply-message" id="apply-message"></p>
+    </form>
+  </main>
+  <script src="./js/db.js"></script><script src="./js/product-rules.js"></script><script src="./js/bundle-apply.js"></script>
+</body></html>

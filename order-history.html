@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>주문 내역 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./today-fridge.css" />
+  <link rel="stylesheet" href="./css/order-history.css" />
+</head>
+<body>
+  <main class="order-page">
+    <header class="order-header">
+      <a href="./my-page.html" aria-label="마이페이지로 돌아가기">‹</a>
+      <h1>주문 내역</h1>
+      <span aria-hidden="true"></span>
+    </header>
+
+    <div class="order-search">
+      <span aria-hidden="true"></span>
+      <input id="order-search-input" type="search" placeholder="주문한 상품을 검색해 보세요" aria-label="주문 상품 검색" />
+    </div>
+
+    <nav class="order-filters" aria-label="주문 상태 필터">
+      <button class="is-active" type="button" data-order-filter="all">전체</button>
+      <button type="button" data-order-filter="progress">진행 중</button>
+      <button type="button" data-order-filter="finished">완료·취소</button>
+    </nav>
+
+    <section class="order-results" id="order-results" aria-live="polite"></section>
+  </main>
+
+  <div class="order-detail" id="order-detail" aria-hidden="true">
+    <button class="order-detail-backdrop" type="button" aria-label="상세 정보 닫기" data-detail-close></button>
+    <section class="order-detail-panel" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
+      <header><h2 id="order-detail-title">주문 상세</h2><button type="button" aria-label="닫기" data-detail-close>×</button></header>
+      <div id="order-detail-content"></div>
+    </section>
+  </div>
+
+  <div class="order-cancel-confirm" id="order-cancel-confirm" aria-hidden="true">
+    <button class="order-cancel-backdrop" type="button" aria-label="취소 확인창 닫기" data-cancel-answer="no"></button>
+    <section role="dialog" aria-modal="true" aria-labelledby="order-cancel-title">
+      <h2 id="order-cancel-title">신청을 취소할까요?</h2>
+      <p>취소한 수량은 다시 판매 가능한 수량으로 돌아갑니다.</p>
+      <div>
+        <button type="button" data-cancel-answer="no">아니요</button>
+        <button type="button" class="is-danger" data-cancel-answer="yes">예, 취소할게요</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="order-toast" id="order-toast" role="status" aria-live="polite"></div>
+
+  <nav class="bottom-nav" aria-label="하단 네비게이션">
+    <a href="./main.html"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.5l8.5 7.3v9.7h-5.4v-6.2H8.9v6.2H3.5z"/></svg>홈</a>
+    <a href="./category.html"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.6"/><rect x="14" y="4" width="6" height="6" rx="1.6"/><rect x="4" y="14" width="6" height="6" rx="1.6"/><rect x="14" y="14" width="6" height="6" rx="1.6"/></svg>카테고리</a>
+    <a href="./main.html#receipt" class="floating-ticket" aria-label="수령 확인증 열기"><svg viewBox="0 -960 960 960" aria-hidden="true"><path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm0-160q17 0 28.5-11.5T520-480q0-17-11.5-28.5T480-520q-17 0-28.5 11.5T440-480q0 17 11.5 28.5T480-440Zm0-160q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm320 440H160q-33 0-56.5-23.5T80-240v-160q33 0 56.5-23.5T160-480q0-33-23.5-56.5T80-560v-160q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v160q-33 0-56.5 23.5T800-480q0 33 23.5 56.5T880-400v160q0 33-23.5 56.5T800-160Zm0-80v-102q-37-22-58.5-58.5T720-480q0-43 21.5-79.5T800-618v-102H160v102q37 22 58.5 58.5T240-480q0 43-21.5 79.5T160-342v102h640Z"/></svg></a>
+    <a href="./favorites.html"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4.2 15.7 4.2 9.7a4.1 4.1 0 0 1 7-2.9l.8.8.8-.8a4.1 4.1 0 0 1 7 2.9c0 6-7.8 10.5-7.8 10.5z"/></svg>찜</a>
+    <a href="./my-page.html" class="active"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.2c.9-4 3.5-6.1 7.2-6.1s6.3 2.1 7.2 6.1"/></svg>마이</a>
+  </nav>
+
+  <script src="./js/db.js"></script>
+  <script src="./js/product-rules.js"></script>
+  <script src="./js/order-history.js"></script>
+  <script src="./js/receipt-launcher.js"></script>
+</body>
+</html>

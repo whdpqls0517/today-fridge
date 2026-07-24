@@ -1,0 +1,273 @@
+body {
+  margin: 0;
+  background: #f3f6f4;
+  color: #202a25;
+}
+
+.apply-page {
+  width: min(100%, 430px);
+  min-height: 100vh;
+  margin: auto;
+  padding: 0 16px 40px;
+  background: #fff;
+}
+
+.apply-page header {
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items: center;
+  height: 66px;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.apply-page header button {
+  font-size: 32px;
+}
+
+.apply-page h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 18px;
+}
+
+.apply-product {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  margin: 20px 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f5f8f6;
+}
+
+.apply-product img {
+  width: 66px;
+  height: 66px;
+  border-radius: 11px;
+  object-fit: cover;
+}
+
+.apply-product div {
+  display: grid;
+  gap: 5px;
+}
+
+.apply-product strong {
+  font-size: 14px;
+}
+
+.apply-product span {
+  color: #77827c;
+  font-size: 11px;
+}
+
+.apply-section {
+  padding: 22px 0;
+  border-top: 1px solid #edf1ef;
+}
+
+.apply-heading {
+  display: flex;
+  gap: 10px;
+}
+
+.apply-heading > span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e8f3ed;
+  color: #176d50;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.apply-heading h2 {
+  margin: 1px 0 4px;
+  font-size: 15px;
+}
+
+.apply-heading p {
+  margin: 0;
+  color: #849089;
+  font-size: 10px;
+}
+
+.quantity-control {
+  display: grid;
+  grid-template-columns: 42px 60px 42px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.quantity-control button {
+  height: 40px;
+  border: 1px solid #dfe6e2;
+  border-radius: 10px;
+  background: #f7f9f8;
+  font-size: 19px;
+}
+
+.quantity-control strong {
+  text-align: center;
+}
+
+.date-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.date-options label input,
+.choice-grid input {
+  position: absolute;
+  opacity: 0;
+}
+
+.date-options label span {
+  display: grid;
+  gap: 3px;
+  padding: 11px 5px;
+  border: 1px solid #dfe6e2;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.date-options b {
+  font-size: 12px;
+}
+
+.date-options small {
+  color: #89938d;
+  font-size: 9px;
+}
+
+.date-options input:checked + span,
+.choice-grid input:checked + span {
+  border-color: #176d50;
+  background: #f0f7f3;
+  box-shadow: inset 0 0 0 1px #176d50;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 17px;
+}
+
+.choice-grid label span {
+  display: grid;
+  gap: 5px;
+  min-height: 72px;
+  padding: 14px;
+  border: 1px solid #dfe6e2;
+  border-radius: 11px;
+}
+
+.choice-grid b {
+  font-size: 13px;
+}
+
+.choice-grid small {
+  color: #7f8a84;
+  font-size: 10px;
+}
+
+.choice-grid label.is-disabled {
+  opacity: 0.45;
+}
+
+.depositor-field {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+  color: #4d5a53;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.depositor-field[hidden] {
+  display: none !important;
+}
+
+.quantity-control button:disabled {
+  cursor: default;
+  opacity: 0.32;
+  background: #f4f5f4;
+}
+
+.depositor-field small {
+  color: #909993;
+  font-weight: 500;
+}
+
+.depositor-field input {
+  padding: 12px;
+  border: 1px solid #dfe6e2;
+  border-radius: 10px;
+}
+
+.amount-box {
+  padding: 17px;
+  border-radius: 14px;
+  background: #f4f7f5;
+}
+
+.amount-box div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.amount-box span {
+  color: #65736b;
+  font-size: 12px;
+}
+
+.amount-box strong {
+  color: #176d50;
+  font-size: 22px;
+}
+
+.amount-box p {
+  margin: 8px 0 0;
+  color: #919a95;
+  font-size: 9px;
+}
+
+.agreement {
+  display: flex;
+  gap: 9px;
+  margin: 18px 2px;
+  color: #6e7973;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.agreement input {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  accent-color: #176d50;
+}
+
+.apply-submit {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  background: #176d50;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.apply-message {
+  min-height: 18px;
+  color: #c04c43;
+  font-size: 10px;
+  text-align: center;
+}

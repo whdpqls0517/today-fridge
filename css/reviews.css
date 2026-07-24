@@ -1,0 +1,24 @@
+.reviews-screen { margin:0; background:#e9ecea; }
+.reviews-page { width:min(100%,430px); min-height:100vh; margin:0 auto; padding:18px 18px 108px; background:#fff; }
+.reviews-page-header { display:grid; grid-template-columns:40px 1fr 40px; align-items:center; padding:4px 0 20px; }
+.reviews-page-header > a { display:grid; place-items:center; width:38px; height:38px; color:#26312b; font-size:34px; line-height:1; }
+.reviews-page-header div { text-align:center; }
+.reviews-page-header span { color:#84908a; font-size:9px; font-weight:750; }
+.reviews-page-header h1 { margin:3px 0 0; color:#222a26; font-size:21px; letter-spacing:-.035em; }
+.reviews-filter { display:flex; gap:7px; overflow-x:auto; padding:0 0 18px; scrollbar-width:none; }
+.reviews-filter::-webkit-scrollbar { display:none; }
+.reviews-filter button { flex:0 0 auto; min-height:35px; padding:0 15px; border-radius:999px; background:#f2f4f3; color:#5c6761; font-size:11px; font-weight:750; }
+.reviews-filter button.is-active { background:var(--deep-green); color:#fff; }
+.reviews-list { display:grid; gap:11px; }
+.review-list-card { display:grid; grid-template-columns:1fr 62px; gap:13px; padding:17px; border:1px solid #e9edeb; border-radius:15px; background:#fff; color:#2e3732; box-shadow:0 7px 20px rgba(37,54,45,.045); }
+.review-list-copy { min-width:0; }
+.review-list-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.review-list-head strong { color:#276246; font-size:11px; letter-spacing:.02em; }
+.review-list-head time { color:#9aa29e; font-size:9px; }
+.review-list-card p { margin:0 0 12px; color:#515c56; font-size:12px; line-height:1.55; }
+.review-list-product { display:flex; align-items:center; gap:5px; color:#35604c; font-size:10px; font-weight:750; }
+.review-list-product::after { content:"›"; font-size:15px; }
+.review-list-card img { width:62px; height:62px; align-self:center; border-radius:11px; object-fit:cover; background:#f0f3f1; }
+.review-owner-reply { grid-column:1/-1; padding:11px 12px; border-radius:10px; background:#f4f7f5; color:#65716b; font-size:10px; line-height:1.5; }
+.review-owner-reply strong { display:block; margin-bottom:3px; color:#315746; }
+.reviews-empty { padding:70px 10px; color:#87918c; font-size:12px; text-align:center; }

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>보따리 상품 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./today-fridge.css" />
+</head>
+<body class="search-screen" data-list-category="bundle">
+  <main class="search-page result-page" aria-label="보따리 상품 목록 화면">
+    <header class="search-header">
+      <a class="search-back" href="./main.html" data-back-button aria-label="이전 화면으로 돌아가기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+      </a>
+      <div class="detail-title">보따리 상품</div>
+    </header>
+
+    <section class="result-summary">
+      <span>보따리 예약</span>
+      <p>마감 전 예약하고 매장에서 수령하는 보따리 상품입니다.</p>
+    </section>
+
+    <section class="bundle-today-section" id="bundle-today-section" aria-label="오늘 수령 보따리">
+      <div class="bundle-section-heading">
+        <div><span>오늘 수령</span><h2>오늘 받을 수 있는 보따리</h2></div>
+      </div>
+      <div class="popular-track bundle-product-grid" id="bundle-today-track"></div>
+    </section>
+
+    <section class="bundle-list-tools" aria-label="보따리 목록 필터와 정렬">
+      <div class="bundle-filter-chips" role="group" aria-label="판매 상태">
+        <button class="active" type="button" data-bundle-filter="all">전체</button>
+        <button type="button" data-bundle-filter="ongoing">진행중인 보따리</button>
+        <button type="button" data-bundle-filter="closed">마감된 보따리</button>
+      </div>
+      <label class="bundle-sort-select">
+        <span>정렬</span>
+        <select id="bundle-sort">
+          <option value="latest">최신순</option>
+          <option value="pickup">수령일순</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="popular-products bundle-general-section" aria-label="보따리 상품">
+      <div class="bundle-section-heading">
+        <div><span>보따리 목록</span><h2>다른 수령일의 보따리</h2></div>
+      </div>
+      <div class="popular-track" id="category-list-track" style="flex-wrap: wrap; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; overflow: visible;"></div>
+    </section>
+  </main>
+
+  <script src="./js/db.js"></script>
+  <script src="./js/product-rules.js"></script>
+  <script src="./js/bundle-list.js"></script>
+  <script src="./js/back-navigation.js"></script>
+  <script src="./js/favorites.js"></script>
+  <script src="./js/receipt-launcher.js"></script>
+</body>
+</html>

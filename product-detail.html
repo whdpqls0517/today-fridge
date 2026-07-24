@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>상품 상세 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./today-fridge.css" />
+  <style>
+    /* 상품상세 추가 스타일 */
+    .detail-container {
+      width: min(100%, 430px);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: #f7f8fa;
+      padding: 20px 18px 120px;
+    }
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 56px;
+      border-bottom: 1px solid #edf0f2;
+      margin-bottom: 15px;
+    }
+    .detail-back {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      color: #111820;
+    }
+    .detail-back svg {
+      width: 31px;
+      height: 31px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .detail-title {
+      font-size: 18px;
+      font-weight: 650;
+      color: #20252b;
+    }
+    .detail-gallery {
+      margin-top: 18px;
+    }
+    .detail-main-photo {
+      position: relative;
+      height: 306px;
+      overflow: hidden;
+      border-radius: 24px;
+      background: #e8f0ec;
+      box-shadow: 0 2px 8px rgba(21, 28, 35, 0.08);
+    }
+    .detail-main-photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gallery-counter {
+      position: absolute;
+      right: 20px;
+      bottom: 19px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      background: rgba(40, 45, 50, 0.72);
+      color: #ffffff;
+      font-family: Inter, Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+    .detail-thumbnails {
+      display: flex;
+      gap: 14px;
+      margin-top: 22px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .detail-thumbnails::-webkit-scrollbar {
+      display: none;
+    }
+    .detail-thumbnail {
+      flex: 0 0 auto;
+      width: 76px;
+      height: 76px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      border-radius: 18px;
+      background: #edf1ee;
+      padding: 0;
+    }
+    .detail-thumbnail.is-active {
+      border-color: #ff6a00;
+    }
+    .detail-thumbnail img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .detail-info-block {
+      margin-top: 42px;
+    }
+    .detail-type-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 15px;
+      border: 1px solid #ffe1c9;
+      border-radius: 999px;
+      background: #fff6ee;
+      color: #ff6a00;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .detail-info-block h1 {
+      margin: 26px 0 14px;
+      color: #06142a;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+    .detail-meta-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: #304762;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .detail-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .detail-meta-item.review {
+      color: #ff6a00;
+    }
+    .detail-meta-item.review small {
+      color: #8b9bb2;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .detail-meta-divider {
+      width: 1px;
+      height: 16px;
+      background: #e0e6ee;
+    }
+    .detail-pickup-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+      padding: 13px 15px;
+      border: 1px solid #e3ebe6;
+      border-radius: 12px;
+      background: #f7faf8;
+    }
+    .detail-pickup-info span {
+      color: #718078;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .detail-pickup-info strong {
+      color: #176d50;
+      font-size: 14px;
+      font-weight: 850;
+    }
+    .detail-deadline-icon {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ff6a00;
+      border-radius: 50%;
+    }
+    .detail-deadline-icon::before,
+    .detail-deadline-icon::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 2px;
+      height: 6px;
+      border-radius: 999px;
+      background: #ff6a00;
+      transform-origin: bottom center;
+    }
+    .detail-deadline-icon::after {
+      height: 5px;
+      transform: rotate(105deg);
+    }
+    .detail-description {
+      margin: 20px 0 0;
+      color: #60718c;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    .detail-price-box {
+      margin-top: 18px;
+    }
+    .detail-price-box h2 {
+      margin: 0;
+      color: #151b22;
+      font-size: 25px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .detail-badge-list {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .detail-badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .detail-badge.red {
+      background: #ffe9e9;
+      color: #b94242;
+    }
+    .detail-badge.green {
+      background: #e4f3ec;
+      color: #1f5f43;
+    }
+    .detail-badge.yellow {
+      background: #fff4df;
+      color: #9a6a1d;
+    }
+    .price-strike {
+      font-size: 14px;
+      text-decoration: line-through;
+      color: #b4bcc2;
+      margin-left: 8px;
+    }
+    .tab-bar {
+      display: flex;
+      border-bottom: 2px solid #edf0f2;
+      margin-top: 25px;
+    }
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0;
+      font-size: 14px;
+      font-weight: 800;
+      color: #8c969e;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .tab-btn.active {
+      color: #1f5f43;
+      border-bottom-color: #1f5f43;
+    }
+    .tab-content {
+      padding: 20px 4px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #454c55;
+    }
+    .action-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      width: min(100%, 430px);
+      transform: translateX(-50%);
+      padding: 14px 18px 24px;
+      background: #ffffff;
+      box-shadow: 0 -10px 24px rgba(36, 41, 50, 0.08);
+      z-index: 20;
+    }
+    .action-btn {
+      width: 100%;
+      height: 52px;
+      border-radius: 12px;
+      background: #1f5f43;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 16px rgba(31, 95, 67, 0.18);
+      border: 0;
+      cursor: pointer;
+    }
+    .action-btn.disabled {
+      background: #ef4b43;
+      box-shadow: 0 8px 16px rgba(239, 75, 67, 0.18);
+    }
+    .action-btn.restock {
+      background: #e4e6e5;
+      color: #666d69;
+      box-shadow: none;
+    }
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+    .review-item-detail {
+      border-bottom: 1px solid #edf0f2;
+      padding: 14px 0;
+    }
+    .review-item-detail:last-child {
+      border-bottom: 0;
+    }
+    .tag-chip {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #f1f3f5;
+      color: #495057;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-right: 6px;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .detail-spec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .detail-spec-card {
+      padding: 14px;
+      border: 1px solid #edf0f2;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 6px 16px rgba(36, 41, 50, 0.04);
+    }
+    .detail-spec-card strong {
+      display: block;
+      color: #17212c;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+    .detail-spec-card p {
+      margin: 7px 0 0;
+      color: #5e6861;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.5;
+    }
+    .store-purchase-note {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #eef7f2;
+      color: #1f5f43;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.45;
+    }
+    @media (max-width: 360px) {
+      .detail-main-photo {
+        height: 268px;
+      }
+
+      .detail-info-block h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body class="search-screen">
+  <main class="detail-container" aria-label="상품 상세 화면">
+    <header class="detail-header">
+      <a class="detail-back" href="./search.html" data-back-button aria-label="이전 화면으로 돌아가기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+      </a>
+      <div class="detail-title">뒤로가기</div>
+    </header>
+
+    <!-- 상품 정보 렌더링 영역 -->
+    <div id="product-detail-content">
+      <!-- JS로 동적 렌더링 -->
+    </div>
+
+    <!-- 3대 필수 탭 -->
+    <nav class="tab-bar" aria-label="상세 정보 메뉴">
+      <button class="tab-btn active" onclick="switchDetailTab('desc', this)">상세설명</button>
+      <button class="tab-btn" id="tab-reviews-btn" onclick="switchDetailTab('reviews', this)">후기란</button>
+      <button class="tab-btn" onclick="switchDetailTab('inquiry', this)">문의하기</button>
+    </nav>
+
+    <!-- 탭별 내용 영역 -->
+    <div id="tab-desc" class="tab-content">
+      <!-- 상세설명 내용 -->
+    </div>
+
+    <div id="tab-reviews" class="tab-content" style="display:none;">
+      <!-- 후기 목록 -->
+    </div>
+
+    <div id="tab-inquiry" class="tab-content" style="display:none;">
+      <!-- 문의하기 목록 및 입력 폼 -->
+      <div style="background: #f8f9fa; padding: 14px; border-radius: 12px; margin-bottom: 20px;">
+        <h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 800; color: #1f5f43;">🏪 사장님께 문의하기</h4>
+        <textarea id="inquiry-text" placeholder="문의하실 내용을 입력해 주세요. (예: 보관 보온이 필요한 상품인가요?)" style="width: 100%; height: 80px; border: 1px solid #d8dde2; border-radius: 8px; padding: 10px; font-family: inherit; font-size: 13px; outline: none; resize: none; margin-bottom: 10px;"></textarea>
+        <button onclick="submitInquiry()" style="width: 100%; background: #1f5f43; color:#fff; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border:0; cursor:pointer;">문의 전송하기</button>
+      </div>
+      <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 800;">내 문의 내역</h4>
+      <div id="inquiry-list" style="display:flex; flex-direction:column; gap:10px;">
+        <!-- 문의 리스트 동적 렌더링 -->
+      </div>
+    </div>
+
+    <!-- 고정 하단 결제/신청 액션 바 -->
+    <div class="action-bar" id="product-action-bar">
+      <!-- JS로 구매 또는 재입고 신청 버튼 동적 생성 -->
+    </div>
+  </main>
+
+  <script src="./js/db.js"></script>
+  <script src="./js/product-rules.js"></script>
+  <script src="./js/back-navigation.js"></script>
+  <script>
+    // URL에서 상품 ID 파싱
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id") || "bundle-citrus";
+    let currentProduct = null;
+    let currentImageIndex = 0;
+
+    function getProductImages(product) {
+      const images = Array.isArray(product.images) && product.images.length > 0
+        ? product.images
+        : [product.image];
+
+      return images.filter(Boolean);
+    }
+
+    function getProductTypeLabel(product) {
+      return product.categoryLabel || (product.category === "bundle" ? "공구" : product.category === "fruit" ? "오늘의 과일" : "매장픽");
+    }
+
+    function getDeadlineText(product) {
+      if (product.deadline === "상시 판매") return "상시 판매";
+      return `${product.deadline || "2026-07-14"} 마감`;
+    }
+
+    function getPickupDateText(product) {
+      const match = String(product.pickupDate || product.expectedPickupDate || "").match(/(20\d{2})-(\d{2})-(\d{2})/);
+      if (!match) return "수령일 미정";
+      const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+      return `${match[2]}.${match[3]} (${weekdays[date.getDay()]})`;
+    }
+
+    function formatRating(product) {
+      const rating = Number(product.rating) || 0;
+      return rating.toFixed(1);
+    }
+
+    function updateDetailImage(index) {
+      const images = getProductImages(currentProduct);
+      if (!images[index]) return;
+
+      currentImageIndex = index;
+
+      const heroImage = document.getElementById("detail-main-image");
+      const counter = document.getElementById("gallery-counter");
+
+      if (heroImage) {
+        heroImage.src = images[index];
+        heroImage.alt = `${currentProduct.name} 사진 ${index + 1}`;
+      }
+
+      if (counter) {
+        counter.textContent = `${index + 1} / ${images.length}`;
+      }
+
+      document.querySelectorAll(".detail-thumbnail").forEach((button, buttonIndex) => {
+        button.classList.toggle("is-active", buttonIndex === index);
+      });
+    }
+
+    window.updateDetailImage = updateDetailImage;
+
+    function initProductDetail() {
+      const products = window.FridgeDB.getProducts();
+      currentProduct = products.find(p => p.id === productId);
+
+      if (!currentProduct) {
+        document.getElementById("product-detail-content").innerHTML = `
+          <div style="text-align:center; padding: 50px 20px; color:#888;">
+            존재하지 않는 상품입니다.
+          </div>
+        `;
+        return;
+      }
+
+      // 1. 배지 계산
+      const images = getProductImages(currentProduct);
+      currentImageIndex = 0;
+      const isReservationProduct = currentProduct.purchaseMode === "reservation" || currentProduct.category === "bundle";
+      const isFruitProduct = currentProduct.category === "fruit";
+      const badgeListHTML = window.ProductRules.badges(currentProduct)
+        .map((badge) => {
+          const tone = badge.tone === "popular" ? "green" : badge.tone === "deadline" ? "yellow" : "red";
+          return `<span class="detail-badge ${tone}">${badge.label}</span>`;
+        })
+        .join("");
+
+      // 2. 가격 영역 (완판 시 비공개)
+      const isSoldOut = window.ProductRules.isSoldOut(currentProduct);
+      const canJoinWaitlist = window.ProductRules.canJoinWaitlist(currentProduct);
+      const priceView = window.ProductRules.priceView(currentProduct);
+      let priceSection = "";
+      if (isSoldOut) {
+        priceSection = "";
+      } else {
+        priceSection = `
+          <h2>
+            ${currentProduct.price.toLocaleString()}원
+            ${priceView.showOriginal ? `<span class="price-strike">${currentProduct.originalPrice.toLocaleString()}원</span>` : ""}
+          </h2>
+        `;
+      }
+
+      // 3. 상품 상세 소개 렌더링
+      const detailHero = document.getElementById("product-detail-content");
+      detailHero.innerHTML = `
+        <div class="detail-gallery">
+          <div class="detail-main-photo">
+            <img id="detail-main-image" src="${images[0]}" alt="${currentProduct.name} 사진 1" />
+            <span class="gallery-counter" id="gallery-counter">1 / ${images.length}</span>
+          </div>
+          <div class="detail-thumbnails" aria-label="상품 사진 목록">
+            ${images.map((image, index) => `
+              <button class="detail-thumbnail ${index === 0 ? 'is-active' : ''}" type="button" onclick="updateDetailImage(${index})" aria-label="상품 사진 ${index + 1} 보기">
+                <img src="${image}" alt="" aria-hidden="true" />
+              </button>
+            `).join('')}
+          </div>
+        </div>
+        <div class="detail-info-block">
+          <span class="detail-type-chip">${getProductTypeLabel(currentProduct)}</span>
+          <h1>${currentProduct.name}</h1>
+          <div class="detail-meta-row" aria-label="상품 평점과 마감일">
+            <span class="detail-meta-item review">★ ${formatRating(currentProduct)} <small>(${currentProduct.reviewsCount || 0})</small></span>
+            ${isReservationProduct ? `
+              <span class="detail-meta-divider" aria-hidden="true"></span>
+              <span class="detail-meta-item"><span class="detail-deadline-icon" aria-hidden="true"></span>${getDeadlineText(currentProduct)}</span>
+            ` : ''}
+          </div>
+          ${isReservationProduct ? `
+            <div class="detail-pickup-info">
+              <span>수령일</span>
+              <strong>${getPickupDateText(currentProduct)}</strong>
+            </div>
+          ` : ''}
+          <p class="detail-description">${currentProduct.description}</p>
+          <div class="detail-price-box">${priceSection}</div>
+          <div class="detail-badge-list" style="margin-top: 14px;">${badgeListHTML}</div>
+          <div style="margin-top: 10px;">
+            ${currentProduct.tags.map(t => `<span class="tag-chip">${t}</span>`).join('')}
+          </div>
+          ${!isReservationProduct ? `<div class="store-purchase-note">이 상품은 매장에서 직접 보고 현장 구매하는 상품입니다.</div>` : ''}
+        </div>
+      `;
+
+      // 4. 탭 정보 채우기
+      // 상세설명 탭
+      if (isFruitProduct) {
+        const specs = currentProduct.detailSpecs || [];
+        document.getElementById("tab-desc").innerHTML = `
+          <div class="detail-spec-list">
+            ${specs.map((spec) => `
+              <article class="detail-spec-card">
+                <strong>${spec.title}</strong>
+                ${spec.body ? `<p>${spec.body}</p>` : ''}
+              </article>
+            `).join('')}
+          </div>
+        `;
+      } else if (!isReservationProduct) {
+        document.getElementById("tab-desc").innerHTML = `
+          <div style="font-size: 13px; color:#555; display:flex; flex-direction:column; gap:12px;">
+            <p><strong>구매 방법:</strong> 매장 방문 후 상품 상태를 확인하고 현장에서 결제합니다.</p>
+            <p><strong>추천 안내:</strong> 재고는 매장 상황에 따라 달라질 수 있어 방문 전 소통방 확인을 권장합니다.</p>
+            <p><strong>보관 방법:</strong> 상품별 안내에 따라 냉장 또는 실온 보관해 주세요.</p>
+          </div>
+        `;
+      } else {
+        document.getElementById("tab-desc").innerHTML = `
+          <div style="font-size: 13px; color:#555; display:flex; flex-direction:column; gap:12px;">
+            <p><strong>수령 방법:</strong> 매장 내 셀프 보관함에서 수령증 바코드를 스캔하여 픽업</p>
+            <p><strong>보관 방법:</strong> 즉시 섭취 또는 신선 보관실 냉장 보관 권장</p>
+            <p><strong>특이 사항:</strong> 산지 상황에 따라 입고 시간이 10~20분 변동될 수 있습니다.</p>
+          </div>
+        `;
+      }
+
+      // 후기 탭 동적 로드
+      renderProductReviews();
+
+      // 문의 내역 로드
+      renderInquiryList();
+
+      // 5. 하단 고정 액션바 버튼 렌더링
+      const actionBar = document.getElementById("product-action-bar");
+      if (!isReservationProduct) {
+        actionBar.style.display = "none";
+      } else if (isSoldOut) {
+        actionBar.style.display = "block";
+        if (canJoinWaitlist) {
+          const isWaiting = localStorage.getItem(`waitlist_requested_${currentProduct.id}`) === "true";
+          actionBar.innerHTML = `
+            <button class="action-btn" id="btn-action-cta" onclick="requestWaitlist()">
+              ${isWaiting ? '대기 신청 완료' : '보따리 대기 신청하기'}
+            </button>
+          `;
+        } else {
+          const isRequested = localStorage.getItem(`restock_requested_${currentProduct.id}`) === "true";
+          actionBar.innerHTML = `
+            <button class="action-btn restock" id="btn-action-cta" onclick="requestRestock()">
+              ${isRequested ? '재입고 알림 신청 취소' : '재입고 알림 신청하기'}
+            </button>
+          `;
+        }
+      } else {
+        actionBar.style.display = "block";
+        actionBar.innerHTML = `
+          <button class="action-btn" id="btn-action-cta" onclick="location.href='./bundle-apply.html?id=${encodeURIComponent(currentProduct.id)}'">
+            🛒 보따리 예약 신청하기 (${currentProduct.price.toLocaleString()}원)
+          </button>
+        `;
+      }
+    }
+
+    // 탭 전환 로직
+    window.switchDetailTab = function (tab, activeButton) {
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      activeButton?.classList.add("active");
+
+      document.getElementById("tab-desc").style.display = "none";
+      document.getElementById("tab-reviews").style.display = "none";
+      document.getElementById("tab-inquiry").style.display = "none";
+
+      if (tab === "desc") document.getElementById("tab-desc").style.display = "block";
+      else if (tab === "reviews") document.getElementById("tab-reviews").style.display = "block";
+      else if (tab === "inquiry") document.getElementById("tab-inquiry").style.display = "block";
+    };
+
+    // 후기 렌더링
+    function renderProductReviews() {
+      const container = document.getElementById("tab-reviews");
+      const tabBtn = document.getElementById("tab-reviews-btn");
+      const reviews = window.FridgeDB.getReviews().filter(r => r.productId === productId && r.isVisible);
+      
+      if (tabBtn) {
+        tabBtn.textContent = `후기란 (${reviews.length})`;
+      }
+
+      container.innerHTML = "";
+
+      if (reviews.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding: 30px; color:#888; font-size:13px;">
+            아직 작성된 구매 후기가 없습니다.
+          </div>
+        `;
+        return;
+      }
+
+      reviews.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "review-item-detail";
+        let stars = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
+
+        let replyHTML = "";
+        if (r.reply) {
+          replyHTML = `
+            <div style="margin-top:10px; padding:10px; background:#f4f9f6; border-radius:10px; font-size:11px; border-left:3px solid #1f5f43; color:#333; line-height:1.45;">
+              <strong style="color:#1f5f43; display:block; margin-bottom:2px;">🏪 사장님 답글</strong>
+              ${r.reply}
+            </div>
+          `;
+        }
+
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="color: #4f8f64; font-size:14px;">${stars} ${r.userName}</strong>
+            <span style="color:#9299a1; font-size:11px;">${r.date}</span>
+          </div>
+          <p style="margin:6px 0; font-size:13px; line-height:1.45; color:#333;">${r.comment}</p>
+          ${r.photoClass ? `<div class="photo-review ${r.photoClass}" style="width:70px; height:70px; border-radius:8px; margin-top:8px;"></div>` : ''}
+          ${replyHTML}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 재입고 신청 로직
+    window.requestRestock = function () {
+      if (!currentProduct) return;
+      const key = `restock_requested_${currentProduct.id}`;
+      if (localStorage.getItem(key) === "true") {
+        const shouldCancel = confirm("재입고 알림 신청을 취소할까요?");
+        if (!shouldCancel) return;
+
+        const nextRequests = Math.max(0, Number(currentProduct.restockRequests || 0) - 1);
+        window.FridgeDB.updateProduct(currentProduct.id, { restockRequests: nextRequests });
+        localStorage.removeItem(key);
+        alert("재입고 알림 신청을 취소했습니다.");
+        initProductDetail();
+        return;
+      }
+
+      // 재입고 신청 유저 수 카운트 증가
+      const newRequests = (currentProduct.restockRequests || 0) + 1;
+      window.FridgeDB.updateProduct(currentProduct.id, { restockRequests: newRequests });
+      
+      localStorage.setItem(key, "true");
+      alert("🔔 재입고 알림 신청이 완료되었습니다! 사장님께 희망 수요가 전송됩니다.");
+      
+      // UI 즉시 업데이트
+      initProductDetail();
+    };
+
+    window.requestWaitlist = function () {
+      if (!currentProduct || !window.ProductRules.canJoinWaitlist(currentProduct)) {
+        alert("대기 신청 가능한 시간이 종료되었습니다.");
+        initProductDetail();
+        return;
+      }
+      const key = `waitlist_requested_${currentProduct.id}`;
+      if (localStorage.getItem(key) === "true") {
+        alert("이미 대기 신청이 접수되었습니다.");
+        return;
+      }
+      window.FridgeDB.updateProduct(currentProduct.id, {
+        waitlistRequests: Number(currentProduct.waitlistRequests || 0) + 1
+      });
+      localStorage.setItem(key, "true");
+      alert("대기 신청이 완료되었습니다. 취소 수량이 생기면 순서대로 안내해 드릴게요.");
+      initProductDetail();
+    };
+
+    // 주문 신청 로직
+    window.orderProduct = function () {
+      if (!currentProduct) return;
+      
+      // 노쇼 차단 계정 확인
+      const user = window.FridgeDB.getUserAccount();
+      const isOnsiteBlocked = user.noShowStack >= 3;
+
+      // 주문 생성
+      const orderId = "order-" + Date.now();
+      
+      // 현장결제 또는 계좌이체 선택 분기 창 띄우기
+      let payType = "transfer";
+      if (isOnsiteBlocked) {
+        alert("노쇼 3회 누적으로 현장결제 신청은 제한됩니다. 이번 주문은 계좌이체 방식으로 진행됩니다.");
+      } else {
+        payType = confirm("결제 방식을 선택해 주세요.\n\n[확인] -> 현장결제 수령증 발급\n[취소] -> 계좌이체(선결제) 수령증 발급") ? "onsite" : "transfer";
+      }
+      
+      const newOrder = {
+        id: orderId,
+        productId: currentProduct.id,
+        productName: currentProduct.name,
+        paymentType: payType,
+        status: "pending",
+        pickupDate: "07.14 화 18:00", // 기본 수령일 예약
+        pickupHour: 18,
+        price: currentProduct.price,
+        userNoShowStacked: false
+      };
+
+      window.FridgeDB.addOrder(newOrder);
+      alert(`🎉 보따리 예약이 완료되었습니다!\n\n수령증 확인 탭(하단 가운데 버튼)에서 수령증을 확인해 주세요.`);
+      if (window.openReceiptOverlay) {
+        window.openReceiptOverlay();
+      } else {
+        window.location.href = "./main.html#receipt";
+      }
+    };
+
+    // 1:1 문의사항 리스트 렌더링
+    const INQUIRY_KEY = "todayFridgeInquiries_" + productId;
+    function getInquiries() {
+      return JSON.parse(localStorage.getItem(INQUIRY_KEY) || "[]");
+    }
+
+    function renderInquiryList() {
+      const list = getInquiries();
+      const container = document.getElementById("inquiry-list");
+      container.innerHTML = "";
+
+      if (list.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:15px; color:#999; font-size:12px;">등록된 문의 내역이 없습니다.</div>`;
+        return;
+      }
+
+      list.forEach((inq, idx) => {
+        const item = document.createElement("div");
+        item.style.cssText = "border:1px solid #edf0f2; border-radius:10px; padding:12px; font-size:12px; background:#fff;";
+        
+        let answerHTML = `<span style="color:#aaa;">답변 대기 중</span>`;
+        if (inq.answer) {
+          answerHTML = `<div style="margin-top:8px; padding:8px; background:#f4f9f6; border-radius:6px; color:#1f5f43; font-weight:700;">🏪 답글: ${inq.answer}</div>`;
+        }
+
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px; color:#888;">
+            <span>질문 #${idx + 1}</span>
+            <span>${inq.date}</span>
+          </div>
+          <p style="margin:0 0 8px 0; font-weight:800; color:#333;">Q. ${inq.question}</p>
+          ${answerHTML}
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // 문의 제출
+    window.submitInquiry = function () {
+      const textarea = document.getElementById("inquiry-text");
+      const question = textarea.value.trim();
+      if (!question) {
+        alert("문의하실 내용을 입력해 주세요.");
+        return;
+      }
+
+      const list = getInquiries();
+      const newInq = {
+        question: question,
+        date: "26.07.14",
+        answer: null
+      };
+
+      list.push(newInq);
+      localStorage.setItem(INQUIRY_KEY, JSON.stringify(list));
+      textarea.value = "";
+      alert("✉️ 문의가 전송되었습니다. 사장님이 확인 후 답변을 작성합니다.");
+      renderInquiryList();
+    };
+
+    window.addEventListener("storage", initProductDetail);
+
+    // 초기화
+    initProductDetail();
+  </script>
+  <script src="./js/receipt-launcher.js"></script>
+</body>
+</html>

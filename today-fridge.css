@@ -1,0 +1,114 @@
+@import url("./css/common.css");
+@import url("./css/main.css");
+@import url("./css/search.css");
+@import url("./css/receipt.css");
+@import url("./css/bundle-list.css");
+@import url("./css/product-card.css");
+@import url("./css/receipt-launcher.css");
+.arrival-status-sheet {
+  overflow-y: auto;
+}
+
+.arrival-status-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.arrival-status-heading span {
+  display: block;
+  margin-bottom: 3px;
+  color: #7e8a84;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.arrival-status-heading h3 {
+  margin: 0;
+  color: #222b26;
+  font-size: 21px;
+  letter-spacing: -.03em;
+}
+
+.arrival-status-heading button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f3f5f4;
+  color: #727d77;
+  font-size: 21px;
+}
+
+.arrival-status-description {
+  margin: 0 0 17px;
+  color: #77827c;
+  font-size: 12px;
+}
+
+.arrival-status-list {
+  overflow: hidden;
+  border: 1px solid #e3e8e5;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.arrival-status-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #edf0ee;
+}
+
+.arrival-status-row:last-child {
+  border-bottom: 0;
+}
+
+.arrival-status-product {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+}
+
+.arrival-status-product img {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  object-fit: cover;
+  background: #f0f3f1;
+}
+
+.arrival-status-product strong {
+  overflow: hidden;
+  color: #303934;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arrival-status-value {
+  color: #d76645;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.arrival-status-value.is-ready {
+  color: #217c58;
+}
+
+.arrival-status-empty {
+  padding: 34px 18px;
+  color: #7c8781;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}

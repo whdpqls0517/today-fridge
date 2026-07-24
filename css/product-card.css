@@ -1,0 +1,339 @@
+.product-master-card {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.product-master-thumb {
+  position: relative;
+  height: 146px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #edf1ef;
+}
+
+.product-master-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-master-badges {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  display: flex;
+  max-width: calc(100% - 18px);
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.master-badge {
+  padding: 5px 7px;
+  border-radius: 7px;
+  background: rgba(28, 41, 35, .88);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  backdrop-filter: blur(5px);
+}
+
+.master-badge.deadline { background: rgba(117, 72, 35, .9); }
+.master-badge.urgent { background: rgba(167, 57, 49, .9); }
+.master-badge.popular { background: rgba(25, 101, 74, .92); }
+.master-badge.muted { background: rgba(70, 77, 73, .84); }
+
+.product-master-favorite {
+  position: absolute;
+  right: 9px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .9);
+  color: #315447;
+  font-size: 20px;
+  box-shadow: 0 3px 10px rgba(19, 40, 31, .12);
+}
+
+.product-master-favorite[aria-pressed="true"] { color: #b54d49; }
+
+.product-master-copy {
+  padding: 11px 2px 0;
+}
+
+.product-master-copy > strong {
+  display: block;
+  overflow: hidden;
+  color: #202e28;
+  font-size: 14px;
+  font-weight: 760;
+  letter-spacing: -.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-master-copy > p {
+  display: -webkit-box;
+  min-height: 30px;
+  margin: 5px 0 8px;
+  overflow: hidden;
+  color: #818c86;
+  font-size: 10px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.product-master-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.product-master-price b {
+  color: #18251f;
+  font-size: 16px;
+}
+
+.product-master-price del {
+  color: #a8b0ac;
+  font-size: 10px;
+}
+
+.product-master-price.is-hidden b {
+  color: #7b8580;
+  font-size: 12px;
+}
+
+.product-master-tags {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.product-master-tags span {
+  overflow: hidden;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: #f0f4f2;
+  color: #617069;
+  font-size: 8px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-master-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  margin-top: 8px;
+  color: #7c8982;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.product-master-deadline {
+  display: block;
+  margin-top: 7px;
+  color: #8b6250;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* 기존 상품 목록 카드 UI를 유지하면서 자동 배지만 겹쳐 표시합니다. */
+.popular-badges {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  max-width: calc(100% - 48px);
+  flex-wrap: wrap;
+}
+
+.popular-badges .popular-badge {
+  position: static;
+  padding: 4px 6px;
+  border-radius: 2px;
+  background: rgba(37, 40, 39, .9);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.popular-badges .popular-badge.green {
+  background: #566f64;
+}
+
+.popular-badges .popular-badge.red {
+  background: #775e58 !important;
+}
+
+.search-popular-card .popular-badge {
+  padding: 4px 6px;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.popular-badge.muted {
+  background: rgba(64, 70, 67, .82);
+}
+
+.popular-card p {
+  display: flex !important;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.popular-card p del {
+  color: #a3aaa7;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.popular-card-meta {
+  display: grid;
+  gap: 4px;
+  margin-top: 7px;
+  color: #8c969e;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.popular-card.is-sold-out .popular-thumb img {
+  filter: saturate(.58) brightness(.64);
+}
+
+.popular-card.is-sold-out .popular-thumb::after {
+  height: 100%;
+  background: rgba(31, 34, 32, .2);
+}
+
+.popular-card.is-sold-out .popular-badges {
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  max-width: none;
+}
+
+.popular-card.is-sold-out .popular-badge {
+  padding: 0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 750;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .3);
+}
+
+.bundle-list-tools {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 0 18px;
+}
+
+.bundle-filter-chips {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bundle-filter-chips button {
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border: 1px solid #e1e5e3;
+  border-radius: 999px;
+  color: #66706b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bundle-filter-chips button.active {
+  border-color: #263b32;
+  background: #263b32;
+  color: #fff;
+}
+
+.bundle-sort-select {
+  flex: 0 0 auto;
+}
+
+.bundle-sort-select > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #8a928e;
+  font-size: 9px;
+}
+
+.bundle-sort-select select {
+  padding: 8px 27px 8px 10px;
+  border: 1px solid #e1e5e3;
+  border-radius: 9px;
+  background: #fff;
+  color: #36413c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bundle-today-section,
+.bundle-general-section {
+  padding-top: 22px;
+  border-top: 1px solid #edf0ee;
+}
+
+.bundle-today-section[hidden] {
+  display: none;
+}
+
+.bundle-today-section {
+  margin-top: 4px;
+  padding: 20px 14px 18px;
+  border: 1px solid #dfe9e4;
+  border-radius: 16px;
+  background: #f6faf8;
+}
+
+.bundle-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.bundle-section-heading span {
+  color: #527064;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.bundle-section-heading h2 {
+  margin: 4px 0 0;
+  color: #202925;
+  font-size: 16px;
+  letter-spacing: -.03em;
+}
+
+.bundle-section-heading small {
+  color: #89938e;
+  font-size: 9px;
+}
+
+.bundle-product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 12px;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.bundle-general-section {
+  margin-top: 22px;
+}

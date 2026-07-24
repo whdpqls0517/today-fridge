@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>상품 등록 | 오늘의 냉장고 관리자</title>
+  <link rel="stylesheet" href="./today-fridge.css" />
+  <link rel="stylesheet" href="./css/admin-product-form.css" />
+</head>
+<body class="product-form-body is-checking-admin">
+  <section class="product-form-auth" id="product-form-auth" role="status">
+    <strong>관리자 권한을 확인하고 있어요</strong>
+    <p>확인이 끝나면 상품 등록 화면이 열립니다.</p>
+  </section>
+
+  <main class="product-form-page" id="product-form-page" aria-hidden="true">
+    <header class="product-form-header">
+      <a href="./admin.html" aria-label="관리자 페이지로 돌아가기">‹</a>
+      <div><span>상품 관리</span><h1 id="product-form-title">새 상품 등록</h1></div>
+      <button type="button" id="save-draft-button">임시저장</button>
+    </header>
+
+    <form id="product-create-form">
+      <section class="form-section">
+        <div class="section-heading"><b>1</b><div><h2>판매 위치</h2><p>상품이 노출될 서비스를 선택하세요.</p></div></div>
+        <div class="type-selector" role="radiogroup" aria-label="상품 유형">
+          <label><input type="radio" name="category" value="bundle" checked /><span><strong>보따리 상품</strong><small>예약 공동구매·매장 수령</small></span></label>
+          <label><input type="radio" name="category" value="fruit" /><span><strong>오늘의 과일</strong><small>당일 입고 제철 과일</small></span></label>
+          <label><input type="radio" name="category" value="market" /><span><strong>매장 둘러보기</strong><small>상시 진열·현장 구매</small></span></label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading"><b>2</b><div><h2>기본 정보</h2><p>목록 카드와 상세페이지에 공통으로 표시됩니다.</p></div></div>
+        <div class="field-grid">
+          <label class="wide"><span>상품명 *</span><input name="name" maxlength="60" required placeholder="예: 제주 감귤 보따리" /></label>
+          <label class="wide"><span>한 줄 소개 *</span><input name="description" maxlength="100" required placeholder="상품의 핵심 특징을 한 문장으로 적어주세요" /></label>
+          <label class="wide"><span>상품 카테고리 *</span><select name="productCategory" required>
+            <option value="">카테고리를 선택해 주세요</option>
+            <option value="fruit">과일</option>
+            <option value="vegetable">채소</option>
+            <option value="meat-egg">정육·계란</option>
+            <option value="seafood-dried">수산·건어물</option>
+            <option value="rice-grain">쌀·잡곡</option>
+            <option value="meal-kit">간편식·밀키트</option>
+            <option value="snack-drink">간식·음료</option>
+            <option value="seasoning-sauce">조미료·소스</option>
+            <option value="etc">기타</option>
+          </select><small>보따리·오늘의 과일·둘러보기 상품 어디에 등록하든 실제 상품 분류는 별도로 선택합니다.</small></label>
+          <label><span>판매가 *</span><div class="input-suffix"><input name="price" type="number" min="0" required /><i>원</i></div></label>
+          <label><span>할인 전 가격</span><div class="input-suffix"><input name="originalPrice" type="number" min="0" /><i>원</i></div></label>
+          <label class="wide switch-field"><span><strong>할인 전 가격 표시</strong><small>켜면 목록과 상세에 취소선 가격이 표시됩니다.</small></span><input name="showOriginalPrice" type="checkbox" /></label>
+          <label><span>전체 입고 수량 *</span><div class="input-suffix"><input name="totalStock" type="number" min="1" required /><i>개</i></div></label>
+          <label><span>현재 판매 가능 수량 *</span><div class="input-suffix"><input name="stock" type="number" min="0" required /><i>개</i></div></label>
+          <label class="wide"><span>해시태그</span><input name="tags" placeholder="#제주산, #산지직송, #당도보장" /><small>쉼표로 구분하며 목록에는 앞의 2개가 표시됩니다.</small></label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading"><b>3</b><div><h2>상품 이미지</h2><p>대표 이미지와 상세 갤러리에 사용할 이미지입니다.</p></div></div>
+        <label class="image-file-picker">
+          <input id="product-image-files" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+          <span><strong>컴퓨터에서 이미지 선택</strong><small>최대 30장 · JPG, PNG, WEBP</small></span>
+        </label>
+        <div class="field-grid">
+          <label class="wide"><span>이미지 주소로 추가</span><input name="image" placeholder="./asset-product.png 또는 이미지 URL" /></label>
+          <label class="wide"><span>추가 이미지 주소</span><textarea name="images" rows="3" placeholder="한 줄에 이미지 주소 하나씩 입력"></textarea></label>
+        </div>
+        <div class="image-gallery-preview" id="image-gallery-preview">
+          <p>첨부한 이미지가 여기에 표시됩니다. 사진을 누르면 대표 이미지로 설정됩니다.</p>
+          <div id="image-preview-list"></div>
+        </div>
+      </section>
+
+      <section class="form-section category-panel" data-category-panel="bundle">
+        <div class="section-heading"><b>4</b><div><h2>보따리 예약 정보</h2><p>마감과 수령 순서를 계산하는 필수 정보입니다.</p></div></div>
+        <div class="field-grid">
+          <label><span>주문 마감일 *</span><input name="deadline" type="date" data-required-for="bundle" /></label>
+          <label><span>주문 마감시간 *</span><input name="deadlineTime" type="time" value="23:59" data-required-for="bundle" /></label>
+          <label><span>수령 가능일 *</span><input name="pickupDate" type="date" data-required-for="bundle" /></label>
+          <label><span>1인 최대 신청 수량</span><div class="input-suffix"><input name="maxQuantity" type="number" min="1" value="10" /><i>개</i></div></label>
+          <label class="wide switch-field"><span>선결제 전용 상품<small>체크하면 계좌이체만 선택할 수 있고 현장결제는 차단됩니다.</small></span><input name="prepaymentOnly" type="checkbox" /></label>
+          <label class="wide"><span>키오스크 바코드 번호 *</span><input name="barcodeValue" inputmode="numeric" pattern="[0-9]{6,24}" data-required-for="bundle" placeholder="숫자 6~24자리" /><small>번호만 입력하면 수령증에서 스캔 가능한 바코드 이미지가 자동으로 생성됩니다. 바코드 사진은 첨부하지 않아도 됩니다.</small></label>
+          <div class="wide form-note">수령 시간은 서비스 정책에 따라 오후 7시 이후 무인 수령으로 안내됩니다. 토·일 수령일은 목록에서 다음 월요일로 자동 보정됩니다.</div>
+        </div>
+      </section>
+
+      <section class="form-section category-panel" data-category-panel="fruit" hidden>
+        <div class="section-heading"><b>4</b><div><h2>과일 상세 정보</h2><p>과일 상세설명의 규격 카드로 표시됩니다.</p></div></div>
+        <div class="field-grid">
+          <label><span>산지·원산지</span><input name="fruitOrigin" placeholder="경북 성주" /></label>
+          <label><span>평균 당도</span><input name="fruitBrix" placeholder="14 Brix 이상" /></label>
+          <label><span>중량·구성</span><input name="fruitWeight" placeholder="1.5kg 내외, 4~6과" /></label>
+          <label><span>권장 보관법</span><input name="fruitStorage" placeholder="냉장 보관" /></label>
+        </div>
+      </section>
+
+      <section class="form-section category-panel" data-category-panel="market" hidden>
+        <div class="section-heading"><b>4</b><div><h2>매장 판매 정보</h2><p>매장 방문 전 고객이 확인할 안내입니다.</p></div></div>
+        <div class="field-grid">
+          <label class="wide"><span>구매·보관 안내</span><textarea name="marketGuide" rows="4" placeholder="현장 구매 방법과 보관 시 주의사항을 입력하세요"></textarea></label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading"><b>5</b><div><h2>상세설명</h2><p>상품 상세페이지의 상세설명 탭에 표시됩니다.</p></div></div>
+        <label class="editor-field"><span>상세 내용 *</span><textarea name="detailDescription" rows="8" required placeholder="구성, 원산지, 보관법, 알레르기·주의사항 등을 입력하세요"></textarea></label>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading"><b>6</b><div><h2>추천 노출</h2><p>카테고리 추천순에서 상품의 우선순위를 관리합니다.</p></div></div>
+        <label class="switch-field">
+          <span><strong>추천 상품으로 우선 노출</strong><small>자동 추천 점수에 관리자 추천 점수가 추가됩니다.</small></span>
+          <input name="isRecommended" type="checkbox" />
+        </label>
+      </section>
+
+      <section class="publish-bar">
+        <div><strong>고객 화면에 바로 공개할까요?</strong><small>끄면 임시저장 상태로 등록됩니다.</small></div>
+        <label class="publish-switch"><input name="isActive" type="checkbox" checked /><span></span></label>
+        <button type="submit" id="product-submit-button">상품 등록하기</button>
+      </section>
+    </form>
+  </main>
+
+  <div class="form-toast" id="form-toast" role="status" aria-live="polite"></div>
+  <script src="./js/db.js"></script>
+  <script src="./js/admin-product-form.js"></script>
+</body>
+</html>
