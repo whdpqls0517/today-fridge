@@ -1,0 +1,480 @@
+(function () {
+  const $ = (selector) => document.querySelector(selector);
+  const modal = $("#my-modal");
+  const modalTitle = $("#my-modal-title");
+  const modalContent = $("#my-modal-content");
+  const toast = $("#my-toast");
+  const SETTINGS_KEY = "todayFridgeNotificationSettings";
+  let toastTimer;
+  let authClient;
+  let nicknameCheckTimer;
+  let nicknameAvailable = false;
+  let authenticated = false;
+
+  const defaultSettings = { arrival: true, inquiry: true, important: true };
+
+  function readJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (_) { return fallback; }
+  }
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[character]));
+  }
+  function settings() { return { ...defaultSettings, ...readJSON(SETTINGS_KEY, {}) }; }
+
+  function base64UrlToUint8Array(value) {
+    const padding = "=".repeat((4 - value.length % 4) % 4);
+    const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const raw = atob(base64);
+    return Uint8Array.from([...raw].map((character) => character.charCodeAt(0)));
+  }
+
+  async function saveNotificationSettings(value) {
+    const token = accessToken() || await refreshedAccessToken();
+    if (!token) throw new Error("로그인 후 알림 설정을 변경해 주세요.");
+    const response = await fetch("/api/profile/notification-settings", {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(value)
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.error || "알림 설정을 저장하지 못했습니다.");
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(result.data));
+    return result.data;
+  }
+
+  async function enableWebPush() {
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    if (!window.isSecureContext) {
+      throw new Error("알림은 https로 시작하는 보안 주소에서만 받을 수 있어요.");
+    }
+    if (isIos && !isStandalone) {
+      throw new Error("아이폰은 Safari 공유 버튼에서 ‘홈 화면에 추가’한 뒤, 설치된 아이콘으로 열어 알림을 켜 주세요.");
+    }
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      throw new Error("현재 브라우저는 웹 푸시를 지원하지 않아요. Android는 Chrome, iPhone은 홈 화면에 추가한 앱에서 열어 주세요.");
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") throw new Error("브라우저 알림 권한을 허용해 주세요.");
+    const configResponse = await fetch("/api/push/config", { cache: "no-store" });
+    const config = await configResponse.json();
+    if (!configResponse.ok || !config.enabled || !config.publicKey) {
+      throw new Error("서버에 웹 푸시 키 설정이 필요합니다.");
+    }
+    const registration = await navigator.serviceWorker.register("/service-worker.js");
+    const existing = await registration.pushManager.getSubscription();
+    const subscription = existing || await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: base64UrlToUint8Array(config.publicKey)
+    });
+    const token = accessToken() || await refreshedAccessToken();
+    if (!token) throw new Error("로그인 후 알림을 신청해 주세요.");
+    const response = await fetch("/api/push/subscriptions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(subscription.toJSON())
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.error || "푸시 구독을 저장하지 못했습니다.");
+    return true;
+  }
+  function isLoggedIn() { return authenticated; }
+  function accessToken() {
+    const direct = localStorage.getItem("todayFridgeAccessToken");
+    if (direct) return direct;
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (!key?.startsWith("sb-") || !key.endsWith("-auth-token")) continue;
+      const value = readJSON(key, null);
+      const token = value?.access_token || value?.currentSession?.access_token;
+      if (token) return token;
+    }
+    return null;
+  }
+  async function refreshedAccessToken() {
+    if (window.TodayFridgeAuth) {
+      return window.TodayFridgeAuth.getAccessToken(true);
+    }
+    if (!window.supabase?.createClient) return null;
+    try {
+      if (!authClient) {
+        const response = await fetch("/api/config");
+        const config = await response.json();
+        if (!response.ok || !config.supabaseUrl || !config.supabasePublishableKey) return null;
+        authClient = window.supabase.createClient(
+          config.supabaseUrl,
+          config.supabasePublishableKey
+        );
+      }
+      const { data } = await authClient.auth.getSession();
+      const token = data?.session?.access_token || null;
+      if (token) localStorage.setItem("todayFridgeAccessToken", token);
+      return token;
+    } catch (_) {
+      return null;
+    }
+  }
+  async function updateAdminMenu() {
+    const link = $("#admin-menu-link");
+    if (!link || !isLoggedIn()) return;
+    let token = accessToken() || await refreshedAccessToken();
+    if (!token) return;
+    try {
+      let response = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.status === 401) {
+        token = await refreshedAccessToken();
+        if (!token) {
+          link.hidden = true;
+          return;
+        }
+        response = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      const result = await response.json();
+      if (response.ok && result.profile?.notification_settings) {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(result.profile.notification_settings));
+      }
+      link.hidden = !(response.ok && result.profile?.role === "admin");
+    } catch (_) {
+      link.hidden = true;
+    }
+  }
+  async function loadAuthenticatedProfile() {
+    let token = accessToken() || await refreshedAccessToken();
+    if (!token) {
+      authenticated = false;
+      window.FridgeDB.clearAuthenticatedUser();
+      return null;
+    }
+    try {
+      let response = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      });
+      if (response.status === 401) {
+        token = await refreshedAccessToken();
+        if (!token) throw new Error("unauthorized");
+        response = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store"
+        });
+      }
+      const result = await response.json();
+      if (!response.ok || !result.success || !result.profile) throw new Error("unauthorized");
+      authenticated = true;
+      window.FridgeDB.bindAuthenticatedUser({
+        id: result.user.id,
+        email: result.user.email || "",
+        name: result.profile.name || "",
+        nickname: result.profile.nickname || "",
+        provider: result.profile.login_provider,
+        role: result.profile.role,
+        noShowStack: result.profile.no_show_count
+      });
+      if (result.profile.notification_settings) {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(result.profile.notification_settings));
+      }
+      return result.profile;
+    } catch (_) {
+      authenticated = false;
+      localStorage.removeItem("todayFridgeAccessToken");
+      window.FridgeDB.clearAuthenticatedUser();
+      return null;
+    }
+  }
+  function renderAccount() {
+    const account = window.FridgeDB.getUserAccount();
+    const name = account?.name || "고객";
+    $("#my-user-name").textContent = name;
+    $(".profile-avatar").textContent = name.slice(0, 1);
+    $("#my-account-provider").textContent = account?.provider === "google"
+      ? "Google 계정으로 로그인"
+      : "카카오 계정으로 로그인";
+    const noShowCount = Math.max(0, Number(account?.noShowStack) || 0);
+    const noShowElement = $("#my-noshow-count");
+    noShowElement.textContent = `노쇼 누적 ${noShowCount}회`;
+    noShowElement.classList.toggle("is-restricted", noShowCount >= 3);
+  }
+  function renderAuthState() {
+    const loggedIn = isLoggedIn();
+    $("#member-profile").hidden = !loggedIn;
+    $("#guest-profile").hidden = loggedIn;
+    document.querySelectorAll("[data-auth-only]").forEach((element) => {
+      element.hidden = !loggedIn;
+    });
+  }
+  function updateSummary() {
+    const status = $("#push-menu-status");
+    if (!window.isSecureContext) status.textContent = "배포 후 연결 가능";
+    else if (!("Notification" in window)) status.textContent = "이 기기에서 지원하지 않음";
+    else if (Notification.permission === "granted") status.textContent = "웹 푸시 사용 중";
+    else if (Notification.permission === "denied") status.textContent = "기기 알림 꺼짐";
+    else status.textContent = "기기 알림 설정 필요";
+  }
+  function showToast(message) {
+    toast.textContent = message; toast.classList.add("is-visible");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2200);
+  }
+  function openModal(title, html) {
+    modalTitle.textContent = title; modalContent.innerHTML = html;
+    modal.classList.add("is-visible"); modal.setAttribute("aria-hidden", "false");
+  }
+  function closeModal() { modal.classList.remove("is-visible"); modal.setAttribute("aria-hidden", "true"); }
+
+  async function checkProfileNickname() {
+    const input = $("#profile-name");
+    const status = $("#profile-nickname-status");
+    const submit = $("#profile-form .my-primary-button");
+    if (!input || !status || !submit) return false;
+    const nickname = input.value.normalize("NFKC").trim();
+    $("#profile-nickname-count").textContent = `${nickname.length}/12`;
+    nicknameAvailable = false;
+    submit.disabled = true;
+    if (!/^[가-힣A-Za-z0-9_]{2,12}$/.test(nickname)) {
+      status.textContent = "한글·영문·숫자·밑줄로 2~12자까지 입력해 주세요.";
+      status.className = "profile-nickname-status is-error";
+      return false;
+    }
+    let token = accessToken() || await refreshedAccessToken();
+    try {
+      const response = await fetch(`/api/profile/nickname-availability?nickname=${encodeURIComponent(nickname)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error);
+      nicknameAvailable = result.available === true;
+      status.textContent = nicknameAvailable
+        ? "사용할 수 있는 닉네임이에요."
+        : "이미 사용 중인 닉네임입니다.";
+      status.className = `profile-nickname-status ${nicknameAvailable ? "is-valid" : "is-error"}`;
+      submit.disabled = !nicknameAvailable;
+      return nicknameAvailable;
+    } catch (error) {
+      status.textContent = error.message || "닉네임을 확인하지 못했습니다.";
+      status.className = "profile-nickname-status is-error";
+      return false;
+    }
+  }
+
+  function notificationSettingsHTML() {
+    const value = settings();
+    const permissionText = !window.isSecureContext ? "HTTPS 배포 후 연결 가능" : ("Notification" in window && Notification.permission === "granted" ? "이 기기 알림 사용 중" : "기기 알림 허용 필요");
+    const rows = [
+      ["arrival", "신청 상품 입고", "신청한 상품의 입고가 완료되면 알려드려요"],
+      ["inquiry", "문의 답변", "문의에 최초 답변이 등록되면 알려드려요"],
+      ["important", "주문·입금 안내", "입금 확인, 입금 요청, 주문 취소처럼 중요한 변경을 알려드려요"]
+    ].map(([key, title, detail]) => `<div class="my-setting-row"><span><strong>${title}</strong><small>${detail}</small></span><button class="setting-switch ${value[key] ? "is-on" : ""}" type="button" role="switch" aria-checked="${value[key]}" data-setting="${key}"><i></i></button></div>`).join("");
+    return `<div class="push-status-card"><span class="status-dot"></span><div><strong>${permissionText}</strong><small>알림은 신청한 주문과 내 문의에 대해서만 보내요.</small></div></div>${rows}<button class="my-primary-button" type="button" data-enable-push>이 기기에서 알림 받기</button><p class="setting-note">아이폰은 사이트를 홈 화면에 추가한 후 알림을 허용해야 해요. 사이트 안 알림 센터에는 설정과 관계없이 이용 내역이 남아요.</p>`;
+  }
+  async function inquiryHTML() {
+    const token = accessToken() || await refreshedAccessToken();
+    if (!token) return `<div class="my-empty"><strong>로그인이 필요해요</strong><p>로그인 후 문의 내역을 확인해 주세요.</p></div>`;
+    const response = await fetch("/api/inquiries", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store"
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.error || "문의 내역을 불러오지 못했습니다.");
+    const list = result.data || [];
+    if (!list.length) return `<div class="my-empty"><strong>아직 문의 내역이 없어요</strong><p>상품 상세 화면에서 궁금한 점을 문의할 수 있어요.</p></div>`;
+    return list.map((item) => `<article class="my-content-card"><strong>${escapeHTML(item.products?.name || "상품 문의")}</strong><p>${escapeHTML(item.content || "문의 내용")}</p><small>${item.answer ? `답변: ${escapeHTML(item.answer)}` : "답변 대기 중"}</small></article>`).join("");
+  }
+
+  async function openRequestedSection() {
+    if (window.location.hash !== "#inquiries") return;
+    openModal("1:1 문의 내역", `<div class="my-empty"><p>문의 내역을 불러오는 중이에요.</p></div>`);
+    try {
+      modalContent.innerHTML = await inquiryHTML();
+    } catch (error) {
+      modalContent.innerHTML = `<div class="my-empty"><strong>문의 내역을 불러오지 못했어요</strong><p>${escapeHTML(error.message)}</p></div>`;
+    }
+  }
+
+  document.addEventListener("click", async (event) => {
+    if (event.target.closest("[data-modal-close]")) return closeModal();
+    const action = event.target.closest("[data-my-action]")?.dataset.myAction;
+    const account = window.FridgeDB.getUserAccount();
+    if (action === "profile") {
+      nicknameAvailable = false;
+      openModal("정보 수정", `<form class="my-form" id="profile-form"><label>닉네임<div class="profile-nickname-field"><input id="profile-name" value="${account?.name || ""}" minlength="2" maxlength="12" autocomplete="nickname" required><span id="profile-nickname-count">${String(account?.name || "").length}/12</span></div><small class="profile-nickname-status" id="profile-nickname-status">입력한 닉네임의 중복 여부를 확인해요.</small></label><div class="linked-account"><span>연결된 계정</span><strong>${account?.provider === "google" ? "Google" : "카카오"} · ${account?.email || "계정 정보 없음"}</strong><small>로그인 계정은 변경할 수 없어요.</small></div><button class="my-primary-button" type="submit" disabled>저장하기</button></form>`);
+      checkProfileNickname();
+    }
+    if (action === "inquiries") {
+      openModal("1:1 문의 내역", `<div class="my-empty"><p>문의 내역을 불러오는 중이에요.</p></div>`);
+      try {
+        modalContent.innerHTML = await inquiryHTML();
+      } catch (error) {
+        modalContent.innerHTML = `<div class="my-empty"><strong>문의 내역을 불러오지 못했어요</strong><p>${escapeHTML(error.message)}</p></div>`;
+      }
+    }
+    if (action === "notifications") openModal("알림 설정", notificationSettingsHTML());
+    if (action === "withdraw") {
+      const nickname = account?.name || "";
+      openModal("회원탈퇴", `
+        <form class="my-form" id="withdraw-form">
+          <p class="withdraw-warning">탈퇴하면 로그인 계정과 찜·알림·문의 정보가 삭제됩니다. 결제 및 재고 증빙이 필요한 주문은 회원을 식별할 수 없도록 익명화해 보존됩니다.</p>
+          <label>확인을 위해 현재 닉네임을 입력해 주세요
+            <input id="withdraw-confirmation" autocomplete="off" placeholder="${escapeHTML(nickname)}" required>
+          </label>
+          <button class="my-primary-button" type="submit">회원탈퇴 계속하기</button>
+        </form>`);
+    }
+
+    const settingButton = event.target.closest("[data-setting]");
+    if (settingButton) {
+      const value = settings(); const key = settingButton.dataset.setting;
+      value[key] = !value[key];
+      try {
+        const saved = await saveNotificationSettings(value);
+        settingButton.classList.toggle("is-on", saved[key]);
+        settingButton.setAttribute("aria-checked", String(saved[key]));
+        showToast(saved[key] ? "알림을 켰어요." : "알림을 껐어요.");
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+    if (event.target.closest("[data-enable-push]")) {
+      try {
+        await enableWebPush();
+        updateSummary();
+        showToast("이 기기에서 웹 푸시를 받을 수 있어요.");
+      } catch (error) {
+        showToast(error.message);
+      }
+      openModal("알림 설정", notificationSettingsHTML());
+    }
+
+    // 💡 완전한 로그아웃 처리 부분 (Supabase 세션 및 로컬스토리지 일괄 삭제)
+    if (event.target.closest("[data-logout]")) {
+      try {
+        const sharedClient = await window.TodayFridgeAuth?.getClient?.();
+        if (sharedClient) {
+          await sharedClient.auth.signOut();
+        } else if (window.supabase?.createClient) {
+          const response = await fetch("/api/config");
+          const config = await response.json();
+          if (response.ok && config.supabaseUrl && config.supabasePublishableKey) {
+            const client = window.supabase.createClient(
+              config.supabaseUrl,
+              config.supabasePublishableKey
+            );
+            await client.auth.signOut(); // Supabase 서버 및 쿠키 세션 파기
+          }
+        }
+      } catch (e) {
+        console.error("Supabase signOut error:", e);
+      }
+
+      // 로컬스토리지에 직접 저장한 액세스 토큰 및 로그인 상태 완전 삭제
+      localStorage.removeItem("todayFridgeAccessToken");
+
+      // Supabase 자동 관리 키 삭제
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("sb-") && key.endsWith("-auth-token")) {
+          localStorage.removeItem(key);
+        }
+      }
+
+      closeModal();
+      showToast("로그아웃했어요.");
+
+      // 로그인 화면으로 이동
+      setTimeout(() => {
+        window.location.href = "./login.html";
+      }, 500);
+      return;
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    if (event.target.id !== "profile-name") return;
+    clearTimeout(nicknameCheckTimer);
+    nicknameCheckTimer = setTimeout(checkProfileNickname, 350);
+  });
+
+  document.addEventListener("submit", async (event) => {
+    if (event.target.id === "withdraw-form") {
+      event.preventDefault();
+      const confirmation = $("#withdraw-confirmation").value.trim();
+      if (!confirm("정말 회원탈퇴할까요? 삭제한 계정은 복구할 수 없습니다.")) return;
+      const submit = event.target.querySelector('[type="submit"]');
+      submit.disabled = true;
+      try {
+        const token = accessToken() || await refreshedAccessToken();
+        const response = await fetch("/api/profile", {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ confirmation })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || "회원탈퇴를 처리하지 못했습니다.");
+        localStorage.clear();
+        sessionStorage.clear();
+        location.replace("./index.html");
+      } catch (error) {
+        submit.disabled = false;
+        showToast(error.message);
+      }
+      return;
+    }
+    if (event.target.id !== "profile-form") return;
+    event.preventDefault();
+    if (!nicknameAvailable && !(await checkProfileNickname())) return;
+    const nickname = $("#profile-name").value.normalize("NFKC").trim();
+    const submit = $("#profile-form .my-primary-button");
+    submit.disabled = true;
+    let token = accessToken() || await refreshedAccessToken();
+    try {
+      const response = await fetch("/api/profile/nickname", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nickname })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "닉네임을 저장하지 못했습니다.");
+      window.FridgeDB.updateUserAccount({ name: result.data.nickname });
+      renderAccount();
+      closeModal();
+      showToast("닉네임을 변경했어요.");
+    } catch (error) {
+      submit.disabled = false;
+      const status = $("#profile-nickname-status");
+      status.textContent = error.message || "닉네임을 저장하지 못했습니다.";
+      status.className = "profile-nickname-status is-error";
+    }
+  });
+
+  async function initializeMyPage() {
+    authenticated = false;
+    renderAuthState();
+    updateSummary();
+    await loadAuthenticatedProfile();
+    renderAccount();
+    renderAuthState();
+    await updateAdminMenu();
+    if (isLoggedIn()) openRequestedSection();
+  }
+
+  initializeMyPage();
+})();

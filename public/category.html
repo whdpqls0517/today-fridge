@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카테고리 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="stylesheet" href="./css/category.css" />
+</head>
+<body class="category-screen">
+  <main class="category-page">
+    <header class="category-header">
+      <div>
+        <span>오늘의 냉장고</span>
+        <h1>카테고리</h1>
+      </div>
+      <a href="./search.html" aria-label="상품 검색">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.7" cy="10.7" r="6.2"/><path d="m15.5 15.5 4.2 4.2"/></svg>
+      </a>
+    </header>
+
+    <section class="category-selector" aria-label="상품 카테고리">
+      <button type="button" data-category-value="all"><strong>전체</strong></button>
+      <button type="button" data-category-value="fruit"><strong>과일</strong></button>
+      <button type="button" data-category-value="vegetable"><strong>채소</strong></button>
+      <button type="button" data-category-value="meat-egg"><strong>정육·계란</strong></button>
+      <button type="button" data-category-value="seafood-dried"><strong>수산·건어물</strong></button>
+      <button type="button" data-category-value="rice-grain"><strong>쌀·잡곡</strong></button>
+      <button type="button" data-category-value="meal-kit"><strong>간편식·밀키트</strong></button>
+      <button type="button" data-category-value="snack-drink"><strong>간식·음료</strong></button>
+      <button type="button" data-category-value="seasoning-sauce"><strong>조미료·소스</strong></button>
+      <button type="button" data-category-value="etc"><strong>기타</strong></button>
+    </section>
+
+    <section class="category-products">
+      <header>
+        <div><span>상품 목록</span><h2 id="category-result-title">전체 상품</h2></div>
+        <div class="category-sort" aria-label="상품 정렬">
+          <button type="button" data-sort-value="recommended">추천순</button>
+          <button type="button" data-sort-value="latest">최신순</button>
+        </div>
+      </header>
+      <div class="category-product-grid" id="category-product-grid"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="하단 네비게이션">
+    <a href="./index.html">
+      <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.5l8.5 7.3v9.7h-5.4v-6.2H8.9v6.2H3.5z"/></svg>
+      홈
+    </a>
+    <a href="./category.html" class="active">
+      <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.6"/><rect x="14" y="4" width="6" height="6" rx="1.6"/><rect x="4" y="14" width="6" height="6" rx="1.6"/><rect x="14" y="14" width="6" height="6" rx="1.6"/></svg>
+      카테고리
+    </a>
+    <a href="./index.html#receipt" class="floating-ticket" aria-label="수령 확인증 열기">
+      <svg viewBox="0 -960 960 960" aria-hidden="true"><path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm0-160q17 0 28.5-11.5T520-480q0-17-11.5-28.5T480-520q-17 0-28.5 11.5T440-480q0 17 11.5 28.5T480-440Zm0-160q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm320 440H160q-33 0-56.5-23.5T80-240v-160q33 0 56.5-23.5T160-480q0-33-23.5-56.5T80-560v-160q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v160q-33 0-56.5 23.5T800-480q0 33 23.5 56.5T880-400v160q0 33-23.5 56.5T800-160Zm0-80v-102q-37-22-58.5-58.5T720-480q0-43 21.5-79.5T800-618v-102H160v102q37 22 58.5 58.5T240-480q0 43-21.5 79.5T160-342v102h640Z"/></svg>
+    </a>
+    <a href="./favorites.html">
+      <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4.2 15.7 4.2 9.7a4.1 4.1 0 0 1 7-2.9l.8.8.8-.8a4.1 4.1 0 0 1 7 2.9c0 6-7.8 10.5-7.8 10.5z"/></svg>
+      찜
+    </a>
+    <a href="./my-page.html">
+      <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.2c.9-4 3.5-6.1 7.2-6.1s6.3 2.1 7.2 6.1"/></svg>
+      마이
+    </a>
+  </nav>
+
+  <script src="./js/auth-session.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/product-rules.js"></script>
+  <script src="./js/category.js"></script>
+  <script src="./js/favorites.js"></script>
+  <script src="./js/receipt-launcher.js"></script>
+  <script src="./js/content-protection.js"></script>
+</body>
+</html>

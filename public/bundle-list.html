@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>보따리 상품 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="shortcut icon" href="#">
+</head>
+<body class="search-screen" data-list-category="bundle">
+  <main class="search-page result-page" aria-label="보따리 상품 목록 화면">
+    <header class="search-header">
+      <a class="search-back" href="./index.html" data-back-button aria-label="이전 화면으로 돌아가기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+      </a>
+      <div class="detail-title">보따리 상품</div>
+    </header>
+
+    <section class="result-summary">
+      <span>보따리 신청</span>
+      <p>마감 전 예약하고 매장에서 수령하는 보따리 상품입니다.</p>
+    </section>
+
+    <section class="bundle-today-section" id="bundle-today-section" aria-label="오늘 수령 보따리">
+      <div class="bundle-section-heading">
+        <div><span>오늘 수령 가능한 보따리</span></div>
+      </div>
+      <div class="popular-track bundle-product-grid" id="bundle-today-track"></div>
+    </section>
+
+    <section class="bundle-date-filter" aria-label="수령일로 보따리 찾기">
+      <button class="bundle-date-trigger" id="bundle-date-trigger" type="button" aria-haspopup="dialog" aria-controls="bundle-calendar-modal">
+        <span class="bundle-date-trigger__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6.5 3.8v3M17.5 3.8v3M4 9h16M5.5 5.5h13A1.5 1.5 0 0 1 20 7v12H4V7a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>
+        </span>
+        <span class="bundle-date-trigger__copy">
+          <small>수령일로 보기</small>
+          <strong id="bundle-date-label">전체 수령일</strong>
+        </span>
+        <span class="bundle-date-trigger__arrow" aria-hidden="true">›</span>
+      </button>
+      <button class="bundle-date-reset" id="bundle-date-reset" type="button" hidden>전체 보기</button>
+    </section>
+
+    <section class="bundle-list-tools" aria-label="보따리 목록 필터와 정렬">
+      <div class="bundle-filter-chips" role="group" aria-label="판매 상태">
+        <button class="active" type="button" data-bundle-filter="all">전체</button>
+        <button type="button" data-bundle-filter="ongoing">신청중인 보따리</button>
+        <button type="button" data-bundle-filter="closed">마감된 보따리</button>
+      </div>
+      <label class="bundle-sort-select">
+        <span>정렬</span>
+        <select id="bundle-sort">
+          <option value="latest">최신순</option>
+          <option value="pickup">수령일순</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="popular-products bundle-general-section" aria-label="보따리 상품">
+      <div class="bundle-section-heading">
+        <div><span id="bundle-list-caption">전체 보따리</span></div>
+      </div>
+      <div class="popular-track" id="category-list-track" style="flex-wrap: wrap; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; overflow: visible;"></div>
+    </section>
+  </main>
+
+  <div class="bundle-calendar-modal" id="bundle-calendar-modal" role="dialog" aria-modal="true" aria-labelledby="bundle-calendar-title" hidden>
+    <button class="bundle-calendar-backdrop" id="bundle-calendar-backdrop" type="button" aria-label="달력 닫기"></button>
+    <section class="bundle-calendar-sheet">
+      <div class="bundle-calendar-handle" aria-hidden="true"></div>
+      <header class="bundle-calendar-header">
+        <div>
+          <small>수령일 선택</small>
+          <h2 id="bundle-calendar-title">날짜별 보따리 보기</h2>
+        </div>
+        <button class="bundle-calendar-close" id="bundle-calendar-close" type="button" aria-label="달력 닫기">×</button>
+      </header>
+      <div class="bundle-calendar-monthbar">
+        <button id="bundle-calendar-prev" type="button" aria-label="이전 달">‹</button>
+        <strong id="bundle-calendar-month"></strong>
+        <button id="bundle-calendar-next" type="button" aria-label="다음 달">›</button>
+      </div>
+      <div class="bundle-calendar-weekdays" aria-hidden="true">
+        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+      </div>
+      <div class="bundle-calendar-grid" id="bundle-calendar-grid" role="grid" aria-label="수령일 달력"></div>
+      <p class="bundle-calendar-help"><i aria-hidden="true"></i> 표시가 있는 날짜에는 등록된 보따리가 있어요.</p>
+      <button class="bundle-calendar-all" id="bundle-calendar-all" type="button">전체 수령일 보기</button>
+    </section>
+  </div>
+
+  <script src="./js/auth-session.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/product-rules.js"></script>
+  <script src="/js/bundle-list.js"></script>
+  <script src="./js/back-navigation.js"></script>
+  <script src="./js/favorites.js"></script>
+  <script src="./js/receipt-launcher.js"></script>
+  <script src="./js/content-protection.js"></script>
+</body>
+</html>

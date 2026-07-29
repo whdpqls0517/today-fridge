@@ -1,0 +1,125 @@
+@import url("./terms.css");
+
+.policy-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin: 19px 20px 5px;
+}
+
+.policy-summary div {
+  display: flex;
+  min-width: 0;
+  padding: 14px 7px;
+  flex-direction: column;
+  gap: 5px;
+  border: 1px solid #e3e9e5;
+  border-radius: 13px;
+  background: #fbfcfb;
+  text-align: center;
+}
+
+.policy-summary strong {
+  color: #315f4b;
+  font-size: 11px;
+}
+
+.policy-summary span {
+  overflow: hidden;
+  color: #87918c;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.policy-emphasis {
+  margin-top: 13px !important;
+  padding: 12px 13px;
+  border-radius: 10px;
+  background: #f0f6f2;
+  color: #3f6f5a !important;
+  font-weight: 700;
+}
+
+.policy-table {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid #e3e8e5;
+  border-radius: 12px;
+}
+
+.policy-table > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-bottom: 1px solid #edf0ee;
+  color: #657169;
+  font-size: 10px;
+}
+
+.policy-table > div:last-child {
+  border-bottom: 0;
+}
+
+.policy-table strong {
+  flex: 0 0 auto;
+  color: #3f5f50;
+  font-size: 10px;
+}
+
+.policy-table--stacked > div {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.policy-table--stacked > div span {
+  color: #7d8882;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.policy-table--stacked > div strong {
+  max-width: 100%;
+  color: #46554d;
+  font-weight: 650;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.policy-notice.compact {
+  margin-top: 15px;
+}
+
+.policy-contact {
+  margin: 14px 0 0;
+  overflow: hidden;
+  border: 1px solid #e3e8e5;
+  border-radius: 12px;
+}
+
+.policy-contact div {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  column-gap: 14px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #edf0ee;
+  font-size: 10px;
+}
+
+.policy-contact div:last-child {
+  border-bottom: 0;
+}
+
+.policy-contact dt {
+  color: #818b86;
+}
+
+.policy-contact dd {
+  margin: 0;
+  color: #4d5b53;
+  font-weight: 700;
+}

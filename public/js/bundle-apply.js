@@ -1,0 +1,286 @@
+(async function () {
+  const orderRequestStorageKey = `todayFridgeOrderRequest:${location.search}`;
+  const orderRequestKey = sessionStorage.getItem(orderRequestStorageKey)
+    || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+  sessionStorage.setItem(orderRequestStorageKey, orderRequestKey);
+  // 1. URL 파라미터 및 기본 데이터 추출
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const isWaitlist = params.get("mode") === "waitlist";
+  if (window.FridgeDB?.catalogReady) await window.FridgeDB.catalogReady;
+  const product = window.FridgeDB?.getProducts().find((p) => p.id === id);
+  const form = document.getElementById("bundle-apply-form");
+  let quantity = 1;
+
+  // 인증 토큰 추출 도구
+  const getToken = () => {
+    const directToken = localStorage.getItem("todayFridgeAccessToken");
+    if (directToken) return directToken;
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith("sb-") && key.endsWith("-auth-token")) {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(key));
+          if (parsed?.access_token) return parsed.access_token;
+          if (parsed?.currentSession?.access_token) return parsed.currentSession.access_token;
+        } catch (_) {}
+      }
+    }
+    return null;
+  };
+
+  // 날짜 ISO 문자열 변환 (YYYY-MM-DD)
+  const toISODate = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+  // 2. 수량 및 결제금액 렌더링 함수
+  function renderAmount() {
+    const stock = Math.max(0, Number(product?.stock) || 0);
+    const maxPerUser = Math.max(1, Number(product?.maxQuantity) || 10);
+    const maxAllowed = isWaitlist ? maxPerUser : Math.max(1, Math.min(maxPerUser, stock || 1));
+
+    document.getElementById("apply-quantity").textContent = quantity;
+    document.getElementById("apply-amount").textContent = `${(
+      Number(product?.price || 0) * quantity
+    ).toLocaleString("ko-KR")}원`;
+
+    const btnMinus = document.querySelector('[data-quantity="-1"]');
+    const btnPlus = document.querySelector('[data-quantity="1"]');
+
+    if (btnMinus) btnMinus.disabled = quantity <= 1;
+    if (btnPlus) btnPlus.disabled = (!isWaitlist && stock <= 0) || quantity >= maxAllowed;
+  }
+
+  // 3. 예외 처리: 보따리 상품이 아니거나 존재하지 않는 경우
+  if (!product || product.category !== "bundle") {
+    if (form) form.hidden = true;
+    document.getElementById("apply-message").textContent = "신청 가능한 보따리 상품이 아닙니다.";
+    return;
+  }
+
+  // 4. 상품 정보 및 픽업 날짜 옵션 UI 구성
+  document.getElementById("apply-product").innerHTML = `
+    <img src="${product.image}" alt="">
+    <div>
+      <strong>${product.name}</strong>
+      <span>${isWaitlist
+        ? `1개 ${Number(product.price).toLocaleString("ko-KR")}원 · 취소 수량 발생 시 선착순 자동 신청`
+        : `1개 ${Number(product.price).toLocaleString("ko-KR")}원 · 남은 수량 ${product.stock}개`}</span>
+    </div>
+  `;
+
+  if (isWaitlist) {
+    document.querySelector(".apply-page header h1").textContent = "보따리 대기 신청";
+    const headings = document.querySelectorAll(".apply-heading");
+    if (headings[0]) headings[0].querySelector("p").textContent = "원하는 수량을 미리 입력해 주세요.";
+    document.querySelector(".amount-box > div > span").textContent = "자동 신청 예정 금액";
+    document.querySelector(".amount-box > p").textContent = "취소 수량이 확보되면 이 정보로 주문이 자동 접수됩니다.";
+    const agreementText = document.getElementById("procurement-agreement-text");
+    if (agreementText) {
+      agreementText.textContent =
+        "신청 마감 후 취소 제한과, 대기 수량 배정 시 입력한 정보로 주문이 자동 접수되는 것을 확인했습니다.";
+    }
+    document.querySelector(".apply-submit").textContent = "대기 신청하기";
+    document.getElementById("apply-message").textContent =
+      "대기 신청은 재고를 확보하지 않으며, 먼저 신청한 순서대로 자동 전환됩니다.";
+  }
+
+  const startMatch = String(product.pickupDate || "").match(/(20\d{2})-(\d{2})-(\d{2})/);
+  const startDate = startMatch
+    ? new Date(+startMatch[1], +startMatch[2] - 1, +startMatch[3])
+    : new Date();
+  const daysOfWeek = ["일", "월", "화", "수", "목", "금", "토"];
+  const dateOptions = [];
+
+  for (let n = 0; n < 7; n++) {
+    const dateObj = new Date(startDate);
+    dateObj.setDate(dateObj.getDate() + n);
+    dateOptions.push(dateObj);
+  }
+
+  document.getElementById("apply-date-options").innerHTML = dateOptions
+    .map(
+      (d, i) => `
+    <label>
+      <input type="radio" name="pickupDate" value="${toISODate(d)}" ${i === 0 ? "checked" : ""}>
+      <span><b>${d.getMonth() + 1}.${d.getDate()}</b><small>${daysOfWeek[d.getDay()]}요일</small></span>
+    </label>`
+    )
+    .join("");
+
+  // 5. 선결제 전용 상품 옵션 처리
+  if (product.prepaymentOnly) {
+    const onsiteInput = document.querySelector('input[value="onsite"]');
+    if (onsiteInput) onsiteInput.disabled = true;
+    document.getElementById("onsite-choice")?.classList.add("is-disabled");
+
+    const transferInput = document.querySelector('input[value="transfer"]');
+    if (transferInput) transferInput.checked = true;
+
+    document.getElementById("payment-help").textContent = "신선도 관리 상품으로 선결제만 가능합니다.";
+  }
+
+  // 6. 결제 수단 수동 변경 시 입금자명 입력란 노출 여부
+  function updatePaymentUI() {
+    const selectedPayment = document.querySelector('input[name="paymentType"]:checked')?.value;
+    document.getElementById("depositor-field").hidden = selectedPayment !== "transfer";
+  }
+
+  document.querySelectorAll('input[name="paymentType"]').forEach((el) => {
+    el.addEventListener("change", updatePaymentUI);
+  });
+  updatePaymentUI();
+
+  // 7. 수량 변경 버튼 이벤트
+  document.querySelectorAll("[data-quantity]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const stock = Math.max(0, Number(product.stock) || 0);
+      const maxPerUser = Math.max(1, Number(product.maxQuantity) || 10);
+      const maxAllowed = isWaitlist ? maxPerUser : Math.max(1, Math.min(maxPerUser, stock || 1));
+      quantity = Math.max(1, Math.min(maxAllowed, quantity + Number(btn.dataset.quantity)));
+      renderAmount();
+    });
+  });
+  renderAmount();
+
+  // 8. 품절 처리
+  if (!isWaitlist && (Number(product.stock) || 0) <= 0) {
+    const submitBtn = document.querySelector(".apply-submit");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "신청 가능한 수량이 없어요";
+    }
+    document.getElementById("apply-message").textContent = "재고가 추가되면 다시 신청할 수 있어요.";
+  }
+
+  // 뒤로 가기
+  const backBtn = document.querySelector("[data-apply-back]");
+  if (backBtn) backBtn.onclick = () => history.back();
+
+  // ====================================================
+  // 9. 🚨 폼 제출 이벤트 (로그인 가드 추가 적용)
+  // ====================================================
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // 🔒 [로그인 가드] 로그인 여부 검증
+    // 비로그인 상태일 경우 안내 경고창 출력 후 index.html로 리다이렉트합니다.
+    if (window.FridgeAuth) {
+      const user = await window.FridgeAuth.requireLogin(e);
+      if (!user) return; // 미로그인 시 신청 절차 차단
+    }
+
+    const paymentType = document.querySelector('input[name="paymentType"]:checked')?.value;
+    const pickupDate = document.querySelector('input[name="pickupDate"]:checked')?.value;
+    const pickupTimeLabel = document.querySelector('input[name="pickupTime"]:checked')?.value;
+    const depositorName =
+      document.getElementById("depositor-name")?.value.trim() ||
+      window.FridgeDB?.getUserAccount()?.name ||
+      "";
+
+    const payload = {
+      bundleItemId: product.bundleItemId,
+      quantity,
+      paymentType,
+      pickupDate,
+      pickupTimeLabel,
+      depositorName,
+      requestKey: orderRequestKey,
+      procurementPolicyConsent: document.getElementById("apply-agreement")?.checked === true,
+      procurementPolicyVersion: "2026-07-29",
+      waitlistAutoOrderConsent: isWaitlist
+        ? document.getElementById("apply-agreement")?.checked === true
+        : false,
+    };
+
+    try {
+      let order;
+      const authToken = getToken();
+
+      if (isWaitlist) {
+        if (!authToken || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(product.id)) {
+          throw new Error("로그인 후 대기 신청을 이용해 주세요.");
+        }
+        const res = await fetch(`${location.origin}/api/products/${encodeURIComponent(product.id)}/waitlist`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "대기 신청을 접수하지 못했습니다.");
+        }
+        order = {
+          ...json.data,
+          status: "waitlisted",
+          isWaitlist: true
+        };
+        window.FridgeDB?.updateProduct(product.id, {
+          waitlistRequests: Number(product.waitlistRequests || 0) + 1
+        });
+      } else if (product.bundleItemId && authToken) {
+        // 백엔드 API 서버 사용 조건 및 토큰 존재 시 서버에 주문 생성
+        const res = await fetch(`${location.origin}/api/orders`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "신청하지 못했습니다.");
+        }
+        order = json.data;
+      } else {
+        // 로컬 DB 전용 주문 데이터 생성
+        order = {
+          id: `order-${Date.now()}`,
+          productId: product.id,
+          bundleItemId: product.bundleItemId,
+          productName: product.name,
+          quantity,
+          price: product.price * quantity,
+          paymentType,
+          transferApproved: false,
+          paymentStatus: "pending",
+          status: "pending",
+          pickupDateISO: payload.pickupDate,
+          pickupDate: payload.pickupDate,
+          pickupTime: payload.pickupTimeLabel,
+          depositorName: payload.depositorName,
+          arrivalStatus: product.arrivalStatus,
+          createdAt: new Date().toISOString(),
+        };
+        window.FridgeDB?.addOrder(order);
+      }
+
+      // 완료 페이지 전달용 세션 저장 후 이동
+      sessionStorage.setItem(
+        "todayFridgeLastOrder",
+        JSON.stringify({
+          ...order,
+          productName: product.name,
+          totalAmount: product.price * quantity,
+          isWaitlist,
+          paymentType,
+          pickupDate: payload.pickupDate,
+          pickupTimeLabel: payload.pickupTimeLabel,
+          depositorName: payload.depositorName,
+        })
+      );
+      sessionStorage.removeItem(orderRequestStorageKey);
+
+      location.href = "./bundle-apply-complete.html";
+    } catch (err) {
+      document.getElementById("apply-message").textContent =
+        err.message || "신청하지 못했습니다.";
+    }
+  });
+})();

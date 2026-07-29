@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시스템 상태 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/today-fridge.css">
+  <link rel="stylesheet" href="./css/admin-system-status.css">
+</head>
+<body>
+  <main class="status-page">
+    <header><a href="./admin.html">‹ 관리자 센터</a><h1>시스템 상태</h1><button id="status-refresh" type="button">다시 점검</button></header>
+    <p class="status-summary" id="status-summary">서버와 데이터베이스를 점검하고 있어요.</p>
+    <section class="status-grid" id="status-grid" aria-live="polite"></section>
+    <small id="status-checked-at"></small>
+  </main>
+  <script src="./js/admin-system-status.js"></script>
+</body>
+</html>

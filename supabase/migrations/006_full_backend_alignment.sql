@@ -5,7 +5,7 @@ alter table public.profiles
   add column if not exists no_show_count integer not null default 0
     check (no_show_count >= 0),
   add column if not exists notification_settings jsonb not null
-    default '{"arrival":true,"inquiry":true}'::jsonb;
+    default '{"arrival":true,"inquiry":true,"important":true}'::jsonb;
 
 alter table public.products
   add column if not exists external_key text unique,

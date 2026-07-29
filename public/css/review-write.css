@@ -1,0 +1,43 @@
+body { background:#f5f7f5; }
+.review-write-page { width:min(100%,430px); min-height:100vh; margin:0 auto; padding:0 18px 38px; background:#fff; color:#202a25; }
+.review-write-page header { display:grid; grid-template-columns:36px 1fr 36px; align-items:center; height:68px; border-bottom:1px solid #edf0ee; }
+.review-write-page header a { font-size:32px; line-height:1; }
+.review-write-page h1 { margin:0; text-align:center; font-size:18px; }
+.review-order-card { display:flex; gap:13px; align-items:center; margin:22px 0 28px; padding:15px; border-radius:15px; background:#f4f7f5; }
+.review-order-card img { width:68px; height:68px; border-radius:11px; object-fit:cover; }
+.review-order-card div { display:grid; gap:5px; }
+.review-order-card strong { font-size:14px; }
+.review-order-card span { color:#77817b; font-size:11px; }
+.review-write-page fieldset { margin:0; padding:0 0 25px; border:0; border-bottom:1px solid #edf0ee; text-align:center; }
+.review-write-page legend { width:100%; margin-bottom:14px; font-size:15px; font-weight:800; }
+.rating-picker { display:flex; justify-content:center; gap:7px; }
+.rating-picker button { color:#dce2de; font-size:34px; line-height:1; }
+.rating-picker button.is-active { color:#f2b84b; }
+.review-write-page form>label { position:relative; display:grid; gap:9px; margin-top:25px; font-size:13px; font-weight:800; }
+.review-write-page textarea { min-height:170px; padding:15px; border:1px solid #dfe5e1; border-radius:13px; color:#27312c; font:inherit; line-height:1.6; resize:none; }
+.review-write-page label small { position:absolute; right:12px; bottom:11px; color:#909993; font-size:10px; font-weight:500; }
+.review-submit { width:100%; margin-top:22px; padding:15px; border-radius:12px; background:var(--brand); color:#fff; font-size:13px; font-weight:700; }
+.review-write-message { margin-top:12px; color:#bf4a42; font-size:11px; text-align:center; }
+.review-photo-field input {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #dfe6e1;
+  border-radius: 12px;
+  background: #f8faf8;
+}
+
+.review-photo-preview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.review-photo-preview img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #e4e9e5;
+}

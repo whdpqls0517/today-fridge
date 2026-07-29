@@ -1,0 +1,259 @@
+body {
+  margin: 0;
+  background: #f2f5f3;
+  color: #122139;
+}
+
+.complete-page {
+  width: min(100%, 430px);
+  min-height: 100vh;
+  margin: auto;
+  padding: 38px 28px;
+  background: #fff;
+  text-align: center;
+}
+
+.complete-check {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  background: #dff8e9;
+  color: #08a94f;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.complete-page h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.complete-page > p {
+  margin: 10px 0 27px;
+  color: #69788d;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.complete-summary,
+.bank-box {
+  padding: 20px;
+  border-radius: 16px;
+  background: #f6f8fa;
+  text-align: left;
+}
+
+.complete-summary {
+  display: grid;
+  gap: 12px;
+}
+
+.complete-summary div,
+.bank-box > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.complete-summary span,
+.bank-box span {
+  color: #71809a;
+  font-size: 11px;
+}
+
+.complete-summary strong {
+  font-size: 12px;
+  text-align: right;
+}
+
+.bank-box {
+  margin-top: 12px;
+}
+
+.bank-box strong {
+  color: #08a94f;
+  font-size: 21px;
+}
+
+.bank-box hr {
+  margin: 17px 0;
+  border: 0;
+  border-top: 1px solid #e4e9ee;
+}
+
+.bank-box > b,
+.bank-box > small {
+  display: block;
+  margin-top: 7px;
+}
+
+.bank-box > b {
+  font-size: 14px;
+}
+
+.bank-box small {
+  color: #71809a;
+}
+
+.complete-actions {
+  display: flex !important;
+  flex-direction: column !important; /* 무조건 위-아래 세로로 배치 */
+  gap: 10px !important;
+  margin-top: 28px !important;
+  width: 100% !important;
+}
+
+.complete-actions a {
+  display: block !important;
+  width: 100% !important;
+  padding: 14px !important;
+  border: 1px solid #dfe5e2 !important;
+  border-radius: 12px !important;
+  color: #64716a !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  text-decoration: none !important;
+}
+
+.complete-actions .primary {
+  border-color: var(--brand) !important;
+  background: var(--brand) !important;
+  color: #fff !important;
+}
+
+.complete-page aside {
+  margin-top: 22px;
+  padding: 15px;
+  border: 1px solid #dff0e5;
+  border-radius: 13px;
+  background: #f2fbf5;
+  color: #23744f;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: left;
+}
+
+/* 트렌디한 그린 틴트 복사 버튼 */
+.bank-box button[onclick*="copyAccountNumber"] {
+  background-color: #e6f4ed; /* 브랜드 메인 초록색의 연한 배경 */
+  color: #0d6e3d;            /* 짙은 텍스트 초록색 */
+  border: none;              /* 답답한 테두리 제거 */
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: -0.3px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.bank-box button[onclick*="copyAccountNumber"]:hover {
+  background-color: #d1ebd9;
+}
+
+.bank-box button[onclick*="copyAccountNumber"]:active {
+  transform: scale(0.95);
+  background-color: #bce2c7;
+}
+
+/* ==========================================
+   🛍️ 간편송금 직사각형 세로 정렬 리스트 (완정본)
+   ========================================== */
+
+/* 전체 영역: 세로 정렬 지정 */
+.remit-section {
+  display: flex !important;
+  flex-direction: column !important; /* 위-아래로 쌓이도록 설정 */
+  align-items: stretch !important;
+  width: 100% !important;
+  margin-top: 18px !important;
+  padding-top: 16px !important;
+  border-top: 1px dashed #e4e9ee !important;
+  text-align: left !important;
+}
+
+/* 제목: 독립적으로 위에 배치 */
+.remit-section-title {
+  display: block !important;
+  width: 100% !important;
+  font-size: 11px !important;
+  color: #71809a !important;
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+  text-align: left !important;
+}
+
+/* 카드 목록 전체 컨테이너 */
+.remit-option-list {
+  display: flex !important;
+  flex-direction: column !important; /* 카드들을 세로로 쌓음 */
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+/* 직사각형 박스 카드 */
+.remit-option-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 10px 14px !important;
+  border: 1px solid #d0d7de !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+  transition: all 0.15s ease;
+}
+
+.remit-option-card:active {
+  background-color: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+
+.remit-option-left {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+.remit-option-name {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: #122139 !important;
+  white-space: nowrap !important;
+}
+
+.remit-logo-img {
+  height: 18px !important;
+  width: auto !important;
+  max-width: none !important;
+  object-fit: contain !important;
+  transform: none !important;
+}
+
+
+.remit-option-right {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #08a94f !important;
+  white-space: nowrap !important;
+}
+
+.remit-option-right span {
+  color: #a0aec0 !important;
+  font-size: 13px !important;
+}

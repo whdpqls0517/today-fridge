@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>오늘의 냉장고</title>
+</head>
+<body>
+  <h1>🧊 오늘의 냉장고 DB 연동 테스트</h1>
+  <button onclick="fetchData()">DB 데이터 불러오기</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function fetchData() {
+      const res = await fetch('/api/test');
+      const data = await res.json();
+      document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

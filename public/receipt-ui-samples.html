@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>수령 확인증 UI 예시 | 오늘의 냉장고</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      color-scheme: light;
+      --green: #0f7b56;
+      --green-soft: #edf6f1;
+      --ink: #18231e;
+      --muted: #76807b;
+      --line: #e7ebe8;
+      --surface: #fff;
+      --canvas: #eef1ef;
+      --rose: #9a676c;
+      --rose-soft: #fbf7f7;
+    }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -.02em;
+    }
+    button { font: inherit; }
+    .demo-toolbar {
+      position: sticky;
+      z-index: 10;
+      top: 0;
+      padding: 14px 16px;
+      border-bottom: 1px solid #dfe4e1;
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(12px);
+    }
+    .demo-toolbar strong { display: block; font-size: 15px; }
+    .demo-toolbar p { margin: 4px 0 12px; color: var(--muted); font-size: 11px; }
+    .demo-tabs { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; }
+    .demo-tab {
+      flex: 0 0 auto;
+      height: 34px;
+      padding: 0 13px;
+      border: 1px solid #dfe4e1;
+      border-radius: 999px;
+      background: #fff;
+      color: #65716b;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .demo-tab.active { border-color: #263a31; background: #263a31; color: #fff; }
+    .stage {
+      display: grid;
+      min-height: calc(100vh - 105px);
+      place-items: end center;
+      padding: 30px 16px 0;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(255,255,255,.8), transparent 40%),
+        rgba(33, 41, 37, .33);
+    }
+    .receipt {
+      width: min(100%, 430px);
+      min-height: 620px;
+      padding: 12px 18px 28px;
+      border-radius: 27px 27px 0 0;
+      background: var(--surface);
+      box-shadow: 0 -18px 45px rgba(23,35,29,.15);
+    }
+    .handle { width: 40px; height: 4px; margin: 0 auto 18px; border-radius: 10px; background: #e5e9e7; }
+    .receipt-head { position: relative; }
+    .brand { color: var(--green); font-size: 11px; font-weight: 800; }
+    h1 { margin: 8px 0 3px; font-size: 24px; }
+    .receipt-head p { margin: 0; color: #8a938e; font-size: 11px; }
+    .close {
+      position: absolute; top: -3px; right: 0;
+      display: grid; width: 38px; height: 38px; place-items: center;
+      border: 0; border-radius: 50%; background: #f5f7f6; color: #57635d; font-size: 24px;
+    }
+    .receipt-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 20px 0; padding: 4px; border-radius: 12px; background: #f1f4f2; }
+    .receipt-tabs span { padding: 10px; border-radius: 9px; color: #7b8580; text-align: center; font-size: 12px; font-weight: 750; }
+    .receipt-tabs .active { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(15,123,86,.18); }
+    .card { padding: 17px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+    .state-row { display: flex; align-items: center; justify-content: space-between; }
+    .state { display: inline-flex; align-items: center; gap: 7px; color: #527064; font-size: 11px; font-weight: 800; }
+    .state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #16a471; box-shadow: 0 0 0 3px #e7f6f0; }
+    .state-row > strong { color: #89928d; font-size: 11px; }
+    .card h2 { margin: 15px 0 11px; font-size: 18px; }
+    .qty { margin-left: 6px; padding: 3px 8px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: 11px; vertical-align: 2px; }
+    .schedule { display: grid; gap: 5px; padding: 12px; border-radius: 12px; background: #f3f7f5; font-size: 11px; }
+    .schedule strong { color: #294238; }
+    .guide { margin: 13px 0; color: #78827d; font-size: 11px; line-height: 1.65; }
+    .barcode {
+      display: grid; height: 72px; place-items: center; overflow: hidden;
+      border: 1px solid var(--line); border-radius: 12px; background: #fff;
+    }
+    .bars { width: 78%; height: 39px; background: repeating-linear-gradient(90deg,#17201c 0 2px,transparent 2px 5px,#17201c 5px 6px,transparent 6px 10px); }
+    .slide { position: relative; height: 52px; margin-top: 12px; border-radius: 13px; background: var(--green); color: #fff; text-align: center; line-height: 52px; font-size: 12px; font-weight: 800; }
+    .slide::before { content: "›"; position: absolute; left: 5px; top: 5px; display: grid; width: 42px; height: 42px; place-items: center; border-radius: 10px; background: #fff; color: var(--green); font-size: 25px; line-height: 1; }
+    .contact { width: 100%; height: 42px; margin-top: 12px; border: 1px solid #dfe4e1; border-radius: 11px; background: #fff; color: #45514b; font-size: 12px; font-weight: 750; }
+    .lock { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 14px; border: 1px solid #eadede; border-radius: 13px; background: var(--rose-soft); color: #735a5d; }
+    .lock-icon { display: grid; flex: 0 0 36px; width: 36px; height: 36px; place-items: center; border-radius: 11px; background: #f3e7e8; font-size: 18px; }
+    .lock div { display: grid; gap: 4px; }
+    .lock strong { font-size: 13px; }
+    .lock span { color: #918083; font-size: 11px; line-height: 1.45; }
+    .waiting { padding: 17px; border: 1px dashed #dce3df; border-radius: 15px; background: #fafbfa; color: #6f7b75; text-align: center; font-size: 12px; line-height: 1.6; }
+    .complete { display: flex; align-items: center; justify-content: center; gap: 7px; height: 48px; margin-top: 12px; border-radius: 12px; background: #eef4f1; color: #50675c; font-size: 12px; font-weight: 800; }
+    .expired .state { color: var(--rose); }
+    .expired .state::before { background: #c96c75; box-shadow: 0 0 0 3px #faecee; }
+    .expired .schedule { background: #f6f7f7; }
+    .notice { margin: 14px 2px 0; color: #89928d; font-size: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+  <header class="demo-toolbar">
+    <strong>수령 확인증 예시 데이터</strong>
+    <p>실제 주문·회원·재고에는 영향을 주지 않는 UI 확인 전용 화면입니다.</p>
+    <nav class="demo-tabs" aria-label="예시 상태 선택">
+      <button class="demo-tab active" data-state="onsite">현장결제</button>
+      <button class="demo-tab" data-state="transfer">선입금 완료</button>
+      <button class="demo-tab" data-state="unpaid">입금 대기</button>
+      <button class="demo-tab" data-state="scheduled">입고 예정</button>
+      <button class="demo-tab" data-state="expired">미수령</button>
+      <button class="demo-tab" data-state="completed">수령 완료</button>
+    </nav>
+  </header>
+
+  <main class="stage">
+    <section class="receipt">
+      <div class="handle"></div>
+      <header class="receipt-head">
+        <span class="brand">오늘의 냉장고</span>
+        <h1>수령 확인증</h1>
+        <p id="subtitle">입고가 완료된 주문을 확인해 주세요</p>
+        <button class="close" type="button" aria-label="예시 화면 닫기" onclick="location.href='./admin.html'">×</button>
+      </header>
+      <div class="receipt-tabs"><span class="active">수령 가능</span><span>예정</span></div>
+      <div id="sample"></div>
+      <p class="notice">이 파일은 UI 미리보기 전용이며 어떤 데이터도 저장하지 않습니다.</p>
+    </section>
+  </main>
+
+  <script>
+    const samples = {
+      onsite: {
+        badge: "수령 가능", heading: "현장 결제", title: "냉장고 한끼 보따리", qty: 3,
+        schedule: "지정 수령 07.29 · 오후 7시 이후",
+        guide: "수령할 때 확인증의 바코드로 결제한 뒤 상품을 가져가 주세요.",
+        barcode: true, slide: "밀어서 결제 및 수령 완료"
+      },
+      transfer: {
+        badge: "확인 완료", heading: "결제 확인", title: "제주 감귤 보따리", qty: 2,
+        schedule: "지정 수령 07.29 · 오후 7시 이전",
+        guide: "입금 확인이 완료된 주문입니다. 상품을 가져간 뒤 수령 완료 처리해 주세요.",
+        slide: "밀어서 물품 수령 완료"
+      },
+      unpaid: {
+        badge: "입금 대기", heading: "입금 확인 전", title: "제주 감귤 보따리", qty: 1,
+        schedule: "지정 수령 07.30 · 오후 7시 이전",
+        guide: "입금 확인이 완료되기 전에는 수령 완료 기능이 표시되지 않습니다.",
+        waiting: "입금 확인을 기다리고 있어요<br>확인이 끝나면 수령 가능한 확인증으로 자동 변경됩니다."
+      },
+      scheduled: {
+        badge: "입고 예정", heading: "수령 예정", title: "아침 샐러드 보따리", qty: 2,
+        schedule: "관리자 지정 수령일 07.31",
+        guide: "아직 입고되지 않은 상품입니다. 입고가 완료되면 수령 가능 탭에서 확인할 수 있어요.",
+        scheduled: true
+      },
+      expired: {
+        badge: "미수령", heading: "수령 기간 종료", title: "냉장고 한끼 보따리", qty: 2,
+        schedule: "지정 수령 07.28 · 오후 7시 이후",
+        guide: "지정한 수령일까지 수령 확인이 되지 않아 확인증 사용이 종료되었습니다.",
+        expired: true
+      },
+      completed: {
+        badge: "수령 완료", heading: "처리 완료", title: "제주 감귤 보따리", qty: 2,
+        schedule: "수령 완료 07.29 · 오후 6:42",
+        guide: "상품 수령이 정상적으로 완료된 주문입니다.",
+        completed: true
+      }
+    };
+
+    const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[char]);
+
+    function render(state) {
+      const data = samples[state];
+      const tabLabels = document.querySelectorAll(".receipt-tabs span");
+      tabLabels[0].classList.toggle("active", state !== "scheduled");
+      tabLabels[1].classList.toggle("active", state === "scheduled");
+      document.getElementById("subtitle").textContent =
+        state === "scheduled" ? "신청한 주문의 입고 일정을 확인해 주세요" : "입고가 완료된 주문을 확인해 주세요";
+
+      document.getElementById("sample").innerHTML = `
+        <article class="card ${data.expired ? "expired" : ""}">
+          <div class="state-row"><span class="state">${escapeHTML(data.badge)}</span><strong>${escapeHTML(data.heading)}</strong></div>
+          <h2>${escapeHTML(data.title)}<span class="qty">총 ${data.qty}개</span></h2>
+          <div class="schedule"><span>보따리 입고 07.29</span><strong>${escapeHTML(data.schedule)}</strong></div>
+          <p class="guide">${escapeHTML(data.guide)}</p>
+          ${data.barcode ? `<div class="barcode" aria-label="예시 바코드"><div class="bars"></div></div>` : ""}
+          ${data.slide ? `<div class="slide">${escapeHTML(data.slide)}</div>` : ""}
+          ${data.waiting ? `<div class="waiting">${data.waiting}</div>` : ""}
+          ${data.scheduled ? `<div class="waiting">입고 완료 후 바코드와 수령 완료 기능이 활성화됩니다.</div>` : ""}
+          ${data.expired ? `
+            <div class="lock"><span class="lock-icon">▢</span><div><strong>바코드 사용이 종료됐어요</strong><span>결제 바코드와 수령 완료 기능을 사용할 수 없습니다.</span></div></div>
+            <button class="contact" type="button">매장 문의</button>
+          ` : ""}
+          ${data.completed ? `<div class="complete">✓ 수령 완료</div>` : ""}
+        </article>
+      `;
+    }
+
+    document.querySelectorAll(".demo-tab").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".demo-tab").forEach(item => item.classList.toggle("active", item === button));
+        render(button.dataset.state);
+      });
+    });
+    render("onsite");
+  </script>
+</body>
+</html>

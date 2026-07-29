@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>사장님 관리 센터 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="stylesheet" href="./css/admin.css" />
+  <link rel="shortcut icon" href="#">
+</head>
+<body class="admin-body is-auth-checking">
+  <section class="admin-auth-gate" id="admin-auth-gate" role="status" aria-live="polite">
+    <span class="admin-auth-spinner" aria-hidden="true"></span>
+    <strong>관리자 권한을 확인하고 있어요</strong>
+    <p>확인이 끝날 때까지 관리 화면은 표시되지 않습니다.</p>
+  </section>
+
+  <div class="admin-layout" id="admin-layout" aria-hidden="true">
+    
+    <!-- 왼쪽: 관리자 대시보드 조작 판넬 -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="admin-logo">
+          <span>오</span>
+          <h1>오늘의 냉장고 <strong>사장님 관리 센터</strong></h1>
+        </div>
+        <div class="admin-header-actions">
+          <a href="./admin-audit-log.html" class="go-to-shop-btn">작업 이력</a>
+          <a href="./admin-system-status.html" class="go-to-shop-btn">시스템 상태</a>
+          <a href="./index.html" class="go-to-shop-btn">🛒 손님 화면으로 가기</a>
+        </div>
+      </header>
+
+      <!-- 상단 통계 현황 카드 -->
+      <section class="stat-grid">
+        <button class="stat-card" type="button" onclick="openPackingFilter('today-orders')">
+          <div class="stat-icon">01</div>
+          <div class="stat-info">
+            <h3>오늘 접수</h3>
+            <p id="stat-today-orders">0건</p>
+            <small id="stat-today-orders-detail">주문 0건 · 상품 0개</small>
+          </div>
+        </button>
+        <button class="stat-card" type="button" onclick="openPackingFilter('today-pickups')">
+          <div class="stat-icon">02</div>
+          <div class="stat-info">
+            <h3>오늘 수령 예정</h3>
+            <p id="stat-today-pickups">0명</p>
+            <small id="stat-today-pickups-detail">상품 0개 · 현장 0 · 이체 0</small>
+            <small class="stat-alert" id="stat-today-unpaid" hidden>미입금 0건</small>
+          </div>
+        </button>
+        <button class="stat-card" type="button" onclick="openPackingFilter('pending-transfer')">
+          <div class="stat-icon">03</div>
+          <div class="stat-info">
+            <h3>입금 확인 대기</h3>
+            <p id="stat-pending-approval">0건</p>
+            <small>확인이 필요한 주문</small>
+          </div>
+        </button>
+        <button class="stat-card" type="button" onclick="openExpiredHistory('today')">
+          <div class="stat-icon">04</div>
+          <div class="stat-info">
+            <h3>미수령 만료</h3>
+            <p id="stat-expired-orders">0건</p>
+            <small>확인 및 원복 가능</small>
+          </div>
+        </button>
+      </section>
+
+      <!-- 관리 탭 메뉴 -->
+      <nav class="admin-tabs">
+        <button class="admin-tab-btn active" onclick="switchAdminTab('products')">상품·보따리</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('arrivals')">입고 상태</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('packing')">패킹·주문</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('reviews')">후기·문의</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('members')">회원 관리</button>
+      </nav>
+
+      <div id="tab-products" class="admin-tab-content">
+        <div class="panel-card recommended-search-admin">
+          <div class="admin-section-heading">
+            <div>
+              <h2>추천 검색어</h2>
+              <p class="panel-desc">직접 등록한 검색어가 고객 검색 화면에 먼저 표시되고, 남은 자리는 판매 중 상품으로 자동 채워집니다.</p>
+            </div>
+          </div>
+          <form id="recommended-search-form" class="recommended-search-form">
+            <label>
+              <span>검색어 입력</span>
+              <input id="recommended-search-input" type="text" maxlength="40" placeholder="예: 제주 감귤" required />
+            </label>
+            <button type="submit">추가</button>
+          </form>
+          <div id="recommended-search-admin-list" class="recommended-search-admin-list" aria-live="polite">
+            <p>등록된 추천 검색어를 불러오고 있어요.</p>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="admin-section-heading">
+            <div>
+              <h2>상품 노출 및 판매 설정</h2>
+              <p class="panel-desc">고객 목록·상세페이지의 가격 표시와 마감 상태를 같은 규칙으로 제어합니다.</p>
+            </div>
+            <a class="admin-primary-btn" href="./admin-product-form.html">새 상품 등록</a>
+          </div>
+          <section class="product-filter-panel" aria-label="상품 목록 필터">
+            <div class="product-type-filter" role="group" aria-label="상품 유형">
+              <button class="product-filter-chip is-active" type="button" data-product-category="all">전체</button>
+              <button class="product-filter-chip" type="button" data-product-category="bundle">보따리</button>
+              <button class="product-filter-chip" type="button" data-product-category="fruit">오늘의 과일</button>
+              <button class="product-filter-chip" type="button" data-product-category="market">둘러보기 상품</button>
+            </div>
+            <div class="product-filter-tools">
+              <label class="admin-search-field">
+                <span>상품 검색</span>
+                <input id="admin-product-search" type="search" placeholder="상품명으로 검색" />
+              </label>
+              <label class="admin-date-field" id="bundle-pickup-date-field" hidden>
+                <span>수령일</span>
+                <input id="admin-bundle-pickup-date" type="date" />
+              </label>
+              <button class="product-filter-reset" id="product-filter-reset" type="button">초기화</button>
+            </div>
+            <p class="product-filter-result"><strong id="admin-product-result-count">0</strong>개의 상품이 표시됩니다.</p>
+          </section>
+          <div class="admin-table-scroll product-management-scroll">
+            <table class="admin-table product-management-table">
+              <thead>
+                <tr>
+                  <th>상품</th>
+                  <th>유형</th>
+                  <th>추천</th>
+                  <th>판매가</th>
+                  <th>할인 전 가격</th>
+                  <th>재고·자동 배지</th>
+                  <th>재입고 신청</th>
+                  <th>판매 상태</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-arrivals" class="admin-tab-content" style="display:none;">
+        <div class="panel-card">
+          <div class="admin-section-heading">
+            <div>
+              <h2>오늘 보따리 입고 상태</h2>
+              <p class="panel-desc"><span id="arrival-management-date"></span> 수령 상품만 표시됩니다. 고객에게 보여줄 안내 문구를 저장하거나 입고 완료로 전환하세요.</p>
+            </div>
+          </div>
+          <div class="admin-table-scroll arrival-management-scroll">
+            <table class="admin-table arrival-management-table">
+              <thead>
+                <tr>
+                  <th>상품</th>
+                  <th>현재 상태</th>
+                  <th>안내 문구</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="arrival-management-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-packing" class="admin-tab-content" style="display:none;">
+        <div class="panel-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div>
+              <h2>패킹용 통합 주문 리스트</h2>
+              <p class="panel-desc">상품별 신청 수량과 수령 정보를 확인하고 계좌이체 입금을 승인합니다.</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <select id="filter-order-product" onchange="renderAdminOrders()" style="padding:6px; border-radius:6px; border:1px solid #ddd;">
+                <option value="all">모든 상품</option>
+                <!-- JS 동적 추가 -->
+              </select>
+              <button onclick="simulatePrint()" class="print-btn">🖨️ A4/영수증 즉시 인쇄</button>
+            </div>
+          </div>
+          <section class="packing-filter-panel" aria-label="패킹 주문 필터">
+            <label class="admin-search-field">
+              <span>주문 검색</span>
+              <input id="packing-order-search" type="search" placeholder="고객명·상품명·주문번호 검색" />
+            </label>
+            <label class="admin-date-field">
+              <span>관리자 지정 보따리 수령일</span>
+              <input id="packing-pickup-date" type="date" />
+            </label>
+            <label class="packing-unreceived-filter">
+              <input id="packing-unreceived-only" type="checkbox" disabled />
+              <span>선택 상품 미수령만 보기</span>
+            </label>
+            <button class="product-filter-reset" id="packing-filter-reset" type="button">초기화</button>
+          </section>
+          <div class="packing-scope-bar" id="packing-scope-bar">
+            <span title="상단 통계 카드나 빠른 필터로 선택한 주문 범위입니다.">적용된 주문 범위</span>
+            <strong id="packing-scope-label">전체 주문</strong>
+            <button type="button" onclick="openPackingFilter('all')">전체 주문으로 초기화</button>
+          </div>
+          <div class="admin-table-scroll packing-table-scroll">
+          <table class="admin-table packing-orders-table">
+            <thead>
+              <tr>
+                <th>주문번호</th>
+                <th>고객명</th>
+                <th>상품명</th>
+                <th>수량</th>
+                <th>수령 예약일시</th>
+                <th>결제방식</th>
+                <th>상태</th>
+                <th>수령 체크 시각</th>
+                <th>관리자 승인</th>
+              </tr>
+            </thead>
+            <tbody id="packing-orders-table">
+              <!-- JS로 렌더링 -->
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 내용 2: 노쇼 및 미수령 관리 -->
+      <div id="tab-noshow" class="admin-tab-content" style="display:none;">
+        <div class="panel-card">
+          <div class="admin-section-heading">
+            <div>
+              <h2>미수령 만료 내역</h2>
+              <p class="panel-desc">실제 만료 처리 시각을 기준으로 최근 내역을 확인합니다.</p>
+            </div>
+            <p class="expired-total">누적 <strong id="expired-history-total">0</strong>건</p>
+          </div>
+          <div class="expired-filter-panel">
+            <div class="expired-quick-filters" role="group" aria-label="만료 기간">
+              <button class="expired-filter-chip is-active" type="button" data-expired-range="today">오늘</button>
+              <button class="expired-filter-chip" type="button" data-expired-range="7">최근 7일</button>
+              <button class="expired-filter-chip" type="button" data-expired-range="30">최근 30일</button>
+              <button class="expired-filter-chip" type="button" data-expired-range="all">전체</button>
+            </div>
+            <div class="expired-filter-tools">
+              <label><span>시작일</span><input id="expired-date-from" type="date" /></label>
+              <label><span>종료일</span><input id="expired-date-to" type="date" /></label>
+              <label class="expired-search"><span>검색</span><input id="expired-history-search" type="search" placeholder="상품명 또는 고객명" /></label>
+              <label><span>처리 상태</span><select id="expired-history-status"><option value="all">전체</option><option value="active">미처리</option><option value="restored">원복 완료</option></select></label>
+            </div>
+          </div>
+          <div class="admin-table-scroll expired-history-scroll">
+            <table class="admin-table expired-history-table">
+              <thead><tr><th>만료일</th><th>고객명</th><th>상품명</th><th>수령 예약</th><th>결제방식</th><th>처리 상태</th><th>관리</th></tr></thead>
+              <tbody id="expired-history-table"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h2>🚫 미수령 만료 강제 회수 엔진</h2>
+          <p class="panel-desc">수령 마감 시각이 지난 주문 건에 대해 회수 처리를 진행합니다. 만료 시 바코드가 차단되며 노쇼 1스택이 누적됩니다.</p>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>주문번호</th>
+                <th>고객명</th>
+                <th>상품명</th>
+                <th>예약일시</th>
+                <th>결제유형</th>
+                <th>만료 처리</th>
+              </tr>
+            </thead>
+            <tbody id="unclaimed-orders-table">
+              <!-- JS로 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-card" style="margin-top: 20px;">
+          <h2>회원별 노쇼 스택 관리</h2>
+          <p class="panel-desc">회원 관리에서 고객을 선택한 뒤 스택을 조정할 수 있습니다. 모든 수동 변경은 관리자 조정 이력으로 남습니다.</p>
+          <div id="member-noshow-panel" style="display:flex; align-items:center; justify-content:space-between; background:#f8f9fa; padding:15px; border-radius:12px; border:1px solid #edf0f2;">
+            <div>
+              <strong style="font-size:16px; color:#222;" id="noshow-username">선택된 회원이 없습니다</strong>
+              <div style="font-size:12px; color:#666; margin-top:4px;">회원번호: <code id="noshow-userkakao">-</code></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px;">
+              <span style="font-size:14px; font-weight:800;">누적 노쇼 횟수: <span id="noshow-count-display" style="color:#b94242; font-size:18px;">0회</span></span>
+              <div style="display:flex; gap:6px;">
+                <button onclick="adjustNoShow(1)" style="padding:6px 12px; background:#ffe9e9; color:#b94242; border-radius:6px; font-weight:800; border:1px solid #f1d7d7;">+1회 누적</button>
+                <button onclick="adjustNoShow(-1)" style="padding:6px 12px; background:#e4f3ec; color:#1f5f43; border-radius:6px; font-weight:800; border:1px solid #cce5d8;">-1회 차감</button>
+                <button onclick="resetNoShow()" style="padding:6px 12px; background:#1f5f43; color:#fff; border-radius:6px; font-weight:800; border:0;">0회 초기화</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 내용 3: 후기 및 문의 관리 -->
+      <div id="tab-reviews" class="admin-tab-content" style="display:none;">
+        <div class="panel-card">
+          <h2>💬 리뷰 평판 방어 및 사장님 피드백</h2>
+          <p class="panel-desc">악의적인 비방글이나 부적절한 노출의 리뷰는 블라인드 처리하여 숨길 수 있으며, 사장님 답글을 달아 1:1로 밀접 케어합니다.</p>
+          <div id="admin-reviews-container" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- JS로 리뷰 리스트 렌더링 -->
+          </div>
+        </div>
+
+        <div class="panel-card" style="margin-top: 20px;">
+          <h2>✉️ 상품 상세 1:1 문의사항 답변 처리</h2>
+          <p class="panel-desc">소비자들이 각 상품 상세 페이지에서 등록한 문의글에 실시간으로 피드백을 전달합니다.</p>
+          <div id="admin-inquiries-container" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- JS로 문의사항 렌더링 -->
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-members" class="admin-tab-content" style="display:none;">
+        <div class="panel-card">
+          <div class="admin-section-heading">
+            <div>
+              <h2>회원 관리</h2>
+              <p class="panel-desc">회원을 검색해 연락 요청을 보내거나 해당 회원의 노쇼 스택 관리 화면으로 이동합니다.</p>
+            </div>
+          </div>
+          <label class="member-search-field">
+            <span>회원 검색</span>
+            <input id="member-search-input" type="search" placeholder="회원 이름 또는 회원번호 검색" />
+          </label>
+          <label class="member-search-field">
+            <span>1:1 카카오 오픈채팅 주소</span>
+            <input id="member-chat-url-input" type="url" inputmode="url" placeholder="https://open.kakao.com/o/..." />
+          </label>
+          <div class="member-list-summary"><strong id="member-result-count">0명</strong><span>고객 회원 · 관리자 계정 제외</span></div>
+          <div class="member-admin-list" id="member-admin-list"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 오른쪽: 실시간 모바일 프리뷰 화면 (Iframe 연동) -->
+  </div>
+
+  <div class="admin-dialog" id="restock-dialog" aria-hidden="true">
+    <button class="admin-dialog-backdrop" type="button" onclick="closeRestockDialog()" aria-label="명단 닫기"></button>
+    <section class="admin-dialog-panel" role="dialog" aria-modal="true" aria-labelledby="restock-dialog-title">
+      <header>
+        <div><span>재입고 알림</span><h2 id="restock-dialog-title">신청자 명단</h2></div>
+        <button type="button" onclick="closeRestockDialog()" aria-label="닫기">×</button>
+      </header>
+      <div id="restock-dialog-content"></div>
+    </section>
+  </div>
+
+  <script src="./js/auth-session.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/product-rules.js"></script>
+  <script src="./js/admin.js"></script>
+</body>
+</html>

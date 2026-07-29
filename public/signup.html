@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>회원가입 | 오늘의 냉장고</title>
+  <link rel="icon" type="image/png" href="./assets/brand/today-fridge-favicon.png" />
+  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="stylesheet" href="./css/signup.css" />
+</head>
+<body>
+  <main class="signup-page">
+    <a class="signup-back" href="./login.html" aria-label="로그인 화면으로 돌아가기">‹</a>
+
+    <section class="signup-intro">
+      <a class="auth-brand" href="./index.html" aria-label="오늘의 냉장고 홈">
+        <img src="./assets/brand/today-fridge-wordmark-black-auth-2x.png" alt="오늘의 냉장고" />
+      </a>
+      <h1>간편하게 가입하고<br />신선한 소식을 받아보세요</h1>
+      <p>별도의 비밀번호 없이 카카오 계정으로 간편하게 가입할 수 있어요.</p>
+    </section>
+
+    <section class="signup-benefits" aria-label="회원 혜택">
+      <div><b>01</b><span><strong>보따리 신청</strong><small>신청부터 수령 확인까지 한 번에 관리해요.</small></span></div>
+      <div><b>02</b><span><strong>입고 알림</strong><small>신청 상품이 준비되면 바로 알려드려요.</small></span></div>
+      <div><b>03</b><span><strong>내역 보관</strong><small>주문과 문의 내역을 계정에 안전하게 보관해요.</small></span></div>
+    </section>
+
+    <section class="signup-actions" aria-label="회원가입 방법">
+      <button class="signup-kakao" type="button" data-signup-provider="kakao">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4C6.8 4 2.6 7.3 2.6 11.3c0 2.6 1.8 4.9 4.5 6.2l-1 3.7c-.1.3.3.6.6.4l4.4-2.9h.9c5.2 0 9.4-3.3 9.4-7.4S17.2 4 12 4Z"/></svg>
+        카카오로 회원가입
+      </button>
+      <p class="signup-terms">카카오 간편가입 화면에서 <a href="./terms.html">이용약관</a>과 <a href="./privacy.html">개인정보처리방침</a>을 확인하고 동의할 수 있습니다.</p>
+      <p class="login-link">이미 회원이신가요? <a href="./login.html">로그인</a></p>
+    </section>
+
+    <footer class="auth-legal-footer">
+      <nav class="auth-legal-footer__links" aria-label="서비스 정책">
+        <a href="./terms.html">이용약관</a>
+        <a href="./privacy.html">개인정보처리방침</a>
+      </nav>
+      <span class="auth-legal-footer__copyright">© 2026 오늘의 냉장고</span>
+    </footer>
+  </main>
+
+  <div class="signup-toast" id="signup-toast" role="status" aria-live="polite"></div>
+  <script src="./vendor/supabase.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/signup.js"></script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>이용 가이드 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="stylesheet" href="./css/guide.css" />
+</head>
+<body>
+  <main class="guide-page">
+    <header class="guide-header">
+      <button type="button" class="guide-back" data-guide-back aria-label="이전 화면으로 돌아가기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+      </button>
+      <h1>이용 가이드</h1>
+      <span class="guide-header-space" aria-hidden="true"></span>
+    </header>
+
+    <section class="guide-intro">
+      <span class="guide-kicker">오늘의 냉장고 이용 방법</span>
+      <h2>신청부터 수령까지<br />필요한 내용만 정리했어요</h2>
+      <p>상품별 신청 마감일과 수령일을 먼저 확인해 주세요. 입고가 완료되면 알림과 수령 확인증으로 안내해 드립니다.</p>
+      <nav class="guide-shortcuts" aria-label="빠른 이동">
+        <a href="#apply">신청</a>
+        <a href="#payment">결제</a>
+        <a href="#pickup">수령</a>
+        <a href="#cancel">취소</a>
+        <a href="#notification">알림</a>
+      </nav>
+    </section>
+
+    <section class="guide-hours" aria-labelledby="guide-hours-title">
+      <div class="guide-hours-heading">
+        <div>
+          <span>365일 언제든 이용 가능</span>
+          <h2 id="guide-hours-title">오늘의 냉장고 영업시간</h2>
+        </div>
+        <strong>24시간</strong>
+      </div>
+      <div class="guide-hours-list">
+        <div>
+          <span>영업일</span>
+          <strong>연중무휴</strong>
+          <p>과일·채소·공산품 등 매장 상품을 언제든 구매할 수 있어요</p>
+        </div>
+        <div>
+          <span>직원 상주</span>
+          <strong>오전 9시–오후 7시</strong>
+          <p>상품 문의와 매장 이용 안내를 받을 수 있어요</p>
+        </div>
+        <div>
+          <span>무인 운영</span>
+          <strong>오후 7시–다음 날 오전 9시</strong>
+          <p>직원 없이 자유롭게 매장을 이용할 수 있어요</p>
+        </div>
+      </div>
+      <p class="guide-hours-footnote">일반 상품 구매와 보따리 수령 모두 24시간 가능합니다. 직원의 도움이 필요한 경우 상주 시간에 방문해 주세요.</p>
+    </section>
+
+    <section class="guide-summary" aria-label="핵심 안내">
+      <div>
+        <span>수령 시간</span>
+        <strong>오후 7시 기준</strong>
+        <p>이전은 유인 수령, 이후는 무인 수령</p>
+      </div>
+      <div>
+        <span>취소 가능 시점</span>
+        <strong>신청기한 마감 전</strong>
+        <p>마감 시 신청 수량대로 사입 발주가 확정되어 이후에는 취소가 제한될 수 있어요</p>
+      </div>
+      <div>
+        <span>선결제 주문</span>
+        <strong>결제 확인 후</strong>
+        <p>수령 완료 기능이 활성화돼요</p>
+      </div>
+    </section>
+
+    <section class="guide-section" id="apply">
+      <div class="guide-section-heading">
+        <span>01</span>
+        <div><h2>보따리 신청</h2><p>상품 조건을 확인한 뒤 수량과 수령 방법을 선택합니다.</p></div>
+      </div>
+      <ol class="guide-steps">
+        <li><b>상품 정보 확인</b><p>가격, 신청 마감일시, 기본 수령일, 상세설명을 확인해 주세요.</p></li>
+        <li><b>수량 선택</b><p>남은 수량과 상품별 최대 신청 수량 안에서 선택할 수 있어요.</p></li>
+        <li><b>희망 수령일 선택</b><p>수령 가능일부터 일주일 범위 안에서 선택할 수 있어요.</p></li>
+        <li><b>수령 시간대 선택</b><p>오후 7시 이전 유인 수령 또는 오후 7시 이후 무인 수령을 선택합니다.</p></li>
+      </ol>
+      <div class="guide-note">
+        <strong>준비된 수량이 모두 소진되었다면</strong>
+        <p>수령일까지 대기 신청이 가능해요. 기존 예약건의 취소 수량이 생기면 신청 순번대로 자동 배정되며, 배정 완료 시 알림을 보내드립니다..</p>
+      </div>
+    </section>
+
+    <section class="guide-section" id="payment">
+      <div class="guide-section-heading">
+        <span>02</span>
+        <div><h2>결제 방식</h2><p>상품에 따라 현장결제와 선결제 중 선택합니다.</p></div>
+      </div>
+      <div class="guide-compare">
+        <article>
+          <span>현장결제</span>
+          <h3>수령할 때 결제</h3>
+          <ul>
+            <li>입고 완료 후 수령 확인증에 바코드가 표시돼요.</li>
+            <li>수령 시간대와 관계없이 바코드로 결제해요.</li>
+            <li>결제 후 수령 완료 슬라이드를 밀어 주세요.</li>
+          </ul>
+        </article>
+        <article>
+          <span>선결제</span>
+          <h3>미리 결제하고 수령</h3>
+          <ul>
+            <li>주문자와 입금자명이 다를 때만 입금자명을 입력해요.</li>
+            <li>결제 확인 전에는 ‘결제 확인 대기’로 표시돼요.</li>
+            <li>확인 완료 후 수령 완료 슬라이드가 활성화돼요.</li>
+          </ul>
+        </article>
+      </div>
+      <div class="guide-note neutral">
+        <strong>선결제 전용 상품</strong>
+        <p>신선식품 등 일부 보따리는 선결제만 가능할 수 있어요. 신청 화면에서 선택 가능한 결제 방식만 표시됩니다.</p>
+      </div>
+    </section>
+
+    <section class="guide-section" id="pickup">
+      <div class="guide-section-heading">
+        <span>03</span>
+        <div><h2>입고 확인과 수령</h2><p>입고 상태와 수령 확인증을 확인하고 방문해 주세요.</p></div>
+      </div>
+      <div class="guide-timeline">
+        <div><span>입고 전</span><b>입고 예정 안내 확인</b><p>메인 화면의 입고 상태에서 오늘 수령 상품의 준비 상황을 볼 수 있어요.</p></div>
+        <div><span>입고 완료</span><b>알림 및 수령 가능 전환</b><p>신청한 동일 상품의 주문이 여러 건이어도 입고 알림은 한 번만 전송돼요.</p></div>
+        <div><span>매장 방문</span><b>수령 확인증 사용</b><p>수령 가능 탭에서 신청한 보따리에 맞는 확인증을 열어 주세요.</p></div>
+        <div><span>수령 후</span><b>완료 슬라이드</b><p>물품을 가져간 뒤 직접 수령 완료 처리해 주세요. 처리 시각은 관리자에게 기록됩니다.</p></div>
+      </div>
+      <div class="guide-pickup-grid">
+        <article><span>오후 7시 이전</span><h3>유인 수령</h3><p>직원의 안내에 따라 준비된 상품을 확인하고 수령해 주세요.</p></article>
+        <article><span>오후 7시 이후</span><h3>무인 수령</h3><p>퇴근 전 별도로 준비해 둔 상품을 안내된 보관 위치에서 수령해 주세요.</p></article>
+      </div>
+    </section>
+
+    <section class="guide-section" id="cancel">
+      <div class="guide-section-heading">
+        <span>04</span>
+        <div><h2>변경·취소·미수령</h2><p>가능한 시점과 처리 기준이 서로 달라요.</p></div>
+      </div>
+      <dl class="guide-rules">
+        <div><dt>수령일 변경</dt><dd>정상 대기 중이며 지정 수령일이 지나지 않은 주문은 허용된 날짜 안에서 변경할 수 있어요.</dd></div>
+        <div><dt>고객 직접 취소</dt><dd>보따리 신청 마감 전까지만 가능해요. 취소 수량은 재고로 돌아가거나 첫 대기자에게 우선 배정됩니다.</dd></div>
+        <div><dt>입금 기한 경과</dt><dd>신청 마감까지 입금 확인이 되지 않으면 주문이 자동 취소될 수 있어요.</dd></div>
+        <div><dt>미수령 만료</dt><dd>지정 기한까지 현장결제 상품을 수령하지 않으면 바코드가 잠기고 미수령으로 기록될 수 있어요.</dd></div>
+      </dl>
+      <div class="guide-caution">
+        <strong>현장결제 미수령 3회 누적 시</strong>
+        <p>이후 보따리 신청 화면에서 현장결제 선택이 제한되고 선입금만 이용할 수 있어요. 제한 안내는 수령증이 아니라 신청 단계에서 표시됩니다.</p>
+      </div>
+    </section>
+
+    <section class="guide-section" id="notification">
+      <div class="guide-section-heading">
+        <span>05</span>
+        <div><h2>알림과 내역 확인</h2><p>중요한 변경은 알림센터와 웹 푸시로 안내합니다.</p></div>
+      </div>
+      <ul class="guide-list">
+        <li><b>입고 알림</b><span>신청 상품이 입고되었을 때</span></li>
+        <li><b>입금 확인 알림</b><span>계좌이체 입금이 확인되었을 때</span></li>
+        <li><b>주문 취소 알림</b><span>관리자 취소 또는 입금 기한 만료 시</span></li>
+        <li><b>재입고·대기 알림</b><span>재고가 다시 생기거나 대기 수량이 배정되었을 때</span></li>
+        <li><b>문의 답변 알림</b><span>작성한 문의에 답변이 등록되었을 때</span></li>
+      </ul>
+      <details class="guide-details">
+        <summary>아이폰에서 웹 푸시 받는 방법</summary>
+        <ol>
+          <li>Safari에서 오늘의 냉장고를 열어 주세요.</li>
+          <li>공유 버튼을 누르고 ‘홈 화면에 추가’를 선택해 주세요.</li>
+          <li>홈 화면에 생긴 아이콘으로 다시 실행해 주세요.</li>
+          <li>마이페이지의 알림 설정에서 ‘이 기기에서 알림 받기’를 허용해 주세요.</li>
+        </ol>
+        <p>아이폰 Safari 일반 탭에서는 잠금화면 웹 푸시를 받을 수 없어요. 홈 화면에 추가한 웹 앱에서 설정해야 합니다.</p>
+      </details>
+      <details class="guide-details">
+        <summary>안드로이드에서 웹 푸시 받는 방법</summary>
+        <ol>
+          <li>Chrome에서 오늘의 냉장고를 열고 로그인해 주세요.</li>
+          <li>마이페이지의 알림 설정에서 ‘이 기기에서 알림 받기’를 눌러 주세요.</li>
+          <li>브라우저의 알림 권한 창에서 ‘허용’을 선택해 주세요.</li>
+          <li>알림이 차단되어 있다면 Chrome의 사이트 설정에서 오늘의 냉장고 알림을 허용해 주세요.</li>
+        </ol>
+        <p>안드로이드는 사이트를 열어 두지 않아도 알림을 받을 수 있어요. 배터리 절전 설정이나 Chrome 알림이 꺼져 있으면 전송이 늦거나 표시되지 않을 수 있습니다.</p>
+      </details>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-section-heading">
+        <span>06</span>
+        <div><h2>그 밖의 기능</h2><p>주문과 상품 정보를 한곳에서 관리할 수 있어요.</p></div>
+      </div>
+      <div class="guide-feature-grid">
+        <article><h3>주문내역</h3><p>주문일, 결제 상태, 지정 수령일과 취소 가능 여부를 확인해요.</p></article>
+        <article><h3>찜한 상품</h3><p>관심 상품을 저장하고 로그인한 다른 기기에서도 확인해요.</p></article>
+        <article><h3>재입고 알림</h3><p>품절 상품의 재입고 알림을 신청하거나 다시 해제할 수 있어요.</p></article>
+        <article><h3>후기·문의</h3><p>구매 후 후기를 작성하고 상품 문의 답변을 확인해요.</p></article>
+      </div>
+    </section>
+
+    <section class="guide-help">
+      <span>추가 확인이 필요한가요?</span>
+      <h2>주문과 수령에 관한 문의는<br />오픈채팅으로 남겨 주세요</h2>
+      <a href="./index.html#chat">1:1 문의하기</a>
+    </section>
+    <footer class="site-footer" aria-label="사업자 및 서비스 안내">
+      <nav class="site-footer__links" aria-label="서비스 정책">
+        <a href="./terms.html">이용약관</a>
+        <a href="./privacy.html">개인정보처리방침</a>
+        <a href="#guide-business">사업자 정보</a>
+      </nav>
+      <div class="site-footer__business" id="guide-business">
+        <p><strong>오늘의 냉장고</strong> | 대표 조영빈</p>
+        <p>사업자등록번호 450-03-03431</p>
+        <p>통신판매업 신고번호 <span class="site-footer__pending">발급 후 표시</span></p>
+        <p>주소 경기 고양시 덕양구 충장로 2</p>
+        <p>고객문의 <a href="tel:050714353715">0507-1435-3715</a> · <a href="mailto:2day0924@naver.com">2day0924@naver.com</a></p>
+      </div>
+      <p class="site-footer__copyright">© 2026 오늘의 냉장고 (오냉). All rights reserved.</p>
+    </footer>
+  </main>
+  <script src="./js/guide.js"></script>
+  <script src="./js/content-protection.js"></script>
+</body>
+</html>

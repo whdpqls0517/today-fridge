@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>닉네임 설정 | 오늘의 냉장고</title>
+  <link rel="icon" type="image/png" href="./assets/brand/today-fridge-favicon.png" />
+  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="stylesheet" href="./css/profile-setup.css" />
+</head>
+<body>
+  <main class="profile-setup-page">
+    <header>
+      <a class="auth-brand" href="./index.html" aria-label="오늘의 냉장고 홈">
+        <img src="./assets/brand/today-fridge-wordmark-black-auth-2x.png" alt="오늘의 냉장고" />
+      </a>
+      <small>마지막 단계</small>
+      <h1>사용할 닉네임을<br>정해 주세요</h1>
+      <p>주문과 수령 확인에 사용되며 다른 회원과 중복될 수 없어요.</p>
+    </header>
+
+    <form id="profile-setup-form">
+      <label for="profile-nickname">닉네임</label>
+      <div class="nickname-field">
+        <input
+          id="profile-nickname"
+          name="nickname"
+          type="text"
+          minlength="2"
+          maxlength="12"
+          autocomplete="nickname"
+          placeholder="한글·영문·숫자 2~12자"
+          required
+        />
+        <span id="nickname-count">0/12</span>
+      </div>
+      <p class="nickname-status" id="nickname-status" aria-live="polite">
+        다른 고객과 구분하기 쉬운 닉네임을 사용해 주세요.
+      </p>
+      <button type="submit">가입 완료</button>
+    </form>
+  </main>
+
+  <script src="/vendor/supabase.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/profile-setup.js"></script>
+</body>
+</html>

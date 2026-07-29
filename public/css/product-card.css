@@ -1,0 +1,710 @@
+/* =============================================================
+   1. Card & Thumbnail Base
+   ============================================================= */
+.product-master-card {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.product-master-thumb {
+  position: relative;
+  height: 146px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #edf1ef;
+}
+
+.product-master-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =============================================================
+   2. Zigzag Style Badges (지그재그 감성 - 폰트 및 비율 디테일 보정)
+   ============================================================= */
+.product-master-badges,
+.popular-badges {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  max-width: calc(100% - 36px);
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+/* [디테일 보정] 폰트 패밀리 지정 및 정교한 픽셀 피팅 */
+.master-badge,
+.popular-badge,
+.popular-badges .popular-badge,
+.search-popular-card .popular-badge {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 2px 2px 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 400 !important; /* [수정] 500/600 -> 400(Regular)으로 얇고 세련되게 변경 */
+  letter-spacing: -0.03em !important;
+  line-height: 1 !important;
+  border: none;
+  color: #ffffff !important;
+  box-shadow: none;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+}
+/* 2-1. [오늘 마감] & [기본/일반] 배지 -> 무조건 솔리드 블랙 (#111111) */
+.master-badge,
+.master-badge.muted,
+.master-badge.deadline,
+.popular-badge,
+.popular-badge.muted,
+.popular-badge.deadline,
+.popular-badges .popular-badge,
+.popular-badges .popular-badge.muted,
+.popular-badges .popular-badge.deadline {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+/* 2-2. [인기] 배지 -> 포레스트 딥 그린 (#0f4c3a) */
+.master-badge.popular,
+.popular-badge.popular,
+.popular-badge.green,
+.popular-badges .popular-badge.popular,
+.popular-badges .popular-badge.green {
+  background: #0f4c3a !important;
+  color: #ffffff !important;
+}
+
+/* 2-3. [마감 임박] 배지 -> 톤다운 크림슨 레드 (#bd2832) */
+.master-badge.urgent,
+.popular-badge.urgent,
+.popular-badge.red,
+.popular-badges .popular-badge.red,
+.popular-badges .popular-badge.urgent {
+  background: #bd2832 !important;
+  color: #ffffff !important;
+}
+
+/* 충돌 방지 덮어쓰기 */
+.popular-badge.deadline,
+.popular-badges .popular-badge.deadline {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+/* 2-4. 품절 (Sold Out) 오버레이 */
+.popular-card.is-sold-out .popular-thumb img {
+  filter: saturate(.58) brightness(.64);
+}
+
+.popular-card.is-sold-out .popular-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  background: rgba(31, 34, 32, .2);
+}
+
+.popular-card.is-sold-out .popular-badges {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: none;
+  left: 0;
+  bottom: 0;
+}
+
+.popular-card.is-sold-out .popular-badge {
+  height: auto;
+  padding: 0;
+  background: transparent !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .3);
+}
+
+/* =============================================================
+   3. Card Details & Elements
+   ============================================================= */
+.product-master-favorite {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .9);
+  color: #0f4c3a;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+  z-index: 3;
+}
+
+.product-master-favorite[aria-pressed="true"] { 
+  color: #bd2832; 
+}
+
+.product-master-copy {
+  padding: 10px 2px 0;
+}
+
+.product-master-copy > strong {
+  display: block;
+  overflow: hidden;
+  color: #202e28;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-master-copy > p {
+  display: -webkit-box;
+  min-height: 28px;
+  margin: 4px 0 6px;
+  overflow: hidden;
+  color: #818c86;
+  font-size: 10px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.popular-card p {
+  display: flex !important;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* 가격 스타일 */
+.product-master-price {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.product-master-price b {
+  color: #18251f;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.product-master-price del,
+.popular-card p del {
+  color: #a8b0ac;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.popular-card p del {
+  color: #a3aaa7;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.product-master-price.is-hidden b {
+  color: #7b8580;
+  font-size: 12px;
+}
+
+/* 텍스트 태그 및 메타 정보 */
+.product-master-tags {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.product-master-tags span {
+  overflow: hidden;
+  padding: 3px 5px;
+  border-radius: 3px;
+  background: #f0f4f2;
+  color: #617069;
+  font-size: 8px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-master-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  margin-top: 6px;
+  color: #7c8982;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.popular-card-meta {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+  color: #8c969e;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.bundle-card-schedule {
+  display: grid;
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.bundle-card-schedule-row {
+  display: grid;
+  grid-template-columns: 43px minmax(0, 1fr);
+  align-items: center;
+  min-height: 25px;
+  padding-left: 8px;
+  border-left: 2px solid #c7dbd1;
+}
+
+.bundle-card-schedule-row + .bundle-card-schedule-row {
+  border-top: 0;
+}
+
+.bundle-card-schedule-row > span {
+  color: #718078;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+.bundle-card-schedule-row.pickup > span {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.bundle-card-schedule-row.deadline {
+  border-left-color: #d8ddd9;
+}
+
+.bundle-card-schedule-row.deadline > span {
+  color: #7f8883;
+}
+
+.bundle-card-schedule-row > b {
+  display: block;
+  overflow: hidden;
+  color: #27332d;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+  line-height: 1.3;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-master-deadline {
+  display: block;
+  margin-top: 6px;
+  color: #bd2832;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* =============================================================
+   4. List Layout & Filter Tools
+   ============================================================= */
+.bundle-date-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 0;
+}
+
+.bundle-date-trigger {
+  display: flex;
+  min-width: 0;
+  min-height: 64px;
+  padding: 11px 13px;
+  flex: 1;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #e0e6e2;
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 4px 14px rgba(35, 55, 45, .035);
+}
+
+.bundle-date-trigger__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: #edf4f0;
+  color: #2c664e;
+}
+
+.bundle-date-trigger__icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bundle-date-trigger__copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bundle-date-trigger__copy small {
+  color: #7e8882;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.bundle-date-trigger__copy strong {
+  overflow: hidden;
+  color: #25302a;
+  font-size: 14px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bundle-date-trigger__arrow {
+  color: #9ba39f;
+  font-size: 25px;
+  font-weight: 300;
+}
+
+.bundle-date-reset {
+  min-height: 40px;
+  padding: 0 12px;
+  flex: 0 0 auto;
+  border: 1px solid #dce4df;
+  border-radius: 10px;
+  background: #fff;
+  color: #4e6258;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bundle-date-reset[hidden] {
+  display: none;
+}
+
+.bundle-list-tools {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px 0 16px;
+}
+
+.bundle-filter-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bundle-filter-chips button {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border: 1px solid #e1e5e3;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #66706b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bundle-filter-chips button.active {
+  border-color: #263b32;
+  background: #263b32;
+  color: #ffffff;
+}
+
+.bundle-sort-select {
+  flex: 0 0 auto;
+}
+
+.bundle-sort-select > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #8a928e;
+  font-size: 9px;
+}
+
+.bundle-sort-select select {
+  padding: 6px 24px 6px 10px;
+  border: 1px solid #e1e5e3;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #36413c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bundle-today-section,
+.bundle-general-section {
+  padding-top: 20px;
+  border-top: 1px solid #edf0ee;
+}
+
+.bundle-today-section[hidden] {
+  display: none;
+}
+
+.bundle-today-section {
+  margin-top: 4px;
+  padding: 16px 12px;
+  border: 1px solid #dfe9e4;
+  border-radius: 12px;
+  background: #f6faf8;
+}
+
+.bundle-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.bundle-section-heading span {
+  color: #0f4c3a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bundle-section-heading h2 {
+  margin: 3px 0 0;
+  color: #202925;
+  font-size: 16px;
+  letter-spacing: -.03em;
+}
+
+.bundle-section-heading small {
+  color: #89938e;
+  font-size: 9px;
+}
+
+.bundle-product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 12px;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.bundle-general-section {
+  margin-top: 20px;
+}
+
+.bundle-calendar-modal[hidden] {
+  display: none;
+}
+
+.bundle-calendar-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  background: rgba(19, 27, 23, .38);
+}
+
+.bundle-calendar-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bundle-calendar-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 430px);
+  padding: 9px 20px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 26px 26px 0 0;
+  background: #fff;
+  box-shadow: 0 -18px 42px rgba(18, 31, 24, .16);
+}
+
+.bundle-calendar-handle {
+  width: 38px;
+  height: 4px;
+  margin: 0 auto 17px;
+  border-radius: 999px;
+  background: #dce1de;
+}
+
+.bundle-calendar-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.bundle-calendar-header small {
+  color: #547161;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.bundle-calendar-header h2 {
+  margin: 3px 0 0;
+  color: #1f2924;
+  font-size: 19px;
+  font-weight: 850;
+  letter-spacing: -.035em;
+}
+
+.bundle-calendar-close {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f2f4f3;
+  color: #707a75;
+  font-size: 22px;
+}
+
+.bundle-calendar-monthbar {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  margin-bottom: 9px;
+}
+
+.bundle-calendar-monthbar button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  color: #64706a;
+  font-size: 25px;
+}
+
+.bundle-calendar-monthbar button:active {
+  background: #f2f5f3;
+}
+
+.bundle-calendar-monthbar strong {
+  color: #29332e;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.bundle-calendar-weekdays,
+.bundle-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.bundle-calendar-weekdays {
+  margin-bottom: 4px;
+}
+
+.bundle-calendar-weekdays span {
+  padding: 6px 0;
+  color: #98a09c;
+  font-size: 10px;
+  font-weight: 650;
+  text-align: center;
+}
+
+.bundle-calendar-day {
+  position: relative;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin: 1px auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #35413b;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.bundle-calendar-day.is-today {
+  color: #245d46;
+  box-shadow: inset 0 0 0 1px #bad0c4;
+}
+
+.bundle-calendar-day.is-selected {
+  background: #235b45;
+  color: #fff;
+  box-shadow: none;
+}
+
+.bundle-calendar-day.has-products::after {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 3px;
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #3c795e;
+  content: "";
+}
+
+.bundle-calendar-day.is-selected::after {
+  background: #fff;
+}
+
+.bundle-calendar-empty-day {
+  width: 38px;
+  height: 38px;
+}
+
+.bundle-calendar-help {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 14px;
+  color: #7b8580;
+  font-size: 10px;
+}
+
+.bundle-calendar-help i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3c795e;
+}
+
+.bundle-calendar-all {
+  width: 100%;
+  min-height: 45px;
+  border: 1px solid #dfe5e1;
+  border-radius: 12px;
+  background: #fff;
+  color: #35483e;
+  font-size: 13px;
+  font-weight: 750;
+}

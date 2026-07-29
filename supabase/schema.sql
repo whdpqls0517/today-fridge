@@ -26,6 +26,8 @@ create table if not exists public.profiles (
     check (login_provider in ('kakao', 'google')),
   role text not null default 'customer'
     check (role in ('customer', 'admin')),
+  notification_settings jsonb not null
+    default '{"arrival":true,"inquiry":true,"important":true}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -198,6 +200,7 @@ create trigger orders_set_updated_at
 
 -- 재입고 알림 신청: 품절 상품별 수요와 신청자 명단
 create table if not exists public.restock_subscriptions (
+  id uuid not null default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   product_id uuid not null references public.products(id) on delete cascade,
   is_active boolean not null default true,
@@ -208,6 +211,8 @@ create table if not exists public.restock_subscriptions (
   primary key (user_id, product_id)
 );
 
+create unique index if not exists restock_subscriptions_id_uidx
+  on public.restock_subscriptions(id);
 create index if not exists restock_subscriptions_product_idx
   on public.restock_subscriptions(product_id, request_type, is_active);
 
@@ -314,13 +319,20 @@ create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   type text not null
-    check (type in ('arrival', 'inquiry_answer', 'order_cancelled', 'pickup')),
+    check (type in (
+      'arrival', 'inquiry_answer', 'order_cancelled', 'pickup',
+      'payment_reminder', 'payment_confirmed', 'restock', 'contact_request',
+      'waitlist_promoted'
+    )),
   title text not null,
   body text not null,
   link text,
   dedupe_key text not null,
   read_at timestamptz,
   push_sent_at timestamptz,
+  push_attempt_count integer not null default 0 check (push_attempt_count >= 0),
+  push_last_error text,
+  push_next_retry_at timestamptz,
   created_at timestamptz not null default now(),
   unique (user_id, dedupe_key)
 );

@@ -5,7 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check js/admin.js && node --check js/login.js"
+    "check": "node scripts/check-js.js",
+    "test": "node --test tests/order-flows.test.js tests/production-contracts.test.js",
+    "verify": "npm run check && npm test",
+    "build:production": "node scripts/build-production.js",
+    "start:production": "npm run build:production && node scripts/start-production.js",
+    "audit:production": "node scripts/production-audit.js",
+    "migrate:images": "node scripts/migrate-inline-product-images.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +19,10 @@
     "@supabase/supabase-js": "^2.110.8",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "terser": "^5.49.0"
   }
 }

@@ -1,0 +1,161 @@
+@charset "utf-8";
+
+/* 1. 모던 웹폰트 Pretendard 불러오기 */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+/* 2. 전체 레이아웃 기본 설정 */
+.result-page {
+  padding-bottom: 34px;
+}
+
+.result-summary {
+  margin-bottom: 2px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #e5eae7;
+}
+
+.fruit-list-section {
+  padding: 4px 0 28px;
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+.fruit-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. 카드 아이템 리스트 스타일 */
+.fruit-list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 16px;
+  align-items: center;
+  padding: 22px 0; /* 카드 상하 여백 넉넉하게 확보 */
+  border-bottom: 1px solid #f0f2f0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.fruit-list-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 4. 텍스트 요소별 스타일 및 위아래 간격 설정 */
+
+/* (1) 상품 제목 */
+.fruit-list-copy h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 10px 0; /* 제목 ↔ 가격 간격 확대 */
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* (2) 가격 */
+.fruit-list-price {
+  margin-bottom: 10px; /* 가격 ↔ 한 줄 소개 간격 확대 */
+  color: #111827;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* (3) 한 줄 소개 */
+.fruit-list-description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 14px 0; /* 한 줄 소개 ↔ 평점 간격 확대 */
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;   /* 글자 줄간격 여유있게 지정 */
+  letter-spacing: -0.01em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* (4) 평점 */
+.fruit-list-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.fruit-list-rating i {
+  color: #10b981;
+  font-style: normal;
+}
+
+/* 5. 우측 이미지 스타일 */
+.fruit-list-image {
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f3f4f6;
+}
+
+.fruit-list-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .2s ease;
+}
+
+.fruit-list-item:active .fruit-list-image img {
+  transform: scale(.98);
+}
+
+/* 6. 빈 목록 예외 처리 */
+.fruit-list-empty {
+  padding: 60px 20px;
+  color: #87918c;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 7. 모바일 소형 화면 대응 (미디어 쿼리) */
+@media (max-width: 380px) {
+  .fruit-list-section {
+    padding-inline: 0;
+  }
+
+  .fruit-list-item {
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 12px;
+    padding: 18px 0;
+  }
+
+  .fruit-list-image {
+    width: 92px;
+    height: 92px;
+  }
+
+  .fruit-list-copy h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .fruit-list-price {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .fruit-list-description {
+    margin-bottom: 10px;
+  }
+}

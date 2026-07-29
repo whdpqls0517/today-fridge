@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>미수령 확인증 미리보기 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/receipt.css" />
+  <link rel="stylesheet" href="./css/receipt-expired-preview.css" />
+</head>
+<body>
+  <main class="expired-preview">
+    <div class="preview-backdrop" aria-hidden="true"></div>
+    <article class="receipt-sheet preview-sheet">
+      <div class="sheet-handle"></div>
+      <header class="sheet-title">
+        <div>
+          <span>오늘의 냉장고</span>
+          <h2>수령 확인증</h2>
+          <p>미수령 처리된 확인증 예시 화면입니다</p>
+        </div>
+        <a class="receipt-close" href="./admin.html" aria-label="미리보기 닫기">×</a>
+      </header>
+
+      <div class="receipt-tabs" aria-label="수령증 탭 예시">
+        <button class="active" type="button">수령 가능</button>
+        <button type="button">예정</button>
+      </div>
+
+      <div class="receipt-list">
+        <article class="receipt-item pay-kiosk is-expired">
+          <header>
+            <span class="status expired">미수령</span>
+            <strong>수령 기간 종료</strong>
+          </header>
+          <h3>냉장고 한끼 보따리 <span class="preview-quantity">총 2개</span></h3>
+          <div class="pickup-meta expired">
+            <div class="pickup-schedule">
+              <span class="bundle-date-label">보따리 입고 07.28</span>
+              <span class="pickup-time">지정 수령 07.29 · 오후 7시 이후</span>
+            </div>
+          </div>
+          <p>지정한 수령일까지 수령 확인이 되지 않아 확인증 사용이 종료되었습니다.</p>
+
+          <div class="expired-barcode-lock" role="status" aria-label="바코드 사용 불가">
+            <span class="expired-lock-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="3"/><path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10"/></svg>
+            </span>
+            <div>
+              <strong>바코드 사용이 종료됐어요</strong>
+              <span>결제 바코드와 수령 완료 기능을 사용할 수 없습니다.</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </article>
+  </main>
+  <script src="./js/receipt-expired-preview.js"></script>
+</body>
+</html>

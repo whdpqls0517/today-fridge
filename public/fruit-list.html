@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 과일 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="stylesheet" href="./css/fruit-list.css" />
+</head>
+<body class="search-screen" data-list-category="fruit">
+  <main class="search-page result-page" aria-label="오늘의 과일 목록 화면">
+    <header class="search-header">
+      <a class="search-back" href="./index.html" data-back-button aria-label="이전 화면으로 돌아가기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+      </a>
+      <div class="detail-title">오늘의 과일</div>
+    </header>
+
+    <section class="result-summary">
+      <span>현장 구매 상품</span>
+      <h1>오늘 매장에 들어온 과일</h1>
+      <p>오늘 매장에 준비된 신선 과일을 한눈에 확인해 보세요.</p>
+    </section>
+
+    <section class="fruit-list-section" aria-label="오늘의 과일">
+      <div class="fruit-list" id="fruit-list-track"></div>
+    </section>
+  </main>
+
+  <script src="./js/auth-session.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/product-rules.js"></script>
+  <script src="./js/back-navigation.js"></script>
+  <script src="./js/fruit-list.js"></script>
+  <script src="./js/favorites.js"></script>
+  <script src="./js/receipt-launcher.js"></script>
+  <script src="./js/content-protection.js"></script>
+</body>
+</html>

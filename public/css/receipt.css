@@ -1,0 +1,1010 @@
+/* 오늘 수령증 바텀시트입니다. 상품별 수령증과 결제수단별 수령 버튼을 표시합니다. */
+.receipt-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+}
+
+.receipt-layer:target {
+  display: block;
+}
+
+.layer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 17, 23, 0.42);
+}
+
+.receipt-sheet {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(100%, 430px);
+  max-height: 86vh;
+  padding: 10px 18px 24px;
+  overflow-y: auto;
+  transform: translateX(-50%);
+  border-radius: 26px 26px 0 0;
+  background: #ffffff;
+  box-shadow: 0 -20px 50px rgba(13, 17, 23, 0.18);
+}
+
+.sheet-handle {
+  width: 42px;
+  height: 5px;
+  margin: 0 auto 18px;
+  border-radius: 99px;
+  background: #d8dde2;
+}
+
+.sheet-title,
+.receipt-card {
+  position: relative; /* 📌 스탬프 위치의 기준점이 되도록 설정 */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.sheet-title span {
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sheet-title h2 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.sheet-title a {
+  color: #8d949c;
+  font-size: 13px;
+}
+
+.sheet-title .receipt-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #f1f3f5;
+  color: #59636d;
+  font-weight: 800;
+}
+
+.receipt-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 12px;
+}
+
+.receipt-tabs button {
+  flex: 1;
+  padding: 11px 8px;
+  border-radius: 999px;
+  background: #f1f3f5;
+  color: #65707b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.receipt-tabs .active {
+  background: var(--deep-green);
+  color: #ffffff;
+}
+
+.receipt-card,
+.receipt-item {
+  padding: 16px;
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.receipt-list {
+  display: grid;
+  gap: 12px;
+}
+
+.receipt-item {
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.receipt-item.is-hidden {
+  display: none;
+}
+
+.receipt-item.is-complete {
+  border-color: #d8eadf;
+  background: #fbfdfb;
+}
+
+.receipt-item.is-expired {
+  border-color: #f1d7d7;
+  background: #fffafa;
+}
+
+.receipt-item header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.receipt-item header strong {
+  color: #7b8490;
+  font-size: 12px;
+}
+
+.status {
+  display: inline-flex;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #eaf6ef;
+  color: #32734a;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.status.onsite {
+  background: #fff4df;
+  color: #9a6a1d;
+}
+
+.status.expired {
+  background: #ffe9e9;
+  color: #b94242;
+}
+
+.receipt-card h3,
+.receipt-item h3 {
+  margin: 10px 0 5px;
+  font-size: 16px;
+}
+
+.pickup-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0 9px;
+  padding: 10px 11px;
+  border-radius: 12px;
+  background: #f6f8f7;
+}
+
+.pickup-meta.expired {
+  background: #fff1f1;
+}
+
+.pickup-time {
+  min-width: 0;
+  color: #344039;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.postpone-button {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: #e8f4ee;
+  color: var(--deep-green);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.postpone-button:disabled {
+  color: #7a8980;
+  background: #edf2ef;
+  cursor: default;
+}
+
+.postpone-button.store-contact {
+  background: #ffe4e4;
+  color: #b94242;
+}
+
+.receipt-card p,
+.receipt-item p {
+  margin: 0;
+  color: #747d86;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+}
+
+.barcode {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  height: 74px;
+  margin-top: 13px;
+  padding: 14px 46px;
+  border: 1px solid #e4e9e6;
+  border-radius: 16px;
+  background: #fbfcfb;
+  box-shadow: inset 0 0 0 4px #f4f7f5;
+}
+
+.barcode::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid #9caaa2;
+  border-right: 2px solid #9caaa2;
+  transform: rotate(45deg);
+}
+
+.barcode::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid var(--green);
+  border-left: 2px solid var(--green);
+  border-radius: 3px 0 0 0;
+}
+
+.barcode span {
+  width: 5px;
+  border-radius: 8px;
+  background: #26322d;
+}
+
+.barcode span:nth-child(2),
+.barcode span:nth-child(5) {
+  width: 10px;
+}
+
+.barcode span:nth-child(3) {
+  height: 70%;
+  align-self: center;
+}
+
+.barcode span:nth-child(4) {
+  width: 3px;
+}
+
+.receipt-item.is-complete .barcode,
+.receipt-item.is-complete .slide-button,
+.receipt-item.is-complete .postpone-button,
+.receipt-item.is-expired .slide-button {
+  display: none;
+}
+
+.receipt-card > strong {
+  position: absolute;   /* 📌 다른 요소에 밀리지 않고 둥둥 뜨게 만듭니다 */
+  right: 16px;          /* 📌 우측 끝에서 16px 이격 */
+  top: 16px;            /* 📌 상단 끝에서 16px 이격 */
+  z-index: 5;           /* 다른 텍스트 위로 올라오도록 설정 */
+  
+  display: grid;
+  place-items: center;
+  width: 52px;          /* 크기 고정 */
+  height: 52px;
+  border-radius: 50%;
+  background: #f7f0df;
+  color: #9a6a1d;
+  font-size: 14px;      /* 글자가 원 안에 예쁘게 들어가도록 조정 */
+  font-weight: bold;
+  transform: rotate(-15deg); /* 도장 느낌 나게 살짝 회전 */
+  pointer-events: none; /* 클릭 방해 금지 */
+}
+
+/* 수령증 안에서 쓰는 완료 버튼 스타일입니다. 현장결제/계좌이체 수령 완료 버튼에 공통 적용됩니다. */
+.slide-button {
+  --slide-progress: 0px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 13px;
+  min-height: 54px;
+  padding: 0 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--deep-green);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  touch-action: none;
+  user-select: none;
+}
+
+.slide-button.secondary {
+  background: var(--deep-green);
+}
+
+.slide-button::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.slide-button::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  bottom: 5px;
+  width: calc(44px + var(--slide-progress));
+  max-width: calc(100% - 10px);
+  border-radius: 999px;
+  background: #77b58a;
+  transition: width 0.18s ease;
+}
+
+.slide-button.is-dragging {
+  cursor: grabbing;
+}
+
+.slide-button.is-dragging::after {
+  transition: none;
+}
+
+.slide-thumb {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--deep-green);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(20, 62, 42, 0.18);
+  transition: transform 0.18s ease;
+}
+
+.slide-thumb svg {
+  display: block;
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.slide-button.is-dragging .slide-thumb {
+  transition: none;
+}
+
+.slide-text {
+  position: relative;
+  z-index: 3;
+  padding-left: 34px;
+  pointer-events: none;
+}
+
+.receipt-done {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  margin-top: 13px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #e8f4ee;
+  color: var(--deep-green);
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.receipt-item.is-complete .receipt-done {
+  display: flex;
+}
+
+.undo-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: min(calc(100% - 36px), 394px);
+  padding: 13px 14px 13px 16px;
+  transform: translate(-50%, 18px);
+  border-radius: 16px;
+  background: rgba(31, 37, 34, 0.94);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.undo-toast.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.undo-toast button {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--deep-green);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.date-picker {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(13, 17, 23, 0.24);
+}
+
+.date-picker.is-visible {
+  display: flex;
+}
+
+.date-panel {
+  width: min(100%, 394px);
+  padding: 18px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(36, 41, 50, 0.18);
+}
+
+.date-panel header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.date-panel header span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.date-panel header strong {
+  display: block;
+  color: #242932;
+  font-size: 17px;
+}
+
+.date-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f2f4f3;
+  color: #5e6861;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.date-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+}
+
+.date-options button {
+  padding: 14px 10px;
+  border-radius: 14px;
+  background: #f4f8f5;
+  color: #2f6f48;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.date-options button:active {
+  transform: scale(0.98);
+}
+
+.barcode-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(13, 17, 23, 0.48);
+}
+
+.barcode-modal.is-visible {
+  display: flex;
+}
+
+.barcode-panel {
+  width: min(100%, 394px);
+  padding: 18px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 20px 46px rgba(36, 41, 50, 0.22);
+}
+
+.barcode-panel header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.barcode-panel header span {
+  display: block;
+  margin-bottom: 4px;
+  color: #9a6a1d;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.barcode-panel header strong {
+  display: block;
+  color: #242932;
+  font-size: 17px;
+}
+
+.barcode-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f2f4f3;
+  color: #5e6861;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.barcode-large {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 7px;
+  height: 142px;
+  padding: 20px 18px;
+  border-radius: 18px;
+  background: #f7f9f8;
+}
+
+.barcode-large span {
+  width: 6px;
+  border-radius: 999px;
+  background: #1d2521;
+}
+
+.barcode-large span:nth-child(2),
+.barcode-large span:nth-child(5),
+.barcode-large span:nth-child(8) {
+  width: 13px;
+}
+
+.barcode-large span:nth-child(3),
+.barcode-large span:nth-child(7) {
+  height: 72%;
+  align-self: center;
+}
+
+.barcode-panel p {
+  margin: 12px 0 0;
+  color: #747d86;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 수령 확인증을 모바일 패스처럼 간결하게 정돈합니다. */
+.receipt-sheet {
+  max-height: 90vh;
+  padding: 9px 18px 28px;
+  border-radius: 30px 30px 0 0;
+  background: #f8faf9;
+  box-shadow: 0 -24px 70px rgba(8, 32, 24, 0.2);
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  margin-bottom: 12px;
+  background: #d8dfdc;
+}
+
+.sheet-title {
+  min-height: 102px;
+  padding: 12px 58px 16px 2px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sheet-title span {
+  color: #15805d;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+}
+
+.sheet-title h2 {
+  margin-top: 7px;
+  color: #101b17;
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+
+.sheet-title p {
+  margin: 6px 0 0;
+  color: #86918c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sheet-title .receipt-close {
+  top: 12px;
+  right: 2px;
+  min-width: 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0 0 2px;
+  border: 1px solid #e8ecea;
+  border-radius: 50%;
+  background: #f2f5f3;
+  color: #52605a;
+  font-size: 24px;
+  font-weight: 400;
+  box-shadow: none;
+}
+
+.receipt-tabs {
+  gap: 3px;
+  margin: 0 0 16px;
+  padding: 4px;
+  border: 0;
+  border-radius: 14px;
+  background: #eef2f0;
+}
+
+.receipt-tabs button {
+  padding: 11px 8px;
+  border-radius: 10px;
+  background: transparent;
+  color: #77817b;
+  transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.receipt-tabs .active {
+  background: #0f684b;
+  color: #ffffff;
+  box-shadow: 0 5px 13px rgba(15, 104, 75, 0.18);
+}
+
+.receipt-list {
+  gap: 12px;
+}
+
+.receipt-item {
+  position: relative;
+  padding: 17px;
+  overflow: hidden;
+  border: 1px solid #e6ebe8;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(20, 48, 36, 0.07);
+}
+
+.receipt-item::before {
+  display: none;
+}
+
+.receipt-item.is-expired {
+  border-color: #e8ebea;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.receipt-item.is-expired::before {
+  background: #c5aaa2;
+}
+
+.receipt-item header strong {
+  color: #89928d;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.status {
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #527064;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #17a472;
+  box-shadow: 0 0 0 3px #e7f6f0;
+}
+
+.status.onsite {
+  background: transparent;
+  color: #527064;
+}
+
+.status.expired {
+  background: transparent;
+  color: #8b686c;
+}
+
+.status.expired::before {
+  background: #c96c75;
+  box-shadow: 0 0 0 3px #faecee;
+}
+
+.receipt-item h3 {
+  margin: 13px 0 10px;
+  color: #1d2923;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+
+.pickup-meta,
+.pickup-meta.expired {
+  margin: 0 0 10px;
+  padding: 11px 12px;
+  border: 0;
+  background: #f3f7f5;
+}
+
+.receipt-item.is-expired .pickup-meta {
+  background: #f6f7f7;
+}
+
+.expired-barcode-lock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #eadede;
+  border-radius: 13px;
+  background: #fbf7f7;
+  color: #735a5d;
+}
+
+.expired-lock-icon {
+  display: inline-grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+  background: #f3e7e8;
+  color: #9a676c;
+}
+
+.expired-lock-icon svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.expired-barcode-lock div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.expired-barcode-lock strong {
+  color: #674f52;
+  font-size: 13px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.expired-barcode-lock div span {
+  color: #918083;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.pickup-time {
+  color: #243b32;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.pickup-schedule {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.bundle-date-label {
+  color: #8a9690;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.postpone-button {
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #126747;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.postpone-button::after {
+  content: "  ›";
+  color: #80a092;
+  font-size: 15px;
+  line-height: 0;
+}
+
+.postpone-button.store-contact {
+  border: 0;
+  background: transparent;
+  color: #68736e;
+}
+
+.postpone-button.store-contact::after {
+  content: "  ›";
+}
+
+.date-options {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.date-options button {
+  padding: 13px 6px;
+  border: 1px solid #e2e9e5;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1d6047;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.date-options button:hover {
+  border-color: #91b9a7;
+  background: #f2f8f5;
+}
+
+.receipt-item p {
+  color: #89928e;
+  font-size: 12px;
+}
+
+.barcode {
+  height: 68px;
+  border-color: #e2eae6;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.slide-button {
+  min-height: 52px;
+  background: #0f684b;
+  box-shadow: 0 8px 18px rgba(15, 104, 75, 0.2);
+}
+
+/* 금융 앱처럼 안정적인 시스템 타이포 비율을 사용합니다. */
+.receipt-sheet,
+.receipt-sheet button,
+.receipt-sheet a {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+}
+
+.sheet-title span,
+.receipt-tabs button,
+.receipt-item h3,
+.postpone-button,
+.date-options button {
+  font-weight: 700;
+}
+
+.sheet-title h2 {
+  font-weight: 750;
+}
+
+.sheet-title p,
+.receipt-item p,
+.receipt-item header strong {
+  font-weight: 500;
+}
+
+.status,
+.pickup-time {
+  font-weight: 600;
+}
+
+.pickup-time,
+.date-options button {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 등록된 번호로 생성한 실제 바코드 SVG를 선명하게 표시합니다. */
+.barcode::before,
+.barcode::after {
+  content: none;
+}
+
+.barcode svg,
+.barcode-large svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: #111713;
+}
+
+.barcode-number {
+  display: block;
+  margin-top: 8px;
+  color: #333d38;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+
