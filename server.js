@@ -9,7 +9,9 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_CLOUDFLARE_WORKER = process.env.CLOUDFLARE_WORKER === 'true';
-const PUBLIC_DIR = process.env.NODE_ENV === 'production'
+const PUBLIC_DIR = IS_CLOUDFLARE_WORKER
+  ? '.'
+  : process.env.NODE_ENV === 'production'
   ? path.join(__dirname, '.production-public')
   : path.join(__dirname, 'public');
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -49,9 +51,14 @@ const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
-const pushEnabled = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
+let pushEnabled = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
 if (pushEnabled) {
-  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  try {
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  } catch (error) {
+    pushEnabled = false;
+    console.error('웹 푸시 키 형식이 올바르지 않아 푸시 전송을 비활성화했습니다:', error.message);
+  }
 }
 
 function pushSettingKey(type) {
