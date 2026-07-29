@@ -136,8 +136,7 @@ body {
   color: #8a948f;
   font-size: 9px;
   font-weight: 650;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .signup-link {
@@ -151,8 +150,7 @@ body {
   margin-left: 4px;
   color: #246d50;
   font-weight: 800;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .login-footer {
@@ -165,8 +163,7 @@ body {
 .login-footer a {
   color: #98a19c;
   font-size: 10px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .login-toast {

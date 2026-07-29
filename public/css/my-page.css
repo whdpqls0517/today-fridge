@@ -415,8 +415,7 @@ body {
   color: #929b96;
   font-size: 11px;
   font-weight: 650;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .withdraw-button {
@@ -426,8 +425,7 @@ body {
   background: transparent;
   color: #8a9290;
   font-size: 13px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .withdraw-warning {

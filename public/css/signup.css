@@ -172,8 +172,7 @@ body {
   color: #7f8a84;
   font-size: 9px;
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .signup-kakao,
@@ -254,8 +253,7 @@ body {
 .login-link a {
   color: #286f52;
   font-weight: 750;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .signup-toast {
