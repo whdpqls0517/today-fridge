@@ -21,7 +21,7 @@ body {
   display: block;
   width: 184px;
   height: 54px;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .profile-setup-page header > small {

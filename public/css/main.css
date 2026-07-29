@@ -24,7 +24,7 @@
   display: block;
   width: 156px;
   height: 46px;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .top-actions {
