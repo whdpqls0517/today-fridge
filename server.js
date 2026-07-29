@@ -17,6 +17,7 @@ const PUBLIC_DIR = IS_CLOUDFLARE_WORKER
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+const SUPABASE_CONFIGURED = Boolean(SUPABASE_URL && SERVICE_ROLE_KEY);
 const VAPID_PUBLIC_KEY = String(process.env.VAPID_PUBLIC_KEY || '').trim();
 const VAPID_PRIVATE_KEY = String(process.env.VAPID_PRIVATE_KEY || '').trim();
 const VAPID_SUBJECT_INPUT = String(process.env.VAPID_SUBJECT || 'mailto:admin@example.com').trim();
@@ -31,7 +32,7 @@ const KAKAO_REQUIRED_TERMS_TAGS = (process.env.KAKAO_REQUIRED_TERMS_TAGS || '')
   .filter(Boolean);
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-  throw new Error('SUPABASE_URL과 SUPABASE_SERVICE_ROLE_KEY를 .env에 설정해 주세요.');
+  console.error('Supabase 서버 설정이 비어 있습니다. 설정을 복구할 때까지 데이터 API가 제한됩니다.');
 }
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://onaeng.com,https://www.onaeng.com')
@@ -47,9 +48,13 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '25mb' }));
 
-const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+const supabaseAdmin = createClient(
+  SUPABASE_URL || 'https://configuration-required.invalid',
+  SERVICE_ROLE_KEY || 'configuration-required',
+  {
+    auth: { autoRefreshToken: false, persistSession: false }
+  }
+);
 
 let pushEnabled = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
 if (pushEnabled) {
