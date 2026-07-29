@@ -11,7 +11,8 @@
     "build:production": "node scripts/build-production.js",
     "start:production": "npm run build:production && node scripts/start-production.js",
     "audit:production": "node scripts/production-audit.js",
-    "migrate:images": "node scripts/migrate-inline-product-images.js"
+    "migrate:images": "node scripts/migrate-inline-product-images.js",
+    "deploy:cloudflare": "npm run verify && wrangler deploy"
   },
   "author": "",
   "license": "ISC",
@@ -23,6 +24,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
-    "terser": "^5.49.0"
+    "terser": "^5.49.0",
+    "wrangler": "^4.114.0"
   }
 }

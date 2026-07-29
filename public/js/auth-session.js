@@ -8,14 +8,14 @@
   function loadSupabaseLibrary() {
     if (global.supabase?.createClient) return Promise.resolve();
     return new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[src*="/vendor/supabase.js"]');
+      const existing = document.querySelector('script[src*="@supabase/supabase-js"]');
       if (existing) {
         existing.addEventListener("load", resolve, { once: true });
         existing.addEventListener("error", () => reject(new Error("로그인 모듈을 불러오지 못했습니다.")), { once: true });
         return;
       }
       const script = document.createElement("script");
-      script.src = "/vendor/supabase.js";
+      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js";
       script.onload = resolve;
       script.onerror = () => reject(new Error("로그인 모듈을 불러오지 못했습니다."));
       document.head.append(script);

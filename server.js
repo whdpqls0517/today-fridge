@@ -8,6 +8,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const IS_CLOUDFLARE_WORKER = process.env.CLOUDFLARE_WORKER === 'true';
 const PUBLIC_DIR = process.env.NODE_ENV === 'production'
   ? path.join(__dirname, '.production-public')
   : path.join(__dirname, 'public');
@@ -2730,6 +2731,16 @@ async function notifyAdminsOfUpcomingUnpaidTransfers() {
   return rows.length;
 }
 
+async function runScheduledMaintenance() {
+  return Promise.allSettled([
+    retryPendingPushNotifications(),
+    expireOverdueTransferOrders(),
+    expireOverduePickupOrders(),
+    notifyAdminsOfUpcomingUnpaidTransfers()
+  ]);
+}
+
+if (!IS_CLOUDFLARE_WORKER) {
 const pushRetryTimer = setInterval(() => {
   retryPendingPushNotifications().catch((error) => {
     console.error('푸시 재시도 실패:', error.message);
@@ -2766,7 +2777,15 @@ setTimeout(() => {
     console.error('초기 관리자 미입금 알림 생성 실패:', error.message);
   });
 }, 5 * 1000).unref();
+}
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  if (!IS_CLOUDFLARE_WORKER) {
+    console.log(`Server running on port ${PORT}`);
+  }
 });
+
+module.exports = {
+  app,
+  runScheduledMaintenance
+};

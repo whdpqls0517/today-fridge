@@ -6,3 +6,7 @@ dist/
 build/
 .DS_Store
 Thumbs.db
+.pnpm-store/
+.wrangler-dry-run/
+wrangler-dev.log
+wrangler-dev-error.log

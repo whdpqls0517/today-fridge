@@ -3,6 +3,9 @@
   "name": "today-fridge",
   "main": "cloudflare-worker.js",
   "compatibility_date": "2026-07-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
@@ -20,7 +23,14 @@
       "custom_domain": true
     }
   ],
+  "triggers": {
+    "crons": [
+      "* * * * *"
+    ]
+  },
   "vars": {
-    "BACKEND_ORIGIN": "https://onaeng-api.onrender.com"
+    "CLOUDFLARE_WORKER": "true",
+    "PUBLIC_APP_URL": "https://onaeng.com",
+    "ALLOWED_ORIGINS": "https://onaeng.com,https://www.onaeng.com"
   }
 }
