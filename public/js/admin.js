@@ -18,7 +18,72 @@
   const recommendedSearchForm = document.getElementById("recommended-search-form");
   const recommendedSearchInput = document.getElementById("recommended-search-input");
   const recommendedSearchAdminList = document.getElementById("recommended-search-admin-list");
+  const fruitHeroForm = document.getElementById("fruit-hero-form");
+  const fruitHeroTitleInput = document.getElementById("fruit-hero-title-input");
+  const fruitHeroDescriptionInput = document.getElementById("fruit-hero-description-input");
+  const fruitHeroStatus = document.getElementById("fruit-hero-status");
   let productCategoryFilter = "all";
+
+  function setFruitHeroStatus(message, tone = "") {
+    if (!fruitHeroStatus) return;
+    fruitHeroStatus.textContent = message;
+    fruitHeroStatus.dataset.tone = tone;
+  }
+
+  async function loadFruitHeroAdmin() {
+    if (!fruitHeroForm) return;
+    setFruitHeroStatus("저장된 문구를 불러오고 있어요.");
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/site-content/fruit-hero`, {
+        headers: { Authorization: `Bearer ${accessToken()}` },
+        cache: "no-store"
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.setupRequired
+          ? "Supabase에 021_site_content.sql을 먼저 실행해 주세요."
+          : (result.error || "문구를 불러오지 못했습니다."));
+      }
+      fruitHeroTitleInput.value = result.data?.title || "";
+      fruitHeroDescriptionInput.value = result.data?.description || "";
+      setFruitHeroStatus("고객 화면과 연결되어 있습니다.", "success");
+    } catch (error) {
+      setFruitHeroStatus(error.message || "문구를 불러오지 못했습니다.", "error");
+    }
+  }
+
+  fruitHeroForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const title = fruitHeroTitleInput?.value.trim();
+    const description = fruitHeroDescriptionInput?.value.trim();
+    if (!title || !description) {
+      setFruitHeroStatus("제목과 소개 문구를 모두 입력해 주세요.", "error");
+      return;
+    }
+
+    const submitButton = fruitHeroForm.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    setFruitHeroStatus("저장하고 있어요.");
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/site-content/fruit-hero`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken()}`
+        },
+        body: JSON.stringify({ title, description })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "문구를 저장하지 못했습니다.");
+      fruitHeroTitleInput.value = result.data.title;
+      fruitHeroDescriptionInput.value = result.data.description;
+      setFruitHeroStatus("저장되었습니다. 고객 화면에 바로 반영됩니다.", "success");
+    } catch (error) {
+      setFruitHeroStatus(error.message || "문구를 저장하지 못했습니다.", "error");
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
 
   function readJSON(value) {
     try { return JSON.parse(value); } catch (_) { return null; }
@@ -1752,6 +1817,7 @@
     const catalogSync = await syncServerCatalogToLocal();
     const orderSync = await syncAdminOrdersToLocal();
     populateProductFilter();
+    loadFruitHeroAdmin();
     renderRecommendedSearchAdmin();
     renderAdminDashboard();
     if (!catalogSync?.success && adminProductsTable) {

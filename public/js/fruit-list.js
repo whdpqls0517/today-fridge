@@ -2,6 +2,21 @@
   const track = document.getElementById("fruit-list-track");
   if (!track) return;
 
+  async function loadFruitHero() {
+    const title = document.getElementById("fruit-hero-title");
+    const description = document.getElementById("fruit-hero-description");
+    if (!title || !description) return;
+    try {
+      const response = await fetch("/api/site-content/fruit-hero", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok || !result.success) return;
+      if (result.data?.title) title.textContent = result.data.title;
+      if (result.data?.description) description.textContent = result.data.description;
+    } catch (_) {
+      // 서버 설정을 불러오지 못하면 HTML에 있는 기본 문구를 그대로 사용합니다.
+    }
+  }
+
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
       "&": "&amp;",
@@ -52,5 +67,6 @@
   window.addEventListener("storage", render);
   window.addEventListener("todayFridgeCatalogUpdated", render);
   window.addEventListener("pageshow", render);
+  loadFruitHero();
   render();
 })();

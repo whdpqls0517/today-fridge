@@ -562,4 +562,27 @@ grant all privileges on all tables in schema public to service_role;
 grant all privileges on all sequences in schema public to service_role;
 grant execute on all functions in schema public to service_role;
 
+-- 고객 화면에 표시되는 운영 문구를 관리자가 수정할 수 있도록 저장합니다.
+create table if not exists public.site_content (
+  key text primary key,
+  content jsonb not null default '{}'::jsonb,
+  updated_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_content enable row level security;
+revoke all on table public.site_content from anon, authenticated;
+grant all on table public.site_content to service_role;
+
+insert into public.site_content (key, content)
+values (
+  'fruit_hero',
+  jsonb_build_object(
+    'title', '오늘 매장에 들어온 과일',
+    'description', '오늘 매장에 준비된 신선 과일을 한눈에 확인해 보세요.'
+  )
+)
+on conflict (key) do nothing;
+
 commit;

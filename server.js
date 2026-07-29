@@ -810,6 +810,96 @@ async function readCatalog(includeInactive = false) {
 }
 
 let publicCatalogCache = { data: null, expiresAt: 0 };
+const FRUIT_HERO_DEFAULT = {
+  title: '오늘 매장에 들어온 과일',
+  description: '오늘 매장에 준비된 신선 과일을 한눈에 확인해 보세요.'
+};
+
+function normalizedFruitHero(content) {
+  return {
+    title: String(content?.title || FRUIT_HERO_DEFAULT.title).trim().slice(0, 50),
+    description: String(content?.description || FRUIT_HERO_DEFAULT.description).trim().slice(0, 120)
+  };
+}
+
+app.get('/api/site-content/fruit-hero', async (_req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('site_content')
+    .select('content, updated_at')
+    .eq('key', 'fruit_hero')
+    .maybeSingle();
+
+  if (error) {
+    console.error('오늘의 과일 문구 불러오기 실패:', error.message);
+    return res.json({ success: true, data: FRUIT_HERO_DEFAULT, isDefault: true });
+  }
+  res.json({
+    success: true,
+    data: normalizedFruitHero(data?.content),
+    updatedAt: data?.updated_at || null
+  });
+});
+
+app.get('/api/admin/site-content/fruit-hero', ...adminOnly, async (_req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('site_content')
+    .select('content, updated_at')
+    .eq('key', 'fruit_hero')
+    .maybeSingle();
+  if (error) {
+    return res.status(503).json({
+      success: false,
+      error: '오늘의 과일 문구 저장소를 준비해 주세요.',
+      setupRequired: true
+    });
+  }
+  res.json({
+    success: true,
+    data: normalizedFruitHero(data?.content),
+    updatedAt: data?.updated_at || null
+  });
+});
+
+app.patch('/api/admin/site-content/fruit-hero', ...adminOnly, async (req, res) => {
+  const content = normalizedFruitHero(req.body);
+  if (!content.title || !content.description) {
+    return res.status(400).json({ success: false, error: '제목과 소개 문구를 모두 입력해 주세요.' });
+  }
+
+  const { data: before } = await supabaseAdmin
+    .from('site_content')
+    .select('content')
+    .eq('key', 'fruit_hero')
+    .maybeSingle();
+  const { data, error } = await supabaseAdmin
+    .from('site_content')
+    .upsert({
+      key: 'fruit_hero',
+      content,
+      updated_by: req.user.id,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'key' })
+    .select('content, updated_at')
+    .single();
+  if (error) {
+    return res.status(400).json({ success: false, error: error.message });
+  }
+
+  await recordAdminAudit({
+    adminId: req.user.id,
+    action: 'site_content_updated',
+    targetType: 'site_content',
+    targetId: 'fruit_hero',
+    before: before?.content || null,
+    after: data.content,
+    metadata: { section: 'today_fruit_hero' }
+  });
+  res.json({
+    success: true,
+    data: normalizedFruitHero(data.content),
+    updatedAt: data.updated_at
+  });
+});
 
 app.get('/api/catalog', async (req, res) => {
   try {

@@ -51,10 +51,10 @@
     </section>
 
     <section class="mini-grid" aria-label="빠른 메뉴">
-      <button type="button" class="mini-card" id="btn-open-chat" aria-label="소통 메뉴 열기">
+      <button type="button" class="mini-card" id="btn-open-chat" aria-label="채팅과 문의 메뉴 열기">
         <!-- 🖼️ images/ 폴더 경로 지정 -->
         <img class="mini-icon-img" src="./images/asset-mini-chat.png" alt="" aria-hidden="true" />
-        <strong>소통하기</strong>
+        <strong>채팅·문의</strong>
       </button>
       <button type="button" class="mini-card" id="btn-arrival-status" aria-label="오늘 보따리 입고상태 열기">
         <!-- 🖼️ images/ 폴더 경로 지정 -->
@@ -169,7 +169,7 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <div class="chat-sheet-heading">
           <span>오늘의 냉장고</span>
-          <h3>소통하기</h3>
+          <h3>채팅·문의</h3>
           <p>목적에 맞는 대화방을 선택해 주세요.</p>
         </div>
         <button onclick="closeAppModal('modal-chat')" style="font-size:20px; color:#888;" aria-label="닫기">&times;</button>
@@ -180,29 +180,34 @@
           <span>상품 후기와 맛있게 먹는 레시피를 함께 나누는 공개 채팅방이에요.</span>
         </div>
         <div style="display:flex; gap:8px;">
-          <div style="width:32px; height:32px; border-radius:50%; background:#5f6964; display:grid; place-items:center; color:#fff; font-weight:800; font-size:11px;">냉장고</div>
+          <div style="width:32px; height:32px; border-radius:50%; background:#557565; display:grid; place-items:center; color:#fff; font-weight:800; font-size:10px;">이웃1</div>
           <div>
-            <div style="font-weight:850; font-size:11px; margin-bottom:2px; color:#555;">오늘의 냉장고</div>
-            <div style="background:#fff; padding:8px 12px; border-radius:0 12px 12px 12px; max-width:240px; line-height:1.4; box-shadow:0 1px 3px rgba(0,0,0,0.05);">오늘 받은 토마토, 어떻게 드셨나요?</div>
+            <div style="font-weight:800; font-size:11px; margin-bottom:2px; color:#626b66;">동네 이웃</div>
+            <div style="background:#fff; padding:8px 12px; border-radius:0 12px 12px 12px; max-width:240px; line-height:1.4; box-shadow:0 1px 3px rgba(0,0,0,0.05);">오늘 수령한 오징어 정말 싱싱하고 좋아요!</div>
           </div>
         </div>
         <div style="display:flex; gap:8px; align-self:flex-end; flex-direction:row-reverse;">
-          <div style="width:32px; height:32px; border-radius:50%; background:#bbb; display:grid; place-items:center; color:#fff; font-weight:850; font-size:11px;">이웃</div>
-          <div style="background:#e8ecea; padding:8px 12px; border-radius:12px 0 12px 12px; max-width:240px; line-height:1.4; box-shadow:0 1px 3px rgba(0,0,0,0.04); text-align:right;">올리브오일을 곁들여 샐러드로 먹었어요. 정말 맛있었어요!</div>
+          <div style="width:32px; height:32px; border-radius:50%; background:#a28d6d; display:grid; place-items:center; color:#fff; font-weight:800; font-size:10px;">이웃2</div>
+          <div style="background:#e6f0ea; padding:8px 12px; border-radius:12px 0 12px 12px; max-width:240px; line-height:1.4; box-shadow:0 1px 3px rgba(0,0,0,0.04); text-align:right;">저는 버터에 마늘 넣고 구웠더니 정말 맛있네요. 다음에도 또 신청하려고요!</div>
         </div>
       </div>
       <div class="chat-destination-grid">
-        <a class="chat-destination chat-destination--community" href="https://open.kakao.com" target="_blank" rel="noopener noreferrer">
+        <a id="community-chat-link" class="chat-destination chat-destination--community" href="https://open.kakao.com/o/gKMFG61h" target="_blank" rel="noopener noreferrer">
           <i class="chat-destination__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M5 5.5h14v9H9.4L6 17.5v-3H5v-9Z"/></svg>
           </i>
           <span class="chat-destination__copy">
             <strong>후기·레시피방</strong>
             <small>상품 후기 · 레시피 공유</small>
+            <em class="chat-destination__password">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.7 7V5.2a3.3 3.3 0 0 1 6.6 0V7M3.5 7h9v6.5h-9z"/></svg>
+              비밀번호 <b>1122</b>
+            </em>
           </span>
           <i class="chat-destination__arrow" aria-hidden="true">›</i>
         </a>
-        <button class="chat-destination chat-destination--direct" type="button" onclick="alert('사장님께 1:1 문의 메시지를 전송했습니다. 문의 내역은 마이페이지에서 확인할 수 있습니다.')">
+        <!-- 사장님 1:1 오픈채팅 주소는 아래 href에 직접 입력하세요. -->
+        <a id="direct-chat-link" class="chat-destination chat-destination--direct" href="https://open.kakao.com/o/sUxQSL3h" target="_blank" rel="noopener noreferrer">
           <i class="chat-destination__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M12 12.2a3.7 3.7 0 1 0 0-7.4 3.7 3.7 0 0 0 0 7.4Zm-6 7c.5-3.1 2.7-5 6-5s5.5 1.9 6 5"/></svg>
           </i>
@@ -211,7 +216,7 @@
             <small>주문 · 수령 · 매장 문의</small>
           </span>
           <i class="chat-destination__arrow" aria-hidden="true">›</i>
-        </button>
+        </a>
       </div>
     </div>
   </div>

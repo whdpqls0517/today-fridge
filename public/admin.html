@@ -79,6 +79,29 @@
       </nav>
 
       <div id="tab-products" class="admin-tab-content">
+        <div class="panel-card fruit-hero-admin">
+          <div class="admin-section-heading">
+            <div>
+              <h2>오늘의 과일 소개 문구</h2>
+              <p class="panel-desc">고객의 오늘의 과일 목록 상단에 표시되는 제목과 안내 문구입니다.</p>
+            </div>
+          </div>
+          <form id="fruit-hero-form" class="fruit-hero-form">
+            <label>
+              <span>메인 제목</span>
+              <input id="fruit-hero-title-input" type="text" maxlength="50" placeholder="오늘 매장에 들어온 과일" required />
+            </label>
+            <label>
+              <span>소개 문구</span>
+              <textarea id="fruit-hero-description-input" maxlength="120" rows="2" placeholder="오늘 매장에 준비된 신선 과일을 한눈에 확인해 보세요." required></textarea>
+            </label>
+            <div class="fruit-hero-form__actions">
+              <p id="fruit-hero-status" role="status" aria-live="polite"></p>
+              <button type="submit">문구 저장</button>
+            </div>
+          </form>
+        </div>
+
         <div class="panel-card recommended-search-admin">
           <div class="admin-section-heading">
             <div>
