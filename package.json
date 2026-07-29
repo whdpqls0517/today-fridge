@@ -25,6 +25,6 @@
   },
   "devDependencies": {
     "terser": "^5.49.0",
-    "wrangler": "^4.114.0"
+    "wrangler": "^4.115.0"
   }
 }
