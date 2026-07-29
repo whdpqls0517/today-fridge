@@ -8,7 +8,7 @@ const { createClient } = require("@supabase/supabase-js");
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
-const API_URL = String(process.env.INTEGRATION_API_URL || "http://localhost:3000").replace(/\/+$/, "");
+const API_URL = String(process.env.INTEGRATION_API_URL || "https://onaeng.com").replace(/\/+$/, "");
 
 if (!SUPABASE_URL || !SERVICE_KEY || !PUBLISHABLE_KEY) {
   throw new Error("Supabase URL, service role key, publishable key가 필요합니다.");
@@ -285,6 +285,8 @@ async function main() {
       paymentType: "onsite",
       pickupDate: stockFixture.pickupDate,
       pickupTimeLabel: "오후 7시 이후",
+      procurementPolicyConsent: true,
+      procurementPolicyVersion: "2026-07-29",
       requestKey
     });
     const results = await Promise.all([
@@ -311,7 +313,8 @@ async function main() {
     await adminDb.from("bundle_items").update({ stock_quantity: 1 }).eq("id", stockFixture.itemId);
     const payload = JSON.stringify({
       bundleItemId: stockFixture.itemId, quantity: 1, paymentType: "onsite",
-      pickupDate: stockFixture.pickupDate, pickupTimeLabel: "오후 7시 이후", requestKey
+      pickupDate: stockFixture.pickupDate, pickupTimeLabel: "오후 7시 이후",
+      procurementPolicyConsent: true, procurementPolicyVersion: "2026-07-29", requestKey
     });
     const first = await api("/api/orders", loser.token, { method: "POST", body: payload });
     const second = await api("/api/orders", loser.token, { method: "POST", body: payload });
@@ -328,7 +331,8 @@ async function main() {
       method: "POST",
       body: JSON.stringify({
         quantity: 2, paymentType: "onsite", pickupDate: stockFixture.pickupDate,
-        pickupTimeLabel: "오후 7시 이후"
+        pickupTimeLabel: "오후 7시 이후", procurementPolicyConsent: true,
+        procurementPolicyVersion: "2026-07-29", waitlistAutoOrderConsent: true
       })
     });
     assert.equal(wait.response.status, 201, JSON.stringify(wait.body));
@@ -360,7 +364,8 @@ async function main() {
       body: JSON.stringify({
         bundleItemId: fixture.itemId, quantity: 1, paymentType: "transfer",
         pickupDate: fixture.pickupDate, pickupTimeLabel: "오후 7시 이후",
-        depositorName: "감사입금자", requestKey: `transfer-${runId}`
+        depositorName: "감사입금자", procurementPolicyConsent: true,
+        procurementPolicyVersion: "2026-07-29", requestKey: `transfer-${runId}`
       })
     });
     assert.equal(orderResult.response.status, 201, JSON.stringify(orderResult.body));

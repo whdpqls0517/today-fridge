@@ -20,11 +20,11 @@
 
 Supabase Dashboard의 **Authentication > URL Configuration**에서:
 
-- Site URL: `http://localhost:3000`
+- Site URL: `https://onaeng.com`
 - Redirect URLs:
-  - `http://localhost:3000/login.html`
-  - `http://localhost:3000/login.html?next=my-page`
-  - `http://localhost:3000/login.html?next=admin`
+  - `https://onaeng.com/login.html`
+  - `https://onaeng.com/login.html?next=my-page`
+  - `https://onaeng.com/login.html?next=admin`
 
 운영 배포 후에는 localhost 주소 대신 실제 HTTPS 도메인도 추가해야 합니다.
 
@@ -51,7 +51,7 @@ SUPABASE_ANON_KEY=복사한_anon_key
 선택 사항으로 `.env`에 허용 주소도 지정할 수 있습니다.
 
 ```env
-ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+ALLOWED_ORIGINS=https://onaeng.com,https://www.onaeng.com
 ```
 
 ## 5. 서버 재시작
@@ -65,12 +65,12 @@ npm start
 이제 페이지는 `file://`가 아니라 아래 주소로 엽니다.
 
 ```text
-http://localhost:3000/main.html
+https://onaeng.com/index.html
 ```
 
 ## 6. 최초 관리자 지정
 
-1. `http://localhost:3000/login.html`에서 사장님 카카오 계정으로 한 번 로그인합니다.
+1. `https://onaeng.com/login.html`에서 사장님 카카오 계정으로 한 번 로그인합니다.
 2. Supabase Dashboard의 Authentication > Users에서 생성된 회원을 확인합니다.
 3. SQL Editor에서 아래 SQL을 실행합니다.
 

@@ -31,7 +31,7 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   throw new Error('SUPABASE_URL과 SUPABASE_SERVICE_ROLE_KEY를 .env에 설정해 주세요.');
 }
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://onaeng.com,https://www.onaeng.com')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
