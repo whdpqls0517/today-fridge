@@ -41,7 +41,15 @@
     }
     const registration = await navigator.serviceWorker.register("/service-worker.js");
     await navigator.serviceWorker.ready;
-    const existing = await registration.pushManager.getSubscription();
+    let existing = await registration.pushManager.getSubscription();
+    if (existing?.options?.applicationServerKey) {
+      const currentKey = Array.from(new Uint8Array(existing.options.applicationServerKey));
+      const expectedKey = Array.from(base64UrlToUint8Array(config.publicKey));
+      if (currentKey.length !== expectedKey.length || currentKey.some((value, index) => value !== expectedKey[index])) {
+        await existing.unsubscribe();
+        existing = null;
+      }
+    }
     const subscription = existing || await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: base64UrlToUint8Array(config.publicKey)
@@ -106,10 +114,14 @@
     if (!window.isSecureContext || !("serviceWorker" in navigator)) return;
     navigator.serviceWorker.register("/service-worker.js").catch(() => {});
     if (!("Notification" in window) || !("PushManager" in window)) return;
-    if (Notification.permission === "granted" || Notification.permission === "denied") return;
-    if (localStorage.getItem(DISMISSED_KEY) === "1") return;
     const token = readAccessToken();
     if (!token) return;
+    if (Notification.permission === "granted") {
+      subscribe(token).catch(() => {});
+      return;
+    }
+    if (Notification.permission === "denied") return;
+    if (localStorage.getItem(DISMISSED_KEY) === "1") return;
     showOnboarding(token);
   }
 

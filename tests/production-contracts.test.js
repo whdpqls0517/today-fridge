@@ -89,3 +89,14 @@ test("계좌번호와 송금 링크는 프론트엔드에 하드코딩하지 않
   assert.match(server, /app\.get\('\/api\/payment-info', requireAuth/);
   assert.match(server, /PAYMENT_ACCOUNT_NUMBER/);
 });
+
+test("웹 푸시는 권한 허용 후 서버 구독 누락을 자동 복구하고 실제 등록 상태를 확인한다", () => {
+  const server = read("server.js");
+  const onboarding = read("public/js/push-onboarding.js");
+  const myPage = read("public/js/my-page.js");
+  assert.match(server, /\/api\/push\/subscriptions\/status/);
+  assert.match(onboarding, /Notification\.permission\s*===\s*"granted"[\s\S]*?subscribe\(token\)/);
+  assert.match(onboarding, /applicationServerKey[\s\S]*?unsubscribe\(\)/);
+  assert.match(myPage, /pushRegistered/);
+  assert.match(myPage, /알림 연결 필요/);
+});

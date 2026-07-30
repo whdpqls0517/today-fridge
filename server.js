@@ -2911,6 +2911,22 @@ app.get('/api/push/config', (_req, res) => {
   res.json({ success: true, enabled: pushEnabled, publicKey: pushEnabled ? VAPID_PUBLIC_KEY : null });
 });
 
+app.get('/api/push/subscriptions/status', requireAuth, async (req, res) => {
+  const { count, error } = await supabaseAdmin
+    .from('web_push_subscriptions')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', req.user.id)
+    .eq('is_active', true);
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.set('Cache-Control', 'private, no-store, max-age=0');
+  res.json({
+    success: true,
+    registered: Number(count) > 0,
+    activeDeviceCount: Number(count) || 0,
+    pushConfigured: pushEnabled
+  });
+});
+
 app.post('/api/push/subscriptions', requireAuth, async (req, res) => {
   const endpoint = String(req.body?.endpoint || '').trim();
   const p256dh = String(req.body?.keys?.p256dh || '').trim();

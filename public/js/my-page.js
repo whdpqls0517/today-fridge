@@ -10,6 +10,7 @@
   let nicknameCheckTimer;
   let nicknameAvailable = false;
   let authenticated = false;
+  let pushRegistered = false;
 
   const defaultSettings = { arrival: true, inquiry: true, important: true };
 
@@ -61,6 +62,9 @@
     if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
       throw new Error("현재 브라우저는 웹 푸시를 지원하지 않아요. Android는 Chrome, iPhone은 홈 화면에 추가한 앱에서 열어 주세요.");
     }
+    if (Notification.permission === "denied") {
+      throw new Error("Chrome 주소창의 사이트 설정 → 알림을 허용으로 바꾼 뒤 페이지를 새로고침해 주세요.");
+    }
     const permission = await Notification.requestPermission();
     if (permission !== "granted") throw new Error("브라우저 알림 권한을 허용해 주세요.");
     const configResponse = await fetch("/api/push/config", { cache: "no-store" });
@@ -69,7 +73,16 @@
       throw new Error("서버에 웹 푸시 키 설정이 필요합니다.");
     }
     const registration = await navigator.serviceWorker.register("/service-worker.js");
-    const existing = await registration.pushManager.getSubscription();
+    await navigator.serviceWorker.ready;
+    let existing = await registration.pushManager.getSubscription();
+    if (existing?.options?.applicationServerKey) {
+      const currentKey = Array.from(new Uint8Array(existing.options.applicationServerKey));
+      const expectedKey = Array.from(base64UrlToUint8Array(config.publicKey));
+      if (currentKey.length !== expectedKey.length || currentKey.some((value, index) => value !== expectedKey[index])) {
+        await existing.unsubscribe();
+        existing = null;
+      }
+    }
     const subscription = existing || await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: base64UrlToUint8Array(config.publicKey)
@@ -86,7 +99,29 @@
     });
     const result = await response.json();
     if (!response.ok || !result.success) throw new Error(result.error || "푸시 구독을 저장하지 못했습니다.");
+    pushRegistered = true;
     return true;
+  }
+
+  async function loadPushRegistrationStatus() {
+    if (!isLoggedIn()) {
+      pushRegistered = false;
+      return false;
+    }
+    const token = accessToken() || await refreshedAccessToken();
+    if (!token) return false;
+    try {
+      const response = await fetch("/api/push/subscriptions/status", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      });
+      const result = await response.json();
+      pushRegistered = response.ok && result.success && result.registered === true;
+      return pushRegistered;
+    } catch (_) {
+      pushRegistered = false;
+      return false;
+    }
   }
   function isLoggedIn() { return authenticated; }
   function accessToken() {
@@ -216,11 +251,14 @@
       element.hidden = !loggedIn;
     });
   }
-  function updateSummary() {
+  async function updateSummary() {
     const status = $("#push-menu-status");
     if (!window.isSecureContext) status.textContent = "배포 후 연결 가능";
     else if (!("Notification" in window)) status.textContent = "이 기기에서 지원하지 않음";
-    else if (Notification.permission === "granted") status.textContent = "웹 푸시 사용 중";
+    else if (Notification.permission === "granted") {
+      await loadPushRegistrationStatus();
+      status.textContent = pushRegistered ? "웹 푸시 사용 중" : "알림 연결 필요";
+    }
     else if (Notification.permission === "denied") status.textContent = "기기 알림 꺼짐";
     else status.textContent = "기기 알림 설정 필요";
   }
@@ -272,13 +310,17 @@
 
   function notificationSettingsHTML() {
     const value = settings();
-    const permissionText = !window.isSecureContext ? "HTTPS 배포 후 연결 가능" : ("Notification" in window && Notification.permission === "granted" ? "이 기기 알림 사용 중" : "기기 알림 허용 필요");
+    const permissionText = !window.isSecureContext
+      ? "HTTPS 배포 후 연결 가능"
+      : ("Notification" in window && Notification.permission === "granted"
+        ? (pushRegistered ? "이 기기 알림 사용 중" : "알림 연결을 완료해 주세요")
+        : "기기 알림 허용 필요");
     const rows = [
       ["arrival", "신청 상품 입고", "신청한 상품의 입고가 완료되면 알려드려요"],
       ["inquiry", "문의 답변", "문의에 최초 답변이 등록되면 알려드려요"],
       ["important", "주문·입금 안내", "입금 확인, 입금 요청, 주문 취소처럼 중요한 변경을 알려드려요"]
     ].map(([key, title, detail]) => `<div class="my-setting-row"><span><strong>${title}</strong><small>${detail}</small></span><button class="setting-switch ${value[key] ? "is-on" : ""}" type="button" role="switch" aria-checked="${value[key]}" data-setting="${key}"><i></i></button></div>`).join("");
-    return `<div class="push-status-card"><span class="status-dot"></span><div><strong>${permissionText}</strong><small>알림은 신청한 주문과 내 문의에 대해서만 보내요.</small></div></div>${rows}<button class="my-primary-button" type="button" data-enable-push>이 기기에서 알림 받기</button><p class="setting-note">아이폰은 사이트를 홈 화면에 추가한 후 알림을 허용해야 해요. 사이트 안 알림 센터에는 설정과 관계없이 이용 내역이 남아요.</p>`;
+    return `<div class="push-status-card"><span class="status-dot"></span><div><strong>${permissionText}</strong><small>${pushRegistered ? "이 브라우저가 서버의 알림 대상에 등록되어 있어요." : "브라우저 허용만으로는 완료되지 않아요. 아래 버튼을 눌러 서버 연결까지 마쳐 주세요."}</small></div></div>${rows}<button class="my-primary-button" type="button" data-enable-push>${pushRegistered ? "이 기기 알림 다시 연결하기" : "이 기기에서 알림 받기"}</button><p class="setting-note">안드로이드는 Chrome에서 알림을 허용하고 이 버튼을 눌러야 해요. 처음에 건너뛰었어도 언제든 마이페이지 → 알림 설정에서 다시 연결할 수 있어요. 아이폰은 홈 화면에 추가한 웹앱에서 설정해 주세요.</p>`;
   }
   async function inquiryHTML() {
     const token = accessToken() || await refreshedAccessToken();
@@ -321,7 +363,10 @@
         modalContent.innerHTML = `<div class="my-empty"><strong>문의 내역을 불러오지 못했어요</strong><p>${escapeHTML(error.message)}</p></div>`;
       }
     }
-    if (action === "notifications") openModal("알림 설정", notificationSettingsHTML());
+    if (action === "notifications") {
+      await loadPushRegistrationStatus();
+      openModal("알림 설정", notificationSettingsHTML());
+    }
     if (action === "withdraw") {
       const nickname = account?.name || "";
       openModal("회원탈퇴", `
@@ -350,7 +395,7 @@
     if (event.target.closest("[data-enable-push]")) {
       try {
         await enableWebPush();
-        updateSummary();
+        await updateSummary();
         showToast("이 기기에서 웹 푸시를 받을 수 있어요.");
       } catch (error) {
         showToast(error.message);
@@ -468,10 +513,11 @@
   async function initializeMyPage() {
     authenticated = false;
     renderAuthState();
-    updateSummary();
+    await updateSummary();
     await loadAuthenticatedProfile();
     renderAccount();
     renderAuthState();
+    await updateSummary();
     await updateAdminMenu();
     if (isLoggedIn()) openRequestedSection();
   }
