@@ -76,6 +76,7 @@
         <button class="admin-tab-btn" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('reviews')">후기·문의</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('members')">회원 관리</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('notifications')">알림 발송</button>
       </nav>
 
       <div id="tab-products" class="admin-tab-content">
@@ -361,6 +362,83 @@
           </label>
           <div class="member-list-summary"><strong id="member-result-count">0명</strong><span>고객 회원 · 관리자 계정 제외</span></div>
           <div class="member-admin-list" id="member-admin-list"></div>
+        </div>
+      </div>
+
+      <div id="tab-notifications" class="admin-tab-content" style="display:none;">
+        <div class="panel-card admin-notification-panel">
+          <div class="admin-section-heading">
+            <div>
+              <h2>고객 알림 발송</h2>
+              <p class="panel-desc">운영에 필요한 안내만 선택한 고객의 알림센터에 등록하고, 허용된 기기에는 웹 푸시로 순차 발송합니다.</p>
+            </div>
+          </div>
+          <div class="admin-notification-layout">
+            <form id="admin-notification-form" class="admin-notification-form">
+              <label>
+                <span>받는 고객</span>
+                <select id="admin-notification-audience">
+                  <option value="bundle_applicants">특정 보따리 신청 고객</option>
+                  <option value="bundle_unreceived">특정 보따리 미수령 고객</option>
+                  <option value="bundle_unpaid">특정 보따리 미입금 고객</option>
+                  <option value="member">개별 회원</option>
+                  <option value="all">전체 회원</option>
+                </select>
+              </label>
+              <label id="admin-notification-bundle-field">
+                <span>보따리 선택</span>
+                <select id="admin-notification-bundle">
+                  <option value="">보따리를 선택해 주세요</option>
+                </select>
+              </label>
+              <label id="admin-notification-member-field" hidden>
+                <span>회원 선택</span>
+                <select id="admin-notification-member">
+                  <option value="">회원을 선택해 주세요</option>
+                </select>
+              </label>
+              <label>
+                <span>알림 제목</span>
+                <input id="admin-notification-title" type="text" maxlength="40" placeholder="예: 수령 안내를 확인해 주세요" required />
+              </label>
+              <label>
+                <span>알림 내용</span>
+                <textarea id="admin-notification-body" maxlength="200" rows="4" placeholder="고객에게 전달할 내용을 간결하게 입력해 주세요." required></textarea>
+                <small><strong id="admin-notification-body-count">0</strong>/200자</small>
+              </label>
+              <label>
+                <span>누르면 이동할 화면</span>
+                <select id="admin-notification-link">
+                  <option value="notifications">알림센터</option>
+                  <option value="bundle_detail">선택한 보따리 상세</option>
+                  <option value="receipt">수령확인증</option>
+                  <option value="orders">주문내역</option>
+                  <option value="home">홈</option>
+                </select>
+              </label>
+              <div class="admin-notification-actions">
+                <button id="admin-notification-preview-button" class="notification-secondary-button" type="button">대상 인원 확인</button>
+                <button id="admin-notification-send-button" type="submit" disabled>알림 발송</button>
+              </div>
+              <p id="admin-notification-status" class="admin-notification-status" role="status" aria-live="polite">대상 인원을 먼저 확인해 주세요.</p>
+            </form>
+            <aside class="admin-notification-preview" aria-label="알림 미리보기">
+              <span>고객 화면 미리보기</span>
+              <article>
+                <div class="notification-preview-icon" aria-hidden="true">알림</div>
+                <div>
+                  <strong id="admin-notification-preview-title">알림 제목</strong>
+                  <p id="admin-notification-preview-body">입력한 안내 내용이 이곳에 표시됩니다.</p>
+                  <small>방금</small>
+                </div>
+              </article>
+              <div class="admin-notification-recipient">
+                <span>확인된 발송 대상</span>
+                <strong id="admin-notification-recipient-count">-</strong>
+              </div>
+              <p>동일한 발송 요청은 한 번만 저장됩니다. 실제 푸시 수신 여부는 고객의 기기 알림 설정에 따라 달라집니다.</p>
+            </aside>
+          </div>
         </div>
       </div>
     </main>

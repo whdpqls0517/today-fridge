@@ -47,3 +47,26 @@ test("수령 완료 되돌리기는 본인의 직전 완료 주문만 서버에�
   assert.match(server, /\.gte\('received_at',\s*undoDeadline\)/);
   assert.match(server, /customer_receipt_completion_undone/);
 });
+
+test("새 보따리는 최초 공개 시에만 전체 회원 알림을 예약한다", () => {
+  const server = read("server.js");
+  const form = read("public/js/admin-product-form.js");
+  const migration = read("supabase/migrations/022_bundle_publish_notifications.sql");
+  assert.match(server, /async function\s+notifyCustomersOfNewBundle/);
+  assert.match(server, /dedupe_key:\s*`bundle-opened:\$\{product\.id\}`/);
+  assert.match(server, /beforeProduct\?\.isActive\s*===\s*false/);
+  assert.match(server, /ignoreDuplicates:\s*true/);
+  assert.match(form, /sendPublishNotification/);
+  assert.match(migration, /bundle_opened/);
+});
+
+test("관리자 수동 알림은 권한 보호·대상 재계산·중복 방지를 적용한다", () => {
+  const server = read("server.js");
+  const migration = read("supabase/migrations/023_admin_manual_notifications.sql");
+  assert.match(server, /app\.post\('\/api\/admin\/notifications\/preview', \.\.\.adminOnly/);
+  assert.match(server, /app\.post\('\/api\/admin\/notifications\/send', \.\.\.adminOnly/);
+  assert.match(server, /resolveAdminNotificationAudience/);
+  assert.match(server, /dedupe_key:\s*`admin-notice:\$\{requestKey\}`/);
+  assert.match(server, /action:\s*'manual_notification_sent'/);
+  assert.match(migration, /admin_notice/);
+});

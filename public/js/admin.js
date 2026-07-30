@@ -310,6 +310,22 @@
   const memberSearchInput = document.getElementById("member-search-input");
   const memberChatUrlInput = document.getElementById("member-chat-url-input");
   const memberResultCount = document.getElementById("member-result-count");
+  const notificationForm = document.getElementById("admin-notification-form");
+  const notificationAudience = document.getElementById("admin-notification-audience");
+  const notificationBundleField = document.getElementById("admin-notification-bundle-field");
+  const notificationBundle = document.getElementById("admin-notification-bundle");
+  const notificationMemberField = document.getElementById("admin-notification-member-field");
+  const notificationMember = document.getElementById("admin-notification-member");
+  const notificationTitle = document.getElementById("admin-notification-title");
+  const notificationBody = document.getElementById("admin-notification-body");
+  const notificationBodyCount = document.getElementById("admin-notification-body-count");
+  const notificationLink = document.getElementById("admin-notification-link");
+  const notificationPreviewButton = document.getElementById("admin-notification-preview-button");
+  const notificationSendButton = document.getElementById("admin-notification-send-button");
+  const notificationStatus = document.getElementById("admin-notification-status");
+  const notificationPreviewTitle = document.getElementById("admin-notification-preview-title");
+  const notificationPreviewBody = document.getElementById("admin-notification-preview-body");
+  const notificationRecipientCount = document.getElementById("admin-notification-recipient-count");
   const filterProductSelect = document.getElementById("filter-order-product");
 
   let currentAdminTab = "products";
@@ -318,6 +334,8 @@
   let expiredRange = "today";
   let selectedNoShowMember = null;
   let memberCache = new Map();
+  let notificationPreview = null;
+  let notificationRequestKey = "";
 
   function localISO(date = new Date()) {
     const offset = date.getTimezoneOffset() * 60000;
@@ -390,6 +408,7 @@
     document.getElementById("tab-noshow").style.display = "none";
     document.getElementById("tab-reviews").style.display = "none";
     document.getElementById("tab-members").style.display = "none";
+    document.getElementById("tab-notifications").style.display = "none";
 
     const targetTab = document.getElementById(`tab-${tab}`);
     if (targetTab) {
@@ -416,8 +435,165 @@
       renderInquiriesPanel();
     } else if (currentAdminTab === "members") {
       renderMemberManagement();
+    } else if (currentAdminTab === "notifications") {
+      prepareNotificationComposer();
     }
   }
+
+  function notificationPayload(includeContent = false) {
+    const payload = {
+      audience: notificationAudience?.value || "",
+      bundleItemId: notificationBundle?.value || null,
+      memberId: notificationMember?.value || null
+    };
+    if (includeContent) {
+      payload.title = notificationTitle?.value.trim() || "";
+      payload.body = notificationBody?.value.trim() || "";
+      payload.linkTarget = notificationLink?.value || "notifications";
+      payload.requestKey = notificationRequestKey;
+    }
+    return payload;
+  }
+
+  function invalidateNotificationPreview(message = "대상 인원을 먼저 확인해 주세요.") {
+    notificationPreview = null;
+    notificationRequestKey = "";
+    if (notificationRecipientCount) notificationRecipientCount.textContent = "-";
+    if (notificationSendButton) notificationSendButton.disabled = true;
+    if (notificationStatus) {
+      notificationStatus.textContent = message;
+      notificationStatus.dataset.tone = "";
+    }
+  }
+
+  async function prepareNotificationComposer() {
+    if (!notificationForm) return;
+    const bundles = (window.FridgeDB?.getProducts?.() || [])
+      .filter((product) => product.category === "bundle" && product.bundleItemId)
+      .sort((left, right) => String(right.pickupDate || "").localeCompare(String(left.pickupDate || "")));
+    const currentBundle = notificationBundle?.value || "";
+    notificationBundle.innerHTML = `<option value="">보따리를 선택해 주세요</option>${bundles.map((product) =>
+      `<option value="${adminEscape(product.bundleItemId)}" data-product-id="${adminEscape(product.id)}">${adminEscape(product.name)}${product.pickupDate ? ` · ${adminEscape(String(product.pickupDate).slice(5).replace("-", "."))} 수령` : ""}</option>`
+    ).join("")}`;
+    if ([...notificationBundle.options].some((option) => option.value === currentBundle)) notificationBundle.value = currentBundle;
+
+    if (!memberCache.size) {
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/members`, {
+          headers: { Authorization: `Bearer ${accessToken()}` },
+          cache: "no-store"
+        });
+        const result = await response.json();
+        if (response.ok && result.success) memberCache = new Map(result.data.map((member) => [member.id, member]));
+      } catch (_) {}
+    }
+    const currentMember = notificationMember?.value || "";
+    notificationMember.innerHTML = `<option value="">회원을 선택해 주세요</option>${[...memberCache.values()]
+      .sort((left, right) => String(left.name || "").localeCompare(String(right.name || ""), "ko-KR"))
+      .map((member) => `<option value="${adminEscape(member.id)}">${adminEscape(member.name || "고객")} · ${adminEscape(String(member.id).slice(0, 8).toUpperCase())}</option>`)
+      .join("")}`;
+    if ([...notificationMember.options].some((option) => option.value === currentMember)) notificationMember.value = currentMember;
+    syncNotificationAudienceFields();
+  }
+
+  function syncNotificationAudienceFields() {
+    const audience = notificationAudience?.value || "";
+    const usesBundle = audience.startsWith("bundle_");
+    if (notificationBundleField) notificationBundleField.hidden = !usesBundle;
+    if (notificationMemberField) notificationMemberField.hidden = audience !== "member";
+    if (notificationLink) {
+      const detailOption = notificationLink.querySelector('option[value="bundle_detail"]');
+      if (detailOption) detailOption.disabled = !usesBundle;
+      if (!usesBundle && notificationLink.value === "bundle_detail") notificationLink.value = "notifications";
+    }
+    invalidateNotificationPreview();
+  }
+
+  function syncNotificationPreviewCopy() {
+    if (notificationPreviewTitle) notificationPreviewTitle.textContent = notificationTitle?.value.trim() || "알림 제목";
+    if (notificationPreviewBody) notificationPreviewBody.textContent = notificationBody?.value.trim() || "입력한 안내 내용이 이곳에 표시됩니다.";
+    if (notificationBodyCount) notificationBodyCount.textContent = String(notificationBody?.value.length || 0);
+  }
+
+  notificationAudience?.addEventListener("change", syncNotificationAudienceFields);
+  notificationBundle?.addEventListener("change", () => invalidateNotificationPreview());
+  notificationMember?.addEventListener("change", () => invalidateNotificationPreview());
+  notificationTitle?.addEventListener("input", syncNotificationPreviewCopy);
+  notificationBody?.addEventListener("input", syncNotificationPreviewCopy);
+
+  notificationPreviewButton?.addEventListener("click", async () => {
+    const button = notificationPreviewButton;
+    button.disabled = true;
+    invalidateNotificationPreview("대상 고객을 확인하고 있습니다.");
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/notifications/preview`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
+        body: JSON.stringify(notificationPayload(false))
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "발송 대상을 확인하지 못했습니다.");
+      notificationPreview = { ...notificationPayload(false), count: Number(result.data?.count) || 0 };
+      notificationRequestKey = crypto.randomUUID();
+      notificationRecipientCount.textContent = `${notificationPreview.count}명`;
+      notificationSendButton.disabled = notificationPreview.count < 1;
+      notificationStatus.textContent = notificationPreview.count
+        ? `${notificationPreview.count}명에게 보낼 수 있습니다. 제목과 내용을 확인한 뒤 발송해 주세요.`
+        : "조건에 맞는 고객이 없습니다.";
+      notificationStatus.dataset.tone = notificationPreview.count ? "success" : "error";
+    } catch (error) {
+      notificationStatus.textContent = error.message || "발송 대상을 확인하지 못했습니다.";
+      notificationStatus.dataset.tone = "error";
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  notificationForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!notificationPreview || !notificationRequestKey) {
+      invalidateNotificationPreview();
+      return;
+    }
+    const title = notificationTitle?.value.trim() || "";
+    const body = notificationBody?.value.trim() || "";
+    if (title.length < 2 || body.length < 2) {
+      notificationStatus.textContent = "알림 제목과 내용을 2자 이상 입력해 주세요.";
+      notificationStatus.dataset.tone = "error";
+      return;
+    }
+    const latestTarget = notificationPayload(false);
+    if (JSON.stringify(latestTarget) !== JSON.stringify({
+      audience: notificationPreview.audience,
+      bundleItemId: notificationPreview.bundleItemId,
+      memberId: notificationPreview.memberId
+    })) {
+      invalidateNotificationPreview("대상이 변경되었습니다. 인원을 다시 확인해 주세요.");
+      return;
+    }
+    if (!window.confirm(`${notificationPreview.count}명에게 알림을 발송할까요?\n발송 후에는 고객 알림센터에서 회수할 수 없습니다.`)) return;
+    notificationSendButton.disabled = true;
+    notificationStatus.textContent = "알림을 등록하고 있습니다.";
+    notificationStatus.dataset.tone = "";
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/notifications/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
+        body: JSON.stringify(notificationPayload(true))
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "알림을 발송하지 못했습니다.");
+      notificationStatus.textContent = `${result.data.count}명의 알림센터에 등록했습니다. 웹 푸시는 허용된 기기에 순차 발송됩니다.`;
+      notificationStatus.dataset.tone = "success";
+      notificationRequestKey = "";
+      notificationPreview = null;
+      notificationRecipientCount.textContent = `${result.data.count}명 발송 완료`;
+    } catch (error) {
+      notificationStatus.textContent = error.message || "알림을 발송하지 못했습니다.";
+      notificationStatus.dataset.tone = "error";
+      notificationSendButton.disabled = false;
+    }
+  });
 
   async function renderMemberManagement() {
     if (!memberAdminList) return;

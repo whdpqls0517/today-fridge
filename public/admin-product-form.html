@@ -91,6 +91,13 @@
     <label><span>1인 최대 신청 수량</span><div class="input-suffix"><input name="maxQuantity" type="number" min="1" value="10" /><i>개</i></div></label>
           <label class="wide switch-field"><span>선결제 전용 상품<small>체크하면 계좌이체만 선택할 수 있고 현장결제는 차단됩니다.</small></span><input name="prepaymentOnly" type="checkbox" /></label>
           <label class="wide"><span>키오스크 바코드 번호 *</span><input name="barcodeValue" inputmode="numeric" pattern="[0-9]{6,24}" data-required-for="bundle" placeholder="숫자 6~24자리" /><small>번호만 입력하면 수령증에서 스캔 가능한 바코드 이미지가 자동으로 생성됩니다. 바코드 사진은 첨부하지 않아도 됩니다.</small></label>
+          <label class="wide switch-field" data-publish-notification-field>
+            <span>
+              <strong>게시와 함께 새 보따리 알림 보내기</strong>
+              <small>처음 공개할 때만 전체 회원의 알림센터에 등록하고, 푸시 허용 기기에도 순차 발송합니다.</small>
+            </span>
+            <input name="sendPublishNotification" type="checkbox" checked />
+          </label>
           <div class="wide form-note">수령 시간은 서비스 정책에 따라 오후 7시 이후 무인 수령으로 안내됩니다. 토·일 수령일은 목록에서 다음 월요일로 자동 보정됩니다.</div>
         </div>
       </section>

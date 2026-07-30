@@ -322,7 +322,7 @@ create table if not exists public.notifications (
     check (type in (
       'arrival', 'inquiry_answer', 'order_cancelled', 'pickup',
       'payment_reminder', 'payment_confirmed', 'restock', 'contact_request',
-      'waitlist_promoted'
+      'waitlist_promoted', 'bundle_opened', 'admin_notice'
     )),
   title text not null,
   body text not null,

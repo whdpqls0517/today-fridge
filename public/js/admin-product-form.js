@@ -301,6 +301,15 @@
     setValue("detailDescription", editingProduct.detailDescription || editingProduct.description);
     setValue("isRecommended", editingProduct.isRecommended === true);
     setValue("isActive", editingProduct.isActive !== false);
+    const publishNotificationInput = form.elements.sendPublishNotification;
+    if (publishNotificationInput) {
+      const canSendPublishNotification =
+        editingProduct.category === "bundle" && editingProduct.isActive === false;
+      publishNotificationInput.checked = canSendPublishNotification;
+      publishNotificationInput.disabled = !canSendPublishNotification;
+      const notificationField = publishNotificationInput.closest("[data-publish-notification-field]");
+      if (notificationField) notificationField.hidden = !canSendPublishNotification;
+    }
     updateCategoryPanels();
     renderImageGallery();
   }
@@ -362,6 +371,8 @@
       rating: editingProduct?.rating || 0,
       reviewsCount: editingProduct?.reviewsCount || 0,
       isRecommended: data.get("isRecommended") === "on",
+      sendPublishNotification:
+        category === "bundle" && data.get("sendPublishNotification") === "on",
       isClosed: editingProduct?.isClosed || false,
       isActive: isDraft ? false : data.get("isActive") === "on",
       restockRequests: editingProduct?.restockRequests || 0,

@@ -36,9 +36,13 @@ body {
 .auth-brand img {
   display: block;
   width: 184px;
-  height: 54px;
-  object-fit: cover;
+  height: auto;
+    /* 핵심: SVG 내부 공백을 뚫고 1.35배 강제 확대 */
+  transform: scale(1.35); 
+  transform-origin: left center; /* 왼쪽을 기준으로 확대 */
+  margin-left: -34px;
 }
+
 
 .login-intro h1 {
   margin: 15px 0 14px;
@@ -63,14 +67,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  width: 100%;
-  min-height: 54px;
-  border-radius: 14px;
-  background: #fee500;
-  color: #191600;
-  font-size: 14px;
-  font-weight: 750;
+  width: min(100%, 360px);
+  margin-inline: auto;
+  min-height: 0;
+  aspect-ratio: 600 / 90;
+  border-radius: 0;
+  background: transparent url("../assets/brand/kakao-login.png") center / contain no-repeat;
+  color: transparent;
+  font-size: 0;
 }
 
 .kakao-login svg,
@@ -80,7 +84,7 @@ body {
 }
 
 .kakao-login svg {
-  fill: currentColor;
+  display: none;
 }
 
 .login-divider {

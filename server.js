@@ -82,7 +82,12 @@ async function deliverPushNotification(notification) {
       .select('notification_settings')
       .eq('id', notification.user_id)
       .maybeSingle();
-    if (profile?.notification_settings?.[settingKey] === false) return;
+    if (profile?.notification_settings?.[settingKey] === false) {
+      await supabaseAdmin.from('notifications')
+        .update({ push_next_retry_at: null })
+        .eq('id', notification.id);
+      return;
+    }
   }
 
   const { data: subscriptions, error } = await supabaseAdmin
@@ -91,7 +96,12 @@ async function deliverPushNotification(notification) {
     .eq('user_id', notification.user_id)
     .eq('is_active', true);
   if (error) throw error;
-  if (!subscriptions?.length) return;
+  if (!subscriptions?.length) {
+    await supabaseAdmin.from('notifications')
+      .update({ push_next_retry_at: null })
+      .eq('id', notification.id);
+    return;
+  }
 
   const payload = JSON.stringify({
     notificationId: notification.id,
@@ -148,6 +158,182 @@ async function upsertNotifications(rows) {
   if (error) throw error;
   await Promise.allSettled((data || []).map(deliverPushNotification));
   return data || [];
+}
+
+async function queueNotifications(rows) {
+  const notifications = (Array.isArray(rows) ? rows : [rows]).filter((row) => row?.user_id);
+  if (!notifications.length) return [];
+  const queuedAt = new Date().toISOString();
+  const inserted = [];
+  for (let index = 0; index < notifications.length; index += 500) {
+    const batch = notifications.slice(index, index + 500).map((row) => ({
+      ...row,
+      push_next_retry_at: queuedAt
+    }));
+    const { data, error } = await supabaseAdmin
+      .from('notifications')
+      .upsert(batch, {
+        onConflict: 'user_id,dedupe_key',
+        ignoreDuplicates: true
+      })
+      .select('id, user_id');
+    if (error) throw error;
+    inserted.push(...(data || []));
+  }
+  return inserted;
+}
+
+async function notifyCustomersOfNewBundle(product) {
+  if (!product?.id || product.category !== 'bundle' || product.is_active === false) return 0;
+  const customerIds = [];
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('role', 'customer')
+      .order('id', { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    customerIds.push(...(data || []).map((profile) => profile.id));
+    if (!data || data.length < pageSize) break;
+  }
+
+  const rows = customerIds.map((userId) => ({
+    user_id: userId,
+    type: 'bundle_opened',
+    title: '새 보따리가 열렸어요',
+    body: `${product.name} 신청을 확인해 보세요.`,
+    link: `./product-detail.html?id=${encodeURIComponent(product.id)}`,
+    dedupe_key: `bundle-opened:${product.id}`
+  }));
+  const queued = await queueNotifications(rows);
+  return queued.length;
+}
+
+const ADMIN_NOTIFICATION_AUDIENCES = new Set([
+  'all',
+  'bundle_applicants',
+  'bundle_unreceived',
+  'bundle_unpaid',
+  'member'
+]);
+
+async function listCustomerProfileIds() {
+  const ids = [];
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('role', 'customer')
+      .order('id', { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    ids.push(...(data || []).map((profile) => profile.id));
+    if (!data || data.length < pageSize) break;
+  }
+  return ids;
+}
+
+async function resolveAdminNotificationAudience({ audience, bundleItemId, memberId }) {
+  if (!ADMIN_NOTIFICATION_AUDIENCES.has(audience)) {
+    const error = new Error('알림을 받을 고객 범위를 확인해 주세요.');
+    error.status = 400;
+    throw error;
+  }
+
+  if (audience === 'all') {
+    return { userIds: await listCustomerProfileIds(), productId: null, productName: null };
+  }
+
+  if (audience === 'member') {
+    if (!memberId) {
+      const error = new Error('알림을 받을 회원을 선택해 주세요.');
+      error.status = 400;
+      throw error;
+    }
+    const { data: member, error: memberError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, role')
+      .eq('id', memberId)
+      .maybeSingle();
+    if (memberError) throw memberError;
+    if (!member || member.role !== 'customer') {
+      const error = new Error('알림을 받을 고객 회원을 찾지 못했습니다.');
+      error.status = 404;
+      throw error;
+    }
+    return { userIds: [member.id], productId: null, productName: null };
+  }
+
+  if (!bundleItemId) {
+    const error = new Error('알림을 보낼 보따리를 선택해 주세요.');
+    error.status = 400;
+    throw error;
+  }
+  const { data: bundleItem, error: bundleError } = await supabaseAdmin
+    .from('bundle_items')
+    .select('id, product_id, products(id, name, category)')
+    .eq('id', bundleItemId)
+    .maybeSingle();
+  if (bundleError) throw bundleError;
+  if (!bundleItem || bundleItem.products?.category !== 'bundle') {
+    const error = new Error('선택한 보따리 정보를 찾지 못했습니다.');
+    error.status = 404;
+    throw error;
+  }
+
+  const orders = [];
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .select('user_id, status, payment_type, payment_status, received_at')
+      .eq('bundle_item_id', bundleItemId)
+      .order('created_at', { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    orders.push(...(data || []));
+    if (!data || data.length < pageSize) break;
+  }
+
+  const cancelledStatuses = new Set(['cancelled', 'canceled', 'refunded']);
+  const activePickupStatuses = new Set(['applied', 'ready', 'pending']);
+  const userIds = [...new Set(orders.filter((order) => {
+    const status = String(order.status || '').toLowerCase();
+    if (!order.user_id || cancelledStatuses.has(status) || order.payment_status === 'cancelled' || order.payment_status === 'refunded') {
+      return false;
+    }
+    if (audience === 'bundle_unreceived') {
+      return !order.received_at && activePickupStatuses.has(status);
+    }
+    if (audience === 'bundle_unpaid') {
+      return order.payment_type === 'transfer' && order.payment_status === 'pending' && activePickupStatuses.has(status);
+    }
+    return true;
+  }).map((order) => order.user_id))];
+
+  return {
+    userIds,
+    productId: bundleItem.product_id,
+    productName: bundleItem.products?.name || null
+  };
+}
+
+function adminNotificationLink(linkTarget, productId) {
+  if (linkTarget === 'bundle_detail') {
+    if (!productId) {
+      const error = new Error('보따리 상세로 이동하려면 보따리를 선택해 주세요.');
+      error.status = 400;
+      throw error;
+    }
+    return `./product-detail.html?id=${encodeURIComponent(productId)}`;
+  }
+  if (linkTarget === 'receipt') return './index.html#receipt';
+  if (linkTarget === 'orders') return './order-history.html';
+  if (linkTarget === 'home') return './index.html';
+  return './notifications.html';
 }
 
 async function recordAdminAudit({ adminId, action, targetType, targetId, before, after, metadata }) {
@@ -1053,14 +1239,33 @@ app.post('/api/admin/products', ...adminOnly, async (req, res) => {
     await upsertBundleForProduct(product, req.body || {}, req.user.id);
     const catalog = await readCatalog(true);
     const savedProduct = catalog.find((item) => item.id === product.id);
+    let publishNotificationCount = 0;
+    let notificationWarning = null;
+    if (
+      product.category === 'bundle'
+      && product.is_active !== false
+      && req.body?.sendPublishNotification === true
+    ) {
+      try {
+        publishNotificationCount = await notifyCustomersOfNewBundle(product);
+      } catch (notificationError) {
+        notificationWarning = `상품은 등록됐지만 새 보따리 알림 생성에 실패했습니다: ${notificationError.message}`;
+      }
+    }
     await recordAdminAudit({
       adminId: req.user.id,
       action: 'product_created',
       targetType: 'product',
       targetId: product.id,
-      after: savedProduct
+      after: savedProduct,
+      metadata: { publishNotificationCount }
     });
-    res.status(201).json({ success: true, data: savedProduct });
+    res.status(201).json({
+      success: true,
+      data: savedProduct,
+      publishNotificationCount,
+      warning: notificationWarning
+    });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -1157,6 +1362,95 @@ app.get('/api/admin/members', ...adminOnly, async (_req, res) => {
       last_order_at: orderStats.get(profile.id)?.lastOrderAt || null
     }))
   });
+});
+
+app.post('/api/admin/notifications/preview', ...adminOnly, async (req, res) => {
+  try {
+    const audience = String(req.body?.audience || '').trim();
+    const resolved = await resolveAdminNotificationAudience({
+      audience,
+      bundleItemId: String(req.body?.bundleItemId || '').trim() || null,
+      memberId: String(req.body?.memberId || '').trim() || null
+    });
+    res.json({
+      success: true,
+      data: {
+        count: resolved.userIds.length,
+        productName: resolved.productName
+      }
+    });
+  } catch (error) {
+    res.status(error.status || 400).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/admin/notifications/send', ...adminOnly, async (req, res) => {
+  const audience = String(req.body?.audience || '').trim();
+  const title = String(req.body?.title || '').trim();
+  const body = String(req.body?.body || '').trim();
+  const requestKey = String(req.body?.requestKey || '').trim();
+  const linkTarget = String(req.body?.linkTarget || 'notifications').trim();
+  if (title.length < 2 || title.length > 40) {
+    return res.status(400).json({ success: false, error: '알림 제목은 2~40자로 입력해 주세요.' });
+  }
+  if (body.length < 2 || body.length > 200) {
+    return res.status(400).json({ success: false, error: '알림 내용은 2~200자로 입력해 주세요.' });
+  }
+  if (!/^[a-zA-Z0-9-]{16,100}$/.test(requestKey)) {
+    return res.status(400).json({ success: false, error: '발송 요청을 다시 확인해 주세요.' });
+  }
+  if (!['notifications', 'bundle_detail', 'receipt', 'orders', 'home'].includes(linkTarget)) {
+    return res.status(400).json({ success: false, error: '알림에서 이동할 화면을 확인해 주세요.' });
+  }
+
+  try {
+    const resolved = await resolveAdminNotificationAudience({
+      audience,
+      bundleItemId: String(req.body?.bundleItemId || '').trim() || null,
+      memberId: String(req.body?.memberId || '').trim() || null
+    });
+    if (!resolved.userIds.length) {
+      return res.status(400).json({ success: false, error: '조건에 맞는 고객이 없습니다. 대상을 다시 확인해 주세요.' });
+    }
+    const link = adminNotificationLink(linkTarget, resolved.productId);
+    const rows = resolved.userIds.map((userId) => ({
+      user_id: userId,
+      type: 'admin_notice',
+      title,
+      body,
+      link,
+      dedupe_key: `admin-notice:${requestKey}`
+    }));
+    const queued = await queueNotifications(rows);
+    await recordAdminAudit({
+      adminId: req.user.id,
+      action: 'manual_notification_sent',
+      targetType: 'notification_audience',
+      targetId: audience === 'member'
+        ? String(req.body?.memberId || '')
+        : String(req.body?.bundleItemId || audience),
+      metadata: {
+        audience,
+        recipient_count: resolved.userIds.length,
+        queued_count: queued.length,
+        product_id: resolved.productId,
+        product_name: resolved.productName,
+        title,
+        body,
+        link,
+        request_key: requestKey
+      }
+    });
+    res.json({
+      success: true,
+      data: {
+        count: resolved.userIds.length,
+        newlyQueued: queued.length
+      }
+    });
+  } catch (error) {
+    res.status(error.status || 400).json({ success: false, error: error.message });
+  }
 });
 
 app.patch('/api/admin/members/:id/no-show', ...adminOnly, async (req, res) => {
@@ -2201,15 +2495,36 @@ app.patch('/api/admin/products/:id', ...adminOnly, async (req, res) => {
     if (beforeProduct && Number(beforeProduct.stock || 0) <= 0 && Number(savedProduct?.stock || 0) > 0) {
       restockNotificationCount = await notifyRestockSubscribers(product.id, product.name);
     }
+    let publishNotificationCount = 0;
+    let notificationWarning = null;
+    if (
+      product.category === 'bundle'
+      && beforeProduct?.isActive === false
+      && savedProduct?.isActive !== false
+      && req.body?.sendPublishNotification === true
+    ) {
+      try {
+        publishNotificationCount = await notifyCustomersOfNewBundle(product);
+      } catch (notificationError) {
+        notificationWarning = `상품은 공개됐지만 새 보따리 알림 생성에 실패했습니다: ${notificationError.message}`;
+      }
+    }
     await recordAdminAudit({
       adminId: req.user.id,
       action: 'product_updated',
       targetType: 'product',
       targetId: product.id,
       before: beforeProduct,
-      after: savedProduct
+      after: savedProduct,
+      metadata: { restockNotificationCount, publishNotificationCount }
     });
-    res.json({ success: true, data: savedProduct, restockNotificationCount });
+    res.json({
+      success: true,
+      data: savedProduct,
+      restockNotificationCount,
+      publishNotificationCount,
+      warning: notificationWarning
+    });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
