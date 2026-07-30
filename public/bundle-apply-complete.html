@@ -4,84 +4,58 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>신청 완료 | 오늘의 냉장고</title>
-
-  <!-- CSS 스타일시트 -->
-  <link rel="stylesheet" href="./css/today-fridge.css" />
+  <link rel="stylesheet" href="./css/today-fridge.css">
   <link rel="stylesheet" href="./css/bundle-apply-complete.css">
 </head>
 <body>
-
   <main class="complete-page">
-    <!-- 완료 체크 아이콘 및 안내 문구 (요청하신 대로 그대로 유지) -->
-    <div class="complete-check">✓</div>
+    <div class="complete-check" aria-hidden="true">✓</div>
     <h1>신청이 완료되었습니다</h1>
     <p id="complete-guide">신청 내역을 확인해 주세요.</p>
 
-    <!-- 신청 동적 요약 데이터가 들어갈 영역 (JS 제어) -->
     <section class="complete-summary" id="complete-summary"></section>
 
-    <!-- 무통장 입금 정보 (선결제 선택 시만 JS가 띄움 / 기본 hidden) -->
     <section class="bank-box" id="bank-box" hidden>
       <div>
-        <span>결제하실 금액</span>
+        <span>입금하실 금액</span>
         <strong id="bank-amount">0원</strong>
       </div>
       <hr>
       <span>입금 계좌</span>
-      
-      <!-- 계좌번호 및 복사 버튼 영역 -->
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0;">
-        <b>카카오뱅크 3333-01-1234567</b>
-        <button type="button" onclick="copyAccountNumber('3333011234567')">
-          복사
-        </button>
+      <div class="bank-account-line">
+        <b id="bank-account">계좌 정보를 불러오는 중입니다</b>
+        <button type="button" id="copy-account-button">복사</button>
       </div>
-      
-      <small>예금주: 오늘의냉장고</small>
+      <small id="bank-holder"></small>
 
-      <!-- 앱으로 바로 송금하기 영역 -->
-      <div class="remit-section">
+      <div class="remit-section" id="remit-section" hidden>
         <div class="remit-section-title">앱으로 바로 송금하기</div>
-        
-        <!-- 토스 카드 -->
-        <a href="#" class="remit-option-card" id="toss-remit-btn">
+        <a href="#" class="remit-option-card" id="toss-remit-btn" hidden>
           <div class="remit-option-left">
             <span class="remit-option-name">토스</span>
-            <img src="./images/Toss_Logo_Primary.png" 
-                 class="remit-logo-img" 
-                 alt="toss" 
-                 style="height: 18px !important; transform: scale(2.1) !important; transform-origin: left center !important; position: relative !important; left: -16px !important;">
+            <img src="./images/Toss_Logo_Primary.png" class="remit-logo-img" alt="토스">
           </div>
-          <div class="remit-option-right">
-            바로 송금 <span>›</span>
-          </div>
+          <div class="remit-option-right">바로 송금 <span>›</span></div>
         </a>
-
-        <!-- 카카오페이 카드 -->
-        <a href="#" class="remit-option-card" id="kakao-remit-btn">
+        <a href="#" class="remit-option-card" id="kakao-remit-btn" hidden>
           <div class="remit-option-left">
             <span class="remit-option-name">카카오페이</span>
-            <img src="./images/payment_icon_yellow_large.png" alt="kakaopay" class="remit-logo-img">
+            <img src="./images/payment_icon_yellow_large.png" alt="카카오페이" class="remit-logo-img">
           </div>
-          <div class="remit-option-right">
-            바로 송금 <span>›</span>
-          </div>
+          <div class="remit-option-right">바로 송금 <span>›</span></div>
         </a>
       </div>
-    </section> <!-- 👈 bank-box는 여기서 딱 깔끔하게 닫혀야 합니다! -->
+      <p id="payment-info-error" class="payment-info-error" hidden></p>
+    </section>
 
-    <!-- 이동 버튼 영역 (bank-box 밖으로 이동) -->
     <div class="complete-actions">
       <a class="primary" href="./order-history.html">주문 내역 확인</a>
       <a href="./index.html">홈으로 돌아가기</a>
     </div>
-
-    <!-- 기타 참고사항/유의사항 영역 (bank-box 밖으로 이동) -->
     <aside id="complete-note"></aside>
-
   </main>
 
-  <!-- 스크립트 연결 (JS 파일 연결이 빠져있어서 추가했습니다) -->
+  <script src="./js/auth-session.js"></script>
   <script src="./js/bundle-apply-complete.js"></script>
 </body>
 </html>

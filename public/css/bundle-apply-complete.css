@@ -98,6 +98,21 @@ body {
   color: #71809a;
 }
 
+.bank-account-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.payment-info-error {
+  margin: 12px 0 0;
+  color: #b1473f;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .complete-actions {
   display: flex !important;
   flex-direction: column !important; /* 무조건 위-아래 세로로 배치 */

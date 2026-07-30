@@ -26,6 +26,11 @@ const VAPID_SUBJECT = VAPID_SUBJECT_INPUT.includes('@') && !VAPID_SUBJECT_INPUT.
   : VAPID_SUBJECT_INPUT;
 const PAYMENT_EXPIRY_GRACE_MINUTES = Math.max(0, Number(process.env.PAYMENT_EXPIRY_GRACE_MINUTES) || 0);
 const PUBLIC_APP_URL = String(process.env.PUBLIC_APP_URL || '').trim().replace(/\/+$/, '');
+const PAYMENT_BANK_NAME = String(process.env.PAYMENT_BANK_NAME || '').trim();
+const PAYMENT_ACCOUNT_NUMBER = String(process.env.PAYMENT_ACCOUNT_NUMBER || '').replace(/[^\d]/g, '');
+const PAYMENT_ACCOUNT_HOLDER = String(process.env.PAYMENT_ACCOUNT_HOLDER || '').trim();
+const PAYMENT_TOSS_DEEP_LINK = String(process.env.PAYMENT_TOSS_DEEP_LINK || '').trim();
+const PAYMENT_KAKAOPAY_DEEP_LINK = String(process.env.PAYMENT_KAKAOPAY_DEEP_LINK || '').trim();
 const KAKAO_REQUIRED_TERMS_TAGS = (process.env.KAKAO_REQUIRED_TERMS_TAGS || '')
   .split(',')
   .map((tag) => tag.trim())
@@ -629,6 +634,48 @@ app.get('/api/config', (_req, res) => {
     supabasePublishableKey: PUBLISHABLE_KEY || null,
     authReady: Boolean(PUBLISHABLE_KEY),
     appUrl: PUBLIC_APP_URL || null
+  });
+});
+
+function formatAccountNumber(value) {
+  const digits = String(value || '').replace(/[^\d]/g, '');
+  if (digits.length === 13) return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+  return digits;
+}
+
+function buildPaymentDeepLink(template, amount) {
+  if (!template) return null;
+  const replacements = {
+    amount: String(Math.max(0, Math.floor(Number(amount) || 0))),
+    bankName: PAYMENT_BANK_NAME,
+    accountNumber: PAYMENT_ACCOUNT_NUMBER
+  };
+  let link = template.replace(/\{(amount|bankName|accountNumber)\}/g, (_match, key) =>
+    encodeURIComponent(replacements[key])
+  );
+  try {
+    const protocol = new URL(link).protocol;
+    if (!['https:', 'supertoss:', 'kakaotalk:'].includes(protocol)) return null;
+  } catch (_) {
+    return null;
+  }
+  return link;
+}
+
+app.get('/api/payment-info', requireAuth, (req, res) => {
+  const configured = Boolean(PAYMENT_BANK_NAME && PAYMENT_ACCOUNT_NUMBER && PAYMENT_ACCOUNT_HOLDER);
+  res.set('Cache-Control', 'private, no-store, max-age=0');
+  res.json({
+    success: true,
+    configured,
+    data: configured ? {
+      bankName: PAYMENT_BANK_NAME,
+      accountNumber: formatAccountNumber(PAYMENT_ACCOUNT_NUMBER),
+      copyNumber: PAYMENT_ACCOUNT_NUMBER,
+      accountHolder: PAYMENT_ACCOUNT_HOLDER,
+      tossUrl: buildPaymentDeepLink(PAYMENT_TOSS_DEEP_LINK, req.query.amount),
+      kakaoPayUrl: buildPaymentDeepLink(PAYMENT_KAKAOPAY_DEEP_LINK, req.query.amount)
+    } : null
   });
 });
 

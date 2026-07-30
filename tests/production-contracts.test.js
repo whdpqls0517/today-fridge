@@ -79,3 +79,13 @@ test("푸시 구독이 알림보다 늦게 완료돼도 최근 미전송 알림�
   assert.match(server, /\.is\('push_sent_at', null\)/);
   assert.match(server, /recentNotifications\.map\(deliverPushNotification\)/);
 });
+
+test("계좌번호와 송금 링크는 프론트엔드에 하드코딩하지 않는다", () => {
+  const server = read("server.js");
+  const complete = read("public/js/bundle-apply-complete.js");
+  const history = read("public/js/order-history.js");
+  assert.doesNotMatch(complete, /\b3333011234567\b|supertoss:\/\/send|kakaotalk:\/\/kakaopay/);
+  assert.doesNotMatch(history, /\b3333011234567\b|supertoss:\/\/send|kakaotalk:\/\/kakaopay/);
+  assert.match(server, /app\.get\('\/api\/payment-info', requireAuth/);
+  assert.match(server, /PAYMENT_ACCOUNT_NUMBER/);
+});

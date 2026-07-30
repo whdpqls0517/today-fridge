@@ -8,12 +8,7 @@
   let activeFilter = "all";
   let toastTimer;
   let pendingCancelOrderId = null;
-  const TRANSFER_ACCOUNT = {
-    bank: "카카오뱅크",
-    number: "3333-01-1234567",
-    copyNumber: "3333011234567",
-    holder: "오늘의냉장고"
-  };
+  let transferAccount = null;
 
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
@@ -44,6 +39,19 @@
       } catch (_) {}
     }
     return null;
+  }
+
+  async function loadTransferAccount() {
+    const token = accessToken();
+    if (!token) return;
+    try {
+      const response = await fetch("/api/payment-info", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      });
+      const result = await response.json();
+      if (response.ok && result.success && result.configured) transferAccount = result.data;
+    } catch (_) {}
   }
 
   function orderedAt(order) {
@@ -128,9 +136,11 @@
     const order = orderData().find((item) => String(item.id) === String(orderId));
     if (!order) return;
     const image = order.product?.image || "./asset-bundle-food-gradient.png";
-    const transferAccountRows = order.paymentType === "transfer"
-      ? `<div class="detail-bank-row"><dt>입금 계좌</dt><dd><span>${TRANSFER_ACCOUNT.bank} ${TRANSFER_ACCOUNT.number}</span><button type="button" data-copy-bank-account>복사</button></dd></div>
-         <div><dt>예금주</dt><dd>${TRANSFER_ACCOUNT.holder}</dd></div>`
+    const transferAccountRows = order.paymentType === "transfer" && transferAccount
+      ? `<div class="detail-bank-row"><dt>입금 계좌</dt><dd><span>${escapeHTML(transferAccount.bankName)} ${escapeHTML(transferAccount.accountNumber)}</span><button type="button" data-copy-bank-account>복사</button></dd></div>
+         <div><dt>예금주</dt><dd>${escapeHTML(transferAccount.accountHolder)}</dd></div>`
+      : order.paymentType === "transfer"
+        ? `<div><dt>입금 계좌</dt><dd>계좌 정보를 확인할 수 없습니다</dd></div>`
       : "";
     detailContent.innerHTML = `<div class="detail-order-number"><span>${dateLabel(orderedAt(order))} 신청</span><small>주문번호 ${escapeHTML(order.id)}</small></div>
       <section class="detail-product"><div class="order-state ${order.viewStatus.tone}">${order.viewStatus.label}</div><div><img src="${escapeHTML(image)}" alt=""><div><strong>${escapeHTML(order.productName)}</strong><span>${Number(order.quantity) || 1}개</span><b>${Number(order.price || 0).toLocaleString("ko-KR")}원</b></div></div></section>
@@ -143,12 +153,16 @@
   }
 
   async function copyTransferAccount() {
+    if (!transferAccount?.copyNumber) {
+      showToast("계좌 정보를 확인할 수 없습니다.");
+      return;
+    }
     try {
-      await navigator.clipboard.writeText(TRANSFER_ACCOUNT.copyNumber);
+      await navigator.clipboard.writeText(transferAccount.copyNumber);
       showToast("계좌번호를 복사했습니다.");
     } catch (_) {
       const input = document.createElement("textarea");
-      input.value = TRANSFER_ACCOUNT.copyNumber;
+      input.value = transferAccount.copyNumber;
       input.style.position = "fixed";
       input.style.opacity = "0";
       document.body.appendChild(input);
@@ -253,5 +267,5 @@
 
   searchInput.addEventListener("input", render);
   window.addEventListener("storage", render);
-  render();
+  loadTransferAccount().finally(render);
 })();
