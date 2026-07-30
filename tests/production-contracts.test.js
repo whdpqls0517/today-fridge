@@ -54,6 +54,7 @@ test("새 보따리는 최초 공개 시에만 전체 회원 알림을 예약한
   const migration = read("supabase/migrations/022_bundle_publish_notifications.sql");
   assert.match(server, /async function\s+notifyCustomersOfNewBundle/);
   assert.match(server, /dedupe_key:\s*`bundle-opened:\$\{product\.id\}`/);
+  assert.match(server, /const delivered = await upsertNotifications\(rows\)/);
   assert.match(server, /beforeProduct\?\.isActive\s*===\s*false/);
   assert.match(server, /ignoreDuplicates:\s*true/);
   assert.match(form, /sendPublishNotification/);

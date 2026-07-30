@@ -207,8 +207,9 @@ async function notifyCustomersOfNewBundle(product) {
     link: `./product-detail.html?id=${encodeURIComponent(product.id)}`,
     dedupe_key: `bundle-opened:${product.id}`
   }));
-  const queued = await queueNotifications(rows);
-  return queued.length;
+  // 새 상품 공개 알림은 등록 직후 바로 푸시를 시도하고, 실패 건만 기존 재시도 대기열로 넘깁니다.
+  const delivered = await upsertNotifications(rows);
+  return delivered.length;
 }
 
 const ADMIN_NOTIFICATION_AUDIENCES = new Set([
