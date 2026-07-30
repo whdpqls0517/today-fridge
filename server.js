@@ -227,7 +227,7 @@ async function listCustomerProfileIds() {
     const { data, error } = await supabaseAdmin
       .from('profiles')
       .select('id')
-      .eq('role', 'customer')
+      .in('role', ['customer', 'admin'])
       .order('id', { ascending: true })
       .range(from, from + pageSize - 1);
     if (error) throw error;
