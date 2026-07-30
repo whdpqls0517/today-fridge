@@ -639,6 +639,7 @@ app.get('/api/config', (_req, res) => {
 
 function formatAccountNumber(value) {
   const digits = String(value || '').replace(/[^\d]/g, '');
+  if (digits.length === 14) return `${digits.slice(0, 6)}-${digits.slice(6, 8)}-${digits.slice(8)}`;
   if (digits.length === 13) return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
   return digits;
 }
