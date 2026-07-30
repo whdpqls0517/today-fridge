@@ -8,7 +8,7 @@
     "start": "node server.js",
     "check": "node scripts/check-js.js",
     "test": "node --test tests/order-flows.test.js tests/production-contracts.test.js",
-    "verify": "npm run check && npm test",
+    "verify": "pnpm run check && pnpm test",
     "build:production": "node scripts/build-production.js",
     "start:production": "npm run build:production && node scripts/start-production.js",
     "audit:production": "node scripts/production-audit.js",
