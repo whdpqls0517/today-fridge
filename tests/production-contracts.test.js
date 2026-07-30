@@ -100,3 +100,12 @@ test("웹 푸시는 권한 허용 후 서버 구독 누락을 자동 복구하�
   assert.match(myPage, /pushRegistered/);
   assert.match(myPage, /알림 연결 필요/);
 });
+
+test("고객 알림 설정은 개별 항목 없이 전체 알림 토글 하나만 사용한다", () => {
+  const server = read("server.js");
+  const myPage = read("public/js/my-page.js");
+  assert.match(myPage, /data-all-notifications/);
+  assert.doesNotMatch(myPage, /data-setting=/);
+  assert.match(server, /notificationSettings\.enabled/);
+  assert.match(server, /arrival:\s*enabled[\s\S]*inquiry:\s*enabled[\s\S]*important:\s*enabled/);
+});

@@ -87,7 +87,11 @@ async function deliverPushNotification(notification) {
       .select('notification_settings')
       .eq('id', notification.user_id)
       .maybeSingle();
-    if (profile?.notification_settings?.[settingKey] === false) {
+    const notificationSettings = profile?.notification_settings || {};
+    const notificationsDisabled = typeof notificationSettings.enabled === 'boolean'
+      ? notificationSettings.enabled === false
+      : notificationSettings.all === false || notificationSettings[settingKey] === false;
+    if (notificationsDisabled) {
       await supabaseAdmin.from('notifications')
         .update({ push_next_retry_at: null })
         .eq('id', notification.id);
@@ -2987,10 +2991,19 @@ app.delete('/api/push/subscriptions', requireAuth, async (req, res) => {
 });
 
 app.patch('/api/profile/notification-settings', requireAuth, async (req, res) => {
+  const enabled = typeof req.body?.enabled === 'boolean'
+    ? req.body.enabled
+    : !(
+      req.body?.arrival === false
+      && req.body?.inquiry === false
+      && req.body?.important === false
+    );
   const notificationSettings = {
-    arrival: req.body?.arrival !== false,
-    inquiry: req.body?.inquiry !== false,
-    important: req.body?.important !== false
+    enabled,
+    all: enabled,
+    arrival: enabled,
+    inquiry: enabled,
+    important: enabled
   };
   const { data, error } = await supabaseAdmin
     .from('profiles')

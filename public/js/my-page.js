@@ -12,7 +12,7 @@
   let authenticated = false;
   let pushRegistered = false;
 
-  const defaultSettings = { arrival: true, inquiry: true, important: true };
+  const defaultSettings = { enabled: true };
 
   function readJSON(key, fallback) {
     try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (_) { return fallback; }
@@ -22,7 +22,14 @@
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[character]));
   }
-  function settings() { return { ...defaultSettings, ...readJSON(SETTINGS_KEY, {}) }; }
+  function settings() {
+    const saved = readJSON(SETTINGS_KEY, {});
+    if (typeof saved.enabled === "boolean") return { enabled: saved.enabled };
+    if (typeof saved.all === "boolean") return { enabled: saved.all };
+    const legacyValues = [saved.arrival, saved.inquiry, saved.important]
+      .filter((value) => typeof value === "boolean");
+    return { enabled: legacyValues.length ? legacyValues.some(Boolean) : defaultSettings.enabled };
+  }
 
   function base64UrlToUint8Array(value) {
     const padding = "=".repeat((4 - value.length % 4) % 4);
@@ -315,12 +322,8 @@
       : ("Notification" in window && Notification.permission === "granted"
         ? (pushRegistered ? "이 기기 알림 사용 중" : "알림 연결을 완료해 주세요")
         : "기기 알림 허용 필요");
-    const rows = [
-      ["arrival", "신청 상품 입고", "신청한 상품의 입고가 완료되면 알려드려요"],
-      ["inquiry", "문의 답변", "문의에 최초 답변이 등록되면 알려드려요"],
-      ["important", "주문·입금 안내", "입금 확인, 입금 요청, 주문 취소처럼 중요한 변경을 알려드려요"]
-    ].map(([key, title, detail]) => `<div class="my-setting-row"><span><strong>${title}</strong><small>${detail}</small></span><button class="setting-switch ${value[key] ? "is-on" : ""}" type="button" role="switch" aria-checked="${value[key]}" data-setting="${key}"><i></i></button></div>`).join("");
-    return `<div class="push-status-card"><span class="status-dot"></span><div><strong>${permissionText}</strong><small>${pushRegistered ? "이 브라우저가 서버의 알림 대상에 등록되어 있어요." : "브라우저 허용만으로는 완료되지 않아요. 아래 버튼을 눌러 서버 연결까지 마쳐 주세요."}</small></div></div>${rows}<button class="my-primary-button" type="button" data-enable-push>${pushRegistered ? "이 기기 알림 다시 연결하기" : "이 기기에서 알림 받기"}</button><p class="setting-note">안드로이드는 Chrome에서 알림을 허용하고 이 버튼을 눌러야 해요. 처음에 건너뛰었어도 언제든 마이페이지 → 알림 설정에서 다시 연결할 수 있어요. 아이폰은 홈 화면에 추가한 웹앱에서 설정해 주세요.</p>`;
+    const toggle = `<div class="my-setting-row"><span><strong>전체 알림 받기</strong><small>입고, 입금 확인, 주문 변경, 문의 답변과 새 보따리 소식을 모두 받아요.</small></span><button class="setting-switch ${value.enabled ? "is-on" : ""}" type="button" role="switch" aria-checked="${value.enabled}" data-all-notifications><i></i></button></div>`;
+    return `<div class="push-status-card"><span class="status-dot"></span><div><strong>${permissionText}</strong><small>${pushRegistered ? "이 브라우저가 서버의 알림 대상에 등록되어 있어요." : "전체 알림을 켜면 브라우저 허용과 서버 연결을 함께 진행해요."}</small></div></div>${toggle}<p class="setting-note">처음에 건너뛰었어도 언제든 이 토글을 켜서 다시 연결할 수 있어요. 알림을 꺼도 사이트 안 알림센터에는 이용 내역이 남아요.</p>`;
   }
   async function inquiryHTML() {
     const token = accessToken() || await refreshedAccessToken();
@@ -379,28 +382,21 @@
         </form>`);
     }
 
-    const settingButton = event.target.closest("[data-setting]");
+    const settingButton = event.target.closest("[data-all-notifications]");
     if (settingButton) {
-      const value = settings(); const key = settingButton.dataset.setting;
-      value[key] = !value[key];
+      const enabled = !settings().enabled;
       try {
-        const saved = await saveNotificationSettings(value);
-        settingButton.classList.toggle("is-on", saved[key]);
-        settingButton.setAttribute("aria-checked", String(saved[key]));
-        showToast(saved[key] ? "알림을 켰어요." : "알림을 껐어요.");
-      } catch (error) {
-        showToast(error.message);
-      }
-    }
-    if (event.target.closest("[data-enable-push]")) {
-      try {
-        await enableWebPush();
+        if (enabled) await enableWebPush();
+        const saved = await saveNotificationSettings({ enabled });
+        const savedEnabled = saved.enabled !== false;
+        settingButton.classList.toggle("is-on", savedEnabled);
+        settingButton.setAttribute("aria-checked", String(savedEnabled));
         await updateSummary();
-        showToast("이 기기에서 웹 푸시를 받을 수 있어요.");
+        openModal("알림 설정", notificationSettingsHTML());
+        showToast(savedEnabled ? "전체 알림을 켰어요." : "전체 알림을 껐어요.");
       } catch (error) {
         showToast(error.message);
       }
-      openModal("알림 설정", notificationSettingsHTML());
     }
 
     // 💡 완전한 로그아웃 처리 부분 (Supabase 세션 및 로컬스토리지 일괄 삭제)
