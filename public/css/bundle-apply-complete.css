@@ -256,6 +256,13 @@ body {
   transform: none !important;
 }
 
+.remit-logo-img-toss {
+  height: 28px !important; 
+  width: auto !important;
+  max-width: none !important;
+  object-fit: contain !important;
+  transform: none !important; /* scale 제거 */
+}
 
 .remit-option-right {
   display: flex !important;

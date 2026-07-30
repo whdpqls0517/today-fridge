@@ -3214,7 +3214,55 @@ app.listen(PORT, '0.0.0.0', () => {
   }
 });
 
-module.exports = {
-  app,
-  runScheduledMaintenance
+// 1. 디코딩 함수 (최상단 위치 유지)
+// ✅ 수정 후: Cloudflare Workers 표준 UTF-8 디코딩
+function decodeBase64Korean(base64Str) {
+  if (!base64Str) return "";
+  try {
+    // 1. Base64 문자열을 바이너리(Uint8Array)로 변환
+    const binaryString = atob(base64Str);
+    const bytes = Uint8Array.from(binaryString, (char) => char.charCodeAt(0));
+    
+    // 2. TextDecoder로 UTF-8 한글 문자열 복원
+    return new TextDecoder('utf-8').decode(bytes);
+  } catch (e) {
+    console.error("Base64 디코딩 실패:", e);
+    return base64Str;
+  }
+}
+
+// 2. 통합된 단 하나의 export default
+export default {
+  // 스케줄러 기능이 필요한 경우를 대비해 유지
+  runScheduledMaintenance,
+
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    // 계좌 정보 요청 API 엔드포인트 (/api/account)
+    if (url.pathname === "/api/account") {
+      const rawBank = env.PAYMENT_BANK_NAME;
+      const rawHolder = env.PAYMENT_ACCOUNT_HOLDER;
+
+      const bankName = decodeBase64Korean(rawBank);
+      const accountHolder = decodeBase64Korean(rawHolder);
+
+      const accountData = {
+        bankName: bankName,            
+        accountHolder: accountHolder,  
+        accountNumber: env.PAYMENT_ACCOUNT_NUMBER || "" 
+      };
+
+      return new Response(JSON.stringify(accountData), {
+        headers: { "Content-Type": "application/json; charset=utf-8" }
+      });
+    }
+
+    // 기존 Express / Hono 앱이 요청을 처리하도록 연결
+    if (typeof app !== "undefined" && typeof app.fetch === "function") {
+      return app.fetch(request, env, ctx);
+    }
+
+    return new Response("Not Found", { status: 404 });
+  }
 };

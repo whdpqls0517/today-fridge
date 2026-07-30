@@ -496,18 +496,20 @@
     syncNotificationAudienceFields();
   }
 
+  // [수정 후] - 조건문 잠금을 해제하여 모바일에서도 언제든 선택 가능하게 변경
   function syncNotificationAudienceFields() {
-    const audience = notificationAudience?.value || "";
-    const usesBundle = audience.startsWith("bundle_");
-    if (notificationBundleField) notificationBundleField.hidden = !usesBundle;
-    if (notificationMemberField) notificationMemberField.hidden = audience !== "member";
-    if (notificationLink) {
-      const detailOption = notificationLink.querySelector('option[value="bundle_detail"]');
-      if (detailOption) detailOption.disabled = !usesBundle;
-      if (!usesBundle && notificationLink.value === "bundle_detail") notificationLink.value = "notifications";
-    }
-    invalidateNotificationPreview();
+  const audience = notificationAudience?.value || "";
+  const usesBundle = audience.startsWith("bundle_");
+  if (notificationBundleField) notificationBundleField.hidden = !usesBundle;
+  if (notificationMemberField) notificationMemberField.hidden = audience !== "member";
+  
+  // detailOption.disabled 제약을 제거하여 개별 회원/전체 발송 시에도 보따리 상세 링크 허용
+  if (notificationLink) {
+    const detailOption = notificationLink.querySelector('option[value="bundle_detail"]');
+    if (detailOption) detailOption.disabled = false;
   }
+  invalidateNotificationPreview();
+  }  
 
   function syncNotificationPreviewCopy() {
     if (notificationPreviewTitle) notificationPreviewTitle.textContent = notificationTitle?.value.trim() || "알림 제목";
