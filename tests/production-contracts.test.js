@@ -70,3 +70,10 @@ test("관리자 수동 알림은 권한 보호·대상 재계산·중복 방지�
   assert.match(server, /action:\s*'manual_notification_sent'/);
   assert.match(migration, /admin_notice/);
 });
+
+test("푸시 구독이 알림보다 늦게 완료돼도 최근 미전송 알림을 다시 보낸다", () => {
+  const server = read("server.js");
+  assert.match(server, /recentSince/);
+  assert.match(server, /\.is\('push_sent_at', null\)/);
+  assert.match(server, /recentNotifications\.map\(deliverPushNotification\)/);
+});

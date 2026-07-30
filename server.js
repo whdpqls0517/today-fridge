@@ -2882,7 +2882,31 @@ app.post('/api/push/subscriptions', requireAuth, async (req, res) => {
     .select('id')
     .single();
   if (error) return res.status(400).json({ success: false, error: error.message });
-  res.status(201).json({ success: true, data });
+
+  // 알림이 먼저 생성되고 기기 구독이 나중에 완료된 경우, 최근 알림을 놓치지 않도록 즉시 재전송합니다.
+  let resumedNotificationCount = 0;
+  if (pushEnabled) {
+    const recentSince = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+    const { data: recentNotifications, error: recentError } = await supabaseAdmin
+      .from('notifications')
+      .select('id, user_id, type, title, body, link, push_sent_at, push_attempt_count')
+      .eq('user_id', req.user.id)
+      .is('read_at', null)
+      .is('push_sent_at', null)
+      .gte('created_at', recentSince)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (!recentError && recentNotifications?.length) {
+      const notificationIds = recentNotifications.map((notification) => notification.id);
+      await supabaseAdmin
+        .from('notifications')
+        .update({ push_next_retry_at: new Date().toISOString() })
+        .in('id', notificationIds);
+      const results = await Promise.allSettled(recentNotifications.map(deliverPushNotification));
+      resumedNotificationCount = results.filter((result) => result.status === 'fulfilled').length;
+    }
+  }
+  res.status(201).json({ success: true, data, resumedNotificationCount });
 });
 
 app.delete('/api/push/subscriptions', requireAuth, async (req, res) => {

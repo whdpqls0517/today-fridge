@@ -461,9 +461,19 @@
       }
 
       localStorage.removeItem("todayFridgeProductDraft");
-      showToast(isDraft ? "임시 저장했습니다." : editingProduct ? "상품 정보를 수정했습니다." : "상품을 등록했습니다.");
+      const notificationCount = Number(result.publishNotificationCount) || 0;
+      const successMessage = isDraft
+        ? "임시 저장했습니다."
+        : result.warning
+          ? result.warning
+          : notificationCount > 0
+            ? `상품을 등록하고 ${notificationCount}명에게 새 보따리 알림을 보냈습니다.`
+            : editingProduct
+              ? "상품 정보를 수정했습니다."
+              : "상품을 등록했습니다.";
+      showToast(successMessage);
       
-      if (!isDraft) setTimeout(() => window.location.replace("./admin.html"), 650);
+      if (!isDraft) setTimeout(() => window.location.replace("./admin.html"), result.warning ? 2600 : 1100);
 
     } catch (error) {
       showToast(error.message || "상품을 저장하지 못했습니다.");
