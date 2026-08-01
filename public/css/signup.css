@@ -179,8 +179,7 @@ body {
   text-decoration: none;
 }
 
-.signup-kakao,
-.signup-google {
+.signup-kakao {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -203,14 +202,7 @@ body {
   font-size: 0;
 }
 
-.signup-google {
-  border: 1px solid #dde3df;
-  background: #fff;
-  color: #27332d;
-}
-
-.signup-kakao svg,
-.signup-google svg {
+.signup-kakao svg {
   width: 20px;
   height: 20px;
 }
@@ -219,27 +211,9 @@ body {
   display: none;
 }
 
-.signup-kakao:disabled,
-.signup-google:disabled {
+.signup-kakao:disabled {
   cursor: wait;
   opacity: .58;
-}
-
-.signup-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 12px 0;
-  color: #a4aca8;
-  font-size: 9px;
-}
-
-.signup-divider::before,
-.signup-divider::after {
-  height: 1px;
-  flex: 1;
-  background: #e7ebe9;
-  content: "";
 }
 
 .signup-terms,

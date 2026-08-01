@@ -23,7 +23,7 @@ create table if not exists public.profiles (
   name text,
   phone text,
   login_provider text not null default 'kakao'
-    check (login_provider in ('kakao', 'google')),
+    check (login_provider = 'kakao'),
   role text not null default 'customer'
     check (role in ('customer', 'admin')),
   notification_settings jsonb not null
@@ -36,7 +36,7 @@ create unique index if not exists profiles_phone_unique
   on public.profiles(phone)
   where phone is not null and phone <> '';
 
--- 카카오/구글로 처음 로그인하면 profiles 행 자동 생성
+-- 카카오로 처음 로그인하면 profiles 행 자동 생성
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql

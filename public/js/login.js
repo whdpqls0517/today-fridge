@@ -63,21 +63,23 @@
       const token = session?.access_token;
       if (!token) return;
 
-      const provider = session.user?.app_metadata?.provider === "google"
-        ? "google"
-        : "kakao";
       localStorage.setItem("todayFridgeAccessToken", token);
       const fromSignup = new URLSearchParams(window.location.search).get("from") === "signup";
       if (fromSignup) {
-        if (provider === "kakao" && session.provider_token) {
-          await fetch(`${API_BASE}/api/auth/kakao-sync`, {
+        if (!session.provider_token) {
+          throw new Error("카카오 동의 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
+        }
+        const syncResponse = await fetch(`${API_BASE}/api/auth/kakao-sync`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json"
             },
             body: JSON.stringify({ providerToken: session.provider_token })
-          });
+        });
+        const syncResult = await syncResponse.json().catch(() => ({}));
+        if (!syncResponse.ok) {
+          throw new Error(syncResult.error || "카카오 필수 약관 동의를 확인하지 못했습니다.");
         }
         const profileResponse = await fetch(`${API_BASE}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },

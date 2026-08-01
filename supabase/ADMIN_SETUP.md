@@ -28,10 +28,6 @@ Supabase Dashboard의 **Authentication > URL Configuration**에서:
 
 운영 배포 후에는 localhost 주소 대신 실제 HTTPS 도메인도 추가해야 합니다.
 
-Google 로그인을 함께 사용할 경우 Google Cloud의 OAuth 클라이언트에도
-Supabase Dashboard의 Google Provider 화면에 표시되는 Callback URL을
-**승인된 리디렉션 URI**로 등록해야 합니다.
-
 ## 4. Publishable key 추가
 
 Supabase Dashboard의 프로젝트 API 설정에서 Publishable key를 복사합니다.

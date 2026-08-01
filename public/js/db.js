@@ -153,7 +153,7 @@
         userId: String(user.id),
         name: user.nickname || user.name || "고객",
         email: user.email || "",
-        provider: user.provider === "google" ? "google" : "kakao",
+        provider: "kakao",
         noShowStack: Number(user.noShowStack ?? user.no_show_count) || 0,
         role: user.role || "customer"
       };

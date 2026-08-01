@@ -74,7 +74,7 @@ async function createTestUser(label, role = "customer") {
     password,
     email_confirm: true,
     user_metadata: { name: `감사${label}` },
-    app_metadata: { provider: "google", providers: ["google"] }
+    app_metadata: { provider: "kakao", providers: ["kakao"] }
   });
   if (error) throw error;
   createdUserIds.push(data.user.id);
@@ -82,7 +82,7 @@ async function createTestUser(label, role = "customer") {
     id: data.user.id,
     name: `감사${label}`,
     nickname: `audit_${label}_${runId.replace(/\D/g, "").slice(-6)}`,
-    login_provider: "google",
+    login_provider: "kakao",
     role
   });
   if (profileError) throw profileError;

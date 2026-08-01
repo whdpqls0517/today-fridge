@@ -699,7 +699,7 @@ app.post('/api/auth/kakao-sync', requireAuth, async (req, res) => {
       return res.status(400).json({ success: false, error: result?.msg || '카카오 약관 동의 내역을 확인하지 못했습니다.' });
     }
 
-    const agreedTerms = (result.allowed_service_terms || []).filter((term) => term.agreed !== false);
+    const agreedTerms = (result.service_terms || []).filter((term) => term.agreed !== false);
     const agreedTags = agreedTerms.map((term) => term.tag);
     const missingTags = KAKAO_REQUIRED_TERMS_TAGS.filter((tag) => !agreedTags.includes(tag));
     if (missingTags.length) {

@@ -45,11 +45,6 @@
       const session = data?.session;
       if (!session?.access_token) return;
 
-      const provider = session.user?.app_metadata?.provider === "google" ? "google" : "kakao";
-      const name = session.user?.user_metadata?.name
-        || session.user?.user_metadata?.full_name
-        || session.user?.user_metadata?.preferred_username
-        || "고객";
       localStorage.setItem("todayFridgeAccessToken", session.access_token);
       window.location.replace("./profile-setup.html");
     } catch (error) {

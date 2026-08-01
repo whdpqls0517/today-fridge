@@ -622,7 +622,7 @@
           <span class="member-avatar">${adminEscape((member.name || "고객").slice(0, 1))}</span>
           <div class="member-admin-copy">
             <strong>${adminEscape(member.name || "고객")}</strong>
-            <small>회원번호 ${adminEscape(String(member.id).slice(0, 8).toUpperCase())} · ${member.login_provider === "google" ? "Google" : "카카오"} 가입</small>
+            <small>회원번호 ${adminEscape(String(member.id).slice(0, 8).toUpperCase())} · 카카오 가입</small>
           </div>
           <div class="member-order-count"><strong>${Number(member.no_show_count) || 0}</strong><small>노쇼</small></div>
           <div class="member-row-actions">

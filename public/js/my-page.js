@@ -242,9 +242,7 @@
     const name = account?.name || "고객";
     $("#my-user-name").textContent = name;
     $(".profile-avatar").textContent = name.slice(0, 1);
-    $("#my-account-provider").textContent = account?.provider === "google"
-      ? "Google 계정으로 로그인"
-      : "카카오 계정으로 로그인";
+    $("#my-account-provider").textContent = "카카오 계정으로 로그인";
     const noShowCount = Math.max(0, Number(account?.noShowStack) || 0);
     const noShowElement = $("#my-noshow-count");
     noShowElement.textContent = `노쇼 누적 ${noShowCount}회`;
@@ -355,7 +353,7 @@
     const account = window.FridgeDB.getUserAccount();
     if (action === "profile") {
       nicknameAvailable = false;
-      openModal("정보 수정", `<form class="my-form" id="profile-form"><label>닉네임<div class="profile-nickname-field"><input id="profile-name" value="${account?.name || ""}" minlength="2" maxlength="12" autocomplete="nickname" required><span id="profile-nickname-count">${String(account?.name || "").length}/12</span></div><small class="profile-nickname-status" id="profile-nickname-status">입력한 닉네임의 중복 여부를 확인해요.</small></label><div class="linked-account"><span>연결된 계정</span><strong>${account?.provider === "google" ? "Google" : "카카오"} · ${account?.email || "계정 정보 없음"}</strong><small>로그인 계정은 변경할 수 없어요.</small></div><button class="my-primary-button" type="submit" disabled>저장하기</button></form>`);
+      openModal("정보 수정", `<form class="my-form" id="profile-form"><label>닉네임<div class="profile-nickname-field"><input id="profile-name" value="${account?.name || ""}" minlength="2" maxlength="12" autocomplete="nickname" required><span id="profile-nickname-count">${String(account?.name || "").length}/12</span></div><small class="profile-nickname-status" id="profile-nickname-status">입력한 닉네임의 중복 여부를 확인해요.</small></label><div class="linked-account"><span>연결된 계정</span><strong>카카오 · ${account?.email || "계정 정보 없음"}</strong><small>로그인 계정은 변경할 수 없어요.</small></div><button class="my-primary-button" type="submit" disabled>저장하기</button></form>`);
       checkProfileNickname();
     }
     if (action === "inquiries") {

@@ -77,8 +77,7 @@ body {
   font-size: 0;
 }
 
-.kakao-login svg,
-.google-login svg {
+.kakao-login svg {
   width: 20px;
   height: 20px;
 }
@@ -87,60 +86,9 @@ body {
   display: none;
 }
 
-.login-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 13px 0;
-  color: #a4aca8;
-  font-size: 9px;
-}
-
-.login-divider::before,
-.login-divider::after {
-  height: 1px;
-  flex: 1;
-  background: #e7ebe9;
-  content: "";
-}
-
-.google-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  width: 100%;
-  min-height: 54px;
-  border: 1px solid #dde3df;
-  border-radius: 14px;
-  background: #fff;
-  color: #27332d;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.kakao-login:disabled,
-.google-login:disabled {
+.kakao-login:disabled {
   cursor: wait;
   opacity: .58;
-}
-
-.login-note {
-  margin: 14px 0 0;
-  color: #9aa29e;
-  font-size: 10px;
-  line-height: 1.55;
-  text-align: center;
-}
-
-.legacy-google-login {
-  display: block;
-  margin: 10px auto 0;
-  padding: 7px 10px;
-  color: #8a948f;
-  font-size: 9px;
-  font-weight: 650;
-  text-decoration: none;
 }
 
 .signup-link {
