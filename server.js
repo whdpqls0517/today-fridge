@@ -496,12 +496,42 @@ async function requireAuth(req, res, next) {
   next();
 }
 
+async function ensureUserProfile(user) {
+  const metadata = user?.user_metadata || {};
+  const fallbackName = String(
+    metadata.name || metadata.full_name || metadata.preferred_username || ''
+  ).trim() || null;
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .upsert({
+      id: user.id,
+      name: fallbackName,
+      login_provider: 'kakao'
+    }, {
+      onConflict: 'id',
+      ignoreDuplicates: true
+    })
+    .select('id, name, nickname, phone, role, login_provider, notification_settings, no_show_count')
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 async function requireAdmin(req, res, next) {
-  const { data: profile, error } = await supabaseAdmin
+  const { data: existingProfile, error } = await supabaseAdmin
     .from('profiles')
     .select('id, name, phone, role, login_provider')
     .eq('id', req.user.id)
     .maybeSingle();
+
+  let profile = existingProfile;
+  if (!error && !profile) {
+    try {
+      profile = await ensureUserProfile(req.user);
+    } catch (profileError) {
+      return res.status(500).json({ success: false, error: profileError.message || '회원 정보를 생성하지 못했습니다.' });
+    }
+  }
 
   if (error) return res.status(500).json({ success: false, error: '회원 권한을 확인하지 못했습니다.' });
   if (!profile || profile.role !== 'admin') {
@@ -859,11 +889,20 @@ app.delete('/api/admin/search/recommendations/:id', ...adminOnly, async (req, re
 });
 
 app.get('/api/auth/me', requireAuth, async (req, res) => {
-  const { data: profile, error } = await supabaseAdmin
+  const { data: existingProfile, error } = await supabaseAdmin
     .from('profiles')
     .select('id, name, nickname, phone, role, login_provider, notification_settings, no_show_count')
     .eq('id', req.user.id)
     .maybeSingle();
+
+  let profile = existingProfile;
+  if (!error && !profile) {
+    try {
+      profile = await ensureUserProfile(req.user);
+    } catch (profileError) {
+      return res.status(500).json({ success: false, error: profileError.message || '회원 정보를 생성하지 못했습니다.' });
+    }
+  }
 
   if (error) return res.status(500).json({ success: false, error: '회원 정보를 불러오지 못했습니다.' });
   res.json({
@@ -920,8 +959,12 @@ app.put('/api/profile/nickname', requireAuth, async (req, res) => {
   }
   const { data, error } = await supabaseAdmin
     .from('profiles')
-    .update({ nickname, name: nickname })
-    .eq('id', req.user.id)
+    .upsert({
+      id: req.user.id,
+      nickname,
+      name: nickname,
+      login_provider: 'kakao'
+    }, { onConflict: 'id' })
     .select('id, name, nickname, login_provider')
     .single();
   if (error) {
@@ -929,6 +972,17 @@ app.put('/api/profile/nickname', requireAuth, async (req, res) => {
       return res.status(409).json({ success: false, error: '이미 사용 중인 닉네임입니다.' });
     }
     return res.status(400).json({ success: false, error: error.message });
+  }
+  const { error: metadataError } = await supabaseAdmin.auth.admin.updateUserById(req.user.id, {
+    user_metadata: {
+      ...(req.user.user_metadata || {}),
+      name: nickname,
+      full_name: nickname,
+      preferred_username: nickname
+    }
+  });
+  if (metadataError) {
+    return res.status(500).json({ success: false, error: '닉네임은 저장됐지만 표시 이름을 갱신하지 못했습니다.' });
   }
   res.json({ success: true, data });
 });

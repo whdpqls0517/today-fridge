@@ -65,7 +65,7 @@
 
       localStorage.setItem("todayFridgeAccessToken", token);
       const fromSignup = new URLSearchParams(window.location.search).get("from") === "signup";
-      if (fromSignup) {
+      if (session.provider_token || fromSignup) {
         if (!session.provider_token) {
           throw new Error("카카오 동의 정보를 확인할 수 없습니다. 다시 로그인해 주세요.");
         }
@@ -90,6 +90,18 @@
           window.location.replace("./profile-setup.html");
           return;
         }
+      }
+      const profileResponse = await fetch(`${API_BASE}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      });
+      const profileResult = await profileResponse.json().catch(() => ({}));
+      if (!profileResponse.ok) {
+        throw new Error(profileResult.error || "회원 정보를 확인하지 못했습니다.");
+      }
+      if (!profileResult.profile?.nickname) {
+        window.location.replace("./profile-setup.html");
+        return;
       }
       window.location.replace(nextPage());
     } catch (error) {
