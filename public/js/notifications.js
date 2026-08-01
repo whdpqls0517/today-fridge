@@ -1,5 +1,11 @@
 (function () {
   const list = document.getElementById("notifications-list");
+  const detailLayer = document.getElementById("notification-detail");
+  const detailCategory = document.getElementById("notification-detail-category");
+  const detailTitle = document.getElementById("notification-detail-title");
+  const detailBody = document.getElementById("notification-detail-body");
+  const detailDate = document.getElementById("notification-detail-date");
+  const detailLink = document.getElementById("notification-detail-link");
   let items = [];
   let loading = false;
 
@@ -30,6 +36,19 @@
     const today = new Date();
     if (date.toDateString() === today.toDateString()) return "오늘";
     return date.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
+  }
+
+  function detailDateLabel(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    });
   }
 
   function kindLabel(type) {
@@ -68,6 +87,25 @@
       </div>`;
   }
 
+  function closeDetail() {
+    if (!detailLayer || detailLayer.hidden) return;
+    detailLayer.hidden = true;
+    document.body.classList.remove("notification-detail-open");
+  }
+
+  function openDetail(item) {
+    const [, category] = kindLabel(item.type);
+    detailCategory.textContent = `${category} 알림`;
+    detailTitle.textContent = item.title || "알림";
+    detailBody.textContent = item.body || "";
+    detailDate.textContent = detailDateLabel(item.createdAt);
+    detailLink.href = item.href || "./index.html";
+    detailLink.hidden = !item.href;
+    detailLayer.hidden = false;
+    document.body.classList.add("notification-detail-open");
+    detailLayer.querySelector(".notification-detail-close")?.focus();
+  }
+
   async function load() {
     if (loading) return;
     loading = true;
@@ -87,6 +125,7 @@
             body: item.body,
             href: item.link,
             date: dateLabel(item.created_at),
+            createdAt: item.created_at,
             read: Boolean(item.read_at),
             remote: true
           }));
@@ -116,9 +155,11 @@
   list.addEventListener("click", (event) => {
     const card = event.target.closest("[data-id]");
     if (!card) return;
+    event.preventDefault();
     const item = items.find((entry) => String(entry.id) === card.dataset.id);
     if (!item) return;
     item.read = true;
+    card.classList.remove("is-unread");
     const token = accessToken();
     if (token && item.remote) {
       fetch(`${location.origin}/api/notifications/${encodeURIComponent(item.id)}/read`, {
@@ -126,6 +167,14 @@
         headers: { Authorization: `Bearer ${token}` }
       }).catch(() => {});
     }
+    openDetail(item);
+  });
+
+  detailLayer?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-notification-detail-close]")) closeDetail();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDetail();
   });
 
   window.addEventListener("pageshow", load);

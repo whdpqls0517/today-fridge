@@ -20,6 +20,21 @@
     <section class="notifications-list" id="notifications-list" aria-label="알림 내역"></section>
   </main>
 
+  <div class="notification-detail-layer" id="notification-detail" hidden>
+    <button class="notification-detail-backdrop" type="button" data-notification-detail-close aria-label="알림 상세 닫기"></button>
+    <section class="notification-detail-sheet" role="dialog" aria-modal="true" aria-labelledby="notification-detail-title">
+      <div class="notification-detail-handle" aria-hidden="true"></div>
+      <header>
+        <span id="notification-detail-category">안내</span>
+        <button class="notification-detail-close" type="button" data-notification-detail-close aria-label="닫기">×</button>
+      </header>
+      <strong id="notification-detail-title"></strong>
+      <p id="notification-detail-body"></p>
+      <time id="notification-detail-date"></time>
+      <a id="notification-detail-link" href="./index.html">관련 화면 보기</a>
+    </section>
+  </div>
+
   <nav class="bottom-nav" aria-label="하단 네비게이션">
     <a href="/index.html">
       <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.5l8.5 7.3v9.7h-5.4v-6.2H8.9v6.2H3.5z"/></svg>

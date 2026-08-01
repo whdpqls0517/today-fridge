@@ -120,3 +120,102 @@ body { min-height: 100vh; background: #eef1ef; }
 .notification-empty { padding: 56px 20px; text-align: center; }
 .notification-empty strong { color: #48564f; font-size: 13px; }
 .notification-empty p { margin: 7px 0 0; color: #929b96; font-size: 10px; }
+
+body.notification-detail-open { overflow: hidden; }
+
+.notification-detail-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.notification-detail-layer[hidden] { display: none; }
+
+.notification-detail-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  background: rgba(21, 31, 26, .42);
+  backdrop-filter: blur(2px);
+}
+
+.notification-detail-sheet {
+  position: relative;
+  width: min(100%, 430px);
+  padding: 10px 22px calc(24px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  box-shadow: 0 -16px 45px rgba(25, 40, 32, .14);
+}
+
+.notification-detail-handle {
+  width: 38px;
+  height: 4px;
+  margin: 0 auto 18px;
+  border-radius: 99px;
+  background: #dce2df;
+}
+
+.notification-detail-sheet header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 17px;
+}
+
+.notification-detail-sheet header span {
+  color: #176349;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.notification-detail-sheet header button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f3f6f4;
+  color: #58655f;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.notification-detail-sheet > strong {
+  display: block;
+  color: #17251e;
+  font-size: 20px;
+  font-weight: 780;
+  line-height: 1.4;
+  letter-spacing: -.035em;
+}
+
+.notification-detail-sheet > p {
+  margin: 14px 0 0;
+  color: #526059;
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.notification-detail-sheet > time {
+  display: block;
+  margin-top: 17px;
+  color: #98a19c;
+  font-size: 11px;
+}
+
+.notification-detail-sheet > a {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  margin-top: 24px;
+  border-radius: 14px;
+  background: #176349;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.notification-detail-sheet > a[hidden] { display: none; }
