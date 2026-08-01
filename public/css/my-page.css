@@ -558,6 +558,27 @@ body {
   line-height: 1.55;
 }
 
+.push-browser-guide {
+  margin-top: 12px;
+  padding: 13px 14px;
+  border: 1px solid #e3e9e5;
+  border-radius: 13px;
+  background: #fafcfb;
+}
+
+.push-browser-guide strong {
+  display: block;
+  color: #43564c;
+  font-size: 11px;
+}
+
+.push-browser-guide p {
+  margin: 5px 0 0;
+  color: #7b8780;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
 .notice-toolbar {
   display: flex;
   align-items: center;

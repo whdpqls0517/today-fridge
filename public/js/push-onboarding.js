@@ -26,6 +26,10 @@
       || window.navigator.standalone === true;
   }
 
+  function isInAppBrowser() {
+    return /NAVER|KAKAOTALK|KAKAOSTORY/i.test(navigator.userAgent);
+  }
+
   function userKey(token) {
     try {
       const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
@@ -84,6 +88,7 @@
 
   function showOnboarding(token) {
     const iosNeedsInstall = isIos() && !isStandalone();
+    const needsExternalBrowser = isInAppBrowser();
     const dismissedKey = userKey(token);
     const panel = document.createElement("section");
     panel.className = "push-onboarding";
@@ -92,18 +97,22 @@
     panel.innerHTML = `
       <div class="push-onboarding__icon" aria-hidden="true">🔔</div>
       <div class="push-onboarding__copy">
-        <strong>${iosNeedsInstall ? "홈 화면에 추가하면 알림을 받을 수 있어요" : "입고·수령 소식을 바로 알려드릴까요?"}</strong>
-        <p>${iosNeedsInstall
+        <strong>${needsExternalBrowser ? "외부 브라우저에서 알림을 켜 주세요" : (iosNeedsInstall ? "홈 화면에 추가하면 알림을 받을 수 있어요" : "입고·수령 소식을 바로 알려드릴까요?")}</strong>
+        <p>${needsExternalBrowser
+          ? (isIos()
+            ? "네이버·카카오톡 앱 메뉴에서 ‘Safari로 열기’를 선택한 뒤 홈 화면에 추가해 주세요."
+            : "네이버·카카오톡 앱 메뉴에서 ‘다른 브라우저로 열기’를 선택해 Chrome 또는 삼성 인터넷으로 접속해 주세요.")
+          : iosNeedsInstall
           ? "Safari의 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택하고, 설치된 오늘의 냉장고에서 알림을 켜 주세요."
           : "신청 상품 입고, 입금 확인, 문의 답변 같은 필요한 소식만 보내드려요."}</p>
       </div>
-      <button class="push-onboarding__primary" type="button">${iosNeedsInstall ? "설치 방법 확인" : "알림 받기"}</button>
+      <button class="push-onboarding__primary" type="button">${needsExternalBrowser ? "확인" : (iosNeedsInstall ? "설치 방법 확인" : "알림 받기")}</button>
       <button class="push-onboarding__close" type="button" aria-label="나중에 하기">×</button>
     `;
     document.body.appendChild(panel);
     panel.querySelector(".push-onboarding__close").addEventListener("click", () => close(panel, dismissedKey));
     panel.querySelector(".push-onboarding__primary").addEventListener("click", async (event) => {
-      if (iosNeedsInstall) return close(panel, dismissedKey);
+      if (needsExternalBrowser || iosNeedsInstall) return close(panel, dismissedKey);
       const button = event.currentTarget;
       button.disabled = true;
       button.textContent = "설정 중";
@@ -121,11 +130,16 @@
   }
 
   async function initialize() {
-    if (!window.isSecureContext || !("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("/service-worker.js").catch(() => {});
-    if (!("Notification" in window) || !("PushManager" in window)) return;
+    if (!window.isSecureContext) return;
     const token = readAccessToken();
     if (!token) return;
+    if (isInAppBrowser()) {
+      if (localStorage.getItem(userKey(token)) !== "1") showOnboarding(token);
+      return;
+    }
+    if (!("serviceWorker" in navigator)) return;
+    navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+    if (!("Notification" in window) || !("PushManager" in window)) return;
     if (Notification.permission === "granted") {
       subscribe(token).catch(() => {});
       return;
