@@ -58,16 +58,19 @@
     return url;
   }
 
-  async function openExternalBrowser() {
+  async function openExternalBrowser(browser) {
     const url = await copyPublicPageUrl();
     if (isIosDevice()) {
       showToast("주소를 복사했어요. Safari 주소창에 붙여넣어 주세요.");
       return;
     }
     const target = new URL(url);
-    showToast("주소를 복사했어요. Chrome 또는 삼성 인터넷을 선택해 주세요.");
+    const packageName = browser === "samsung"
+      ? "com.sec.android.app.sbrowser"
+      : "com.android.chrome";
+    showToast(`주소를 복사했어요. ${browser === "samsung" ? "삼성 인터넷" : "Chrome"}으로 이동할게요.`);
     setTimeout(() => {
-      location.href = `intent://${target.host}${target.pathname}${target.search}#Intent;scheme=${target.protocol.replace(":", "")};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+      location.href = `intent://${target.host}${target.pathname}${target.search}#Intent;scheme=${target.protocol.replace(":", "")};package=${packageName};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url=${encodeURIComponent(url)};end`;
     }, 180);
   }
 
@@ -77,8 +80,10 @@
       <strong>네이버·카카오톡 앱 안에서는 웹 알림을 켤 수 없어요.</strong>
       ${ios
         ? `<ol><li>아래 버튼을 눌러 주소를 복사해 주세요.</li><li>Safari를 열고 주소창에 붙여넣어 접속해 주세요.</li><li>Safari 공유 버튼을 누르고 ‘홈 화면에 추가’를 선택해 주세요.</li><li>홈 화면의 오늘의 냉장고 아이콘으로 접속해 로그인해 주세요.</li><li>마이페이지 → 알림 설정에서 ‘전체 알림 받기’를 켜 주세요.</li></ol>`
-        : `<ol><li>아래 버튼을 눌러 외부 브라우저 선택창을 열어 주세요.</li><li>Chrome 또는 삼성 인터넷을 선택해 접속해 주세요.</li><li>필요하면 복사된 주소를 브라우저 주소창에 붙여넣어 주세요.</li><li>로그인한 뒤 마이페이지 → 알림 설정에서 ‘전체 알림 받기’를 켜 주세요.</li></ol>`}
-      <button class="my-primary-button" type="button" data-open-external-browser>${ios ? "주소 복사하기" : "다른 브라우저로 열기"}</button>
+        : `<ol><li>아래에서 사용할 브라우저를 직접 선택해 주세요.</li><li>버튼을 누르면 주소도 함께 복사돼요.</li><li>앱이 열리지 않으면 해당 브라우저 주소창에 붙여넣어 주세요.</li><li>로그인한 뒤 마이페이지 → 알림 설정에서 ‘전체 알림 받기’를 켜 주세요.</li></ol>`}
+      ${ios
+        ? `<button class="my-primary-button" type="button" data-open-external-browser="copy">주소 복사하기</button>`
+        : `<div class="external-browser-actions"><button type="button" data-open-external-browser="chrome">Chrome으로 열기</button><button type="button" data-open-external-browser="samsung">삼성 인터넷으로 열기</button></div>`}
       <small>외부 브라우저로 로그인 정보는 전달되지 않으며, 다시 로그인이 필요할 수 있어요.</small>
     </div>`;
   }
@@ -441,7 +446,7 @@
     if (event.target.closest("[data-modal-close]")) return closeModal();
     if (event.target.closest("[data-open-external-browser]")) {
       try {
-        await openExternalBrowser();
+        await openExternalBrowser(event.target.closest("[data-open-external-browser]").dataset.openExternalBrowser);
       } catch (error) {
         showToast(error.message || "주소를 복사하지 못했어요. onaeng.com을 직접 입력해 주세요.");
       }

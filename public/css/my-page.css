@@ -598,6 +598,23 @@ body {
   margin-top: 17px;
 }
 
+.external-browser-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.external-browser-actions button {
+  min-height: 44px;
+  border: 1px solid #d9e4de;
+  border-radius: 12px;
+  background: #f3f7f5;
+  color: #285d47;
+  font-size: 12px;
+  font-weight: 750;
+}
+
 .external-browser-guide > small {
   display: block;
   margin-top: 10px;
