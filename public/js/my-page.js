@@ -38,6 +38,51 @@
     return Uint8Array.from([...raw].map((character) => character.charCodeAt(0)));
   }
 
+  function isIosDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
+  function isInAppBrowser() {
+    return /NAVER|KAKAOTALK|KAKAOSTORY/i.test(navigator.userAgent);
+  }
+
+  function publicPageUrl() {
+    return `${location.origin}${location.pathname}${location.search}`;
+  }
+
+  async function copyPublicPageUrl() {
+    const url = publicPageUrl();
+    if (!navigator.clipboard?.writeText) throw new Error("주소를 복사하지 못했어요.");
+    await navigator.clipboard.writeText(url);
+    return url;
+  }
+
+  async function openExternalBrowser() {
+    const url = await copyPublicPageUrl();
+    if (isIosDevice()) {
+      showToast("주소를 복사했어요. Safari 주소창에 붙여넣어 주세요.");
+      return;
+    }
+    const target = new URL(url);
+    showToast("주소를 복사했어요. Chrome 또는 삼성 인터넷을 선택해 주세요.");
+    setTimeout(() => {
+      location.href = `intent://${target.host}${target.pathname}${target.search}#Intent;scheme=${target.protocol.replace(":", "")};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+    }, 180);
+  }
+
+  function externalBrowserGuideHTML() {
+    const ios = isIosDevice();
+    return `<div class="external-browser-guide">
+      <strong>네이버·카카오톡 앱 안에서는 웹 알림을 켤 수 없어요.</strong>
+      ${ios
+        ? `<ol><li>아래 버튼을 눌러 주소를 복사해 주세요.</li><li>Safari를 열고 주소창에 붙여넣어 접속해 주세요.</li><li>Safari 공유 버튼을 누르고 ‘홈 화면에 추가’를 선택해 주세요.</li><li>홈 화면의 오늘의 냉장고 아이콘으로 접속해 로그인해 주세요.</li><li>마이페이지 → 알림 설정에서 ‘전체 알림 받기’를 켜 주세요.</li></ol>`
+        : `<ol><li>아래 버튼을 눌러 외부 브라우저 선택창을 열어 주세요.</li><li>Chrome 또는 삼성 인터넷을 선택해 접속해 주세요.</li><li>필요하면 복사된 주소를 브라우저 주소창에 붙여넣어 주세요.</li><li>로그인한 뒤 마이페이지 → 알림 설정에서 ‘전체 알림 받기’를 켜 주세요.</li></ol>`}
+      <button class="my-primary-button" type="button" data-open-external-browser>${ios ? "주소 복사하기" : "다른 브라우저로 열기"}</button>
+      <small>외부 브라우저로 로그인 정보는 전달되지 않으며, 다시 로그인이 필요할 수 있어요.</small>
+    </div>`;
+  }
+
   async function saveNotificationSettings(value) {
     const token = accessToken() || await refreshedAccessToken();
     if (!token) throw new Error("로그인 후 알림 설정을 변경해 주세요.");
@@ -56,16 +101,13 @@
   }
 
   async function enableWebPush() {
-    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const isIos = isIosDevice();
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches
       || window.navigator.standalone === true;
-    const isNaverInApp = /NAVER/i.test(navigator.userAgent);
-    const isKakaoInApp = /KAKAOTALK|KAKAOSTORY/i.test(navigator.userAgent);
     if (!window.isSecureContext) {
       throw new Error("알림은 https로 시작하는 보안 주소에서만 받을 수 있어요.");
     }
-    if (isNaverInApp || isKakaoInApp) {
+    if (isInAppBrowser()) {
       throw new Error(isIos
         ? "네이버·카카오톡 앱 안에서는 웹 푸시를 지원하지 않아요. 메뉴에서 ‘Safari로 열기’를 선택한 뒤 홈 화면에 추가해 주세요."
         : "네이버·카카오톡 앱 안에서는 웹 푸시를 지원하지 않아요. 메뉴에서 ‘다른 브라우저로 열기’를 선택해 Chrome 또는 삼성 인터넷에서 알림을 켜 주세요.");
@@ -397,6 +439,14 @@
 
   document.addEventListener("click", async (event) => {
     if (event.target.closest("[data-modal-close]")) return closeModal();
+    if (event.target.closest("[data-open-external-browser]")) {
+      try {
+        await openExternalBrowser();
+      } catch (error) {
+        showToast(error.message || "주소를 복사하지 못했어요. onaeng.com을 직접 입력해 주세요.");
+      }
+      return;
+    }
     const action = event.target.closest("[data-my-action]")?.dataset.myAction;
     const account = window.FridgeDB.getUserAccount();
     if (action === "profile") {
@@ -442,7 +492,8 @@
         openModal("알림 설정", notificationSettingsHTML());
         showToast(savedEnabled ? "전체 알림을 켰어요." : "전체 알림을 껐어요.");
       } catch (error) {
-        showToast(error.message);
+        if (isInAppBrowser()) openModal("외부 브라우저에서 알림 켜기", externalBrowserGuideHTML());
+        else showToast(error.message);
       }
     }
 

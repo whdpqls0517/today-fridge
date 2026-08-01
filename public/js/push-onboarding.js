@@ -30,6 +30,25 @@
     return /NAVER|KAKAOTALK|KAKAOSTORY/i.test(navigator.userAgent);
   }
 
+  function currentPageUrl() {
+    return `${location.origin}${location.pathname}${location.search}`;
+  }
+
+  async function copyAndOpenExternalBrowser(panel) {
+    const url = currentPageUrl();
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(url);
+    const message = panel.querySelector(".push-onboarding__copy p");
+    if (isIos()) {
+      message.textContent = "주소를 복사했어요. Safari 주소창에 붙여넣은 뒤 공유 → 홈 화면에 추가를 선택해 주세요.";
+      return;
+    }
+    message.textContent = "주소를 복사했어요. Chrome 또는 삼성 인터넷을 선택해 주세요. 선택창이 열리지 않으면 주소창에 붙여넣어 주세요.";
+    const target = new URL(url);
+    setTimeout(() => {
+      location.href = `intent://${target.host}${target.pathname}${target.search}#Intent;scheme=${target.protocol.replace(":", "")};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+    }, 180);
+  }
+
   function userKey(token) {
     try {
       const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
@@ -100,20 +119,33 @@
         <strong>${needsExternalBrowser ? "외부 브라우저에서 알림을 켜 주세요" : (iosNeedsInstall ? "홈 화면에 추가하면 알림을 받을 수 있어요" : "입고·수령 소식을 바로 알려드릴까요?")}</strong>
         <p>${needsExternalBrowser
           ? (isIos()
-            ? "네이버·카카오톡 앱 메뉴에서 ‘Safari로 열기’를 선택한 뒤 홈 화면에 추가해 주세요."
-            : "네이버·카카오톡 앱 메뉴에서 ‘다른 브라우저로 열기’를 선택해 Chrome 또는 삼성 인터넷으로 접속해 주세요.")
+            ? "아래 버튼으로 주소를 복사한 뒤 Safari에서 붙여넣어 접속하세요. 공유 → 홈 화면에 추가 후 설치된 아이콘에서 로그인하고 마이페이지의 전체 알림을 켜 주세요."
+            : "아래 버튼을 누르고 Chrome 또는 삼성 인터넷을 선택하세요. 선택창이 열리지 않아도 주소가 복사되므로 외부 브라우저 주소창에 붙여넣을 수 있어요.")
           : iosNeedsInstall
           ? "Safari의 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택하고, 설치된 오늘의 냉장고에서 알림을 켜 주세요."
           : "신청 상품 입고, 입금 확인, 문의 답변 같은 필요한 소식만 보내드려요."}</p>
       </div>
-      <button class="push-onboarding__primary" type="button">${needsExternalBrowser ? "확인" : (iosNeedsInstall ? "설치 방법 확인" : "알림 받기")}</button>
+      <button class="push-onboarding__primary" type="button">${needsExternalBrowser ? (isIos() ? "주소 복사하기" : "다른 브라우저로 열기") : (iosNeedsInstall ? "설치 방법 확인" : "알림 받기")}</button>
       <button class="push-onboarding__close" type="button" aria-label="나중에 하기">×</button>
     `;
     document.body.appendChild(panel);
     panel.querySelector(".push-onboarding__close").addEventListener("click", () => close(panel, dismissedKey));
     panel.querySelector(".push-onboarding__primary").addEventListener("click", async (event) => {
-      if (needsExternalBrowser || iosNeedsInstall) return close(panel, dismissedKey);
       const button = event.currentTarget;
+      if (needsExternalBrowser) {
+        button.disabled = true;
+        try {
+          await copyAndOpenExternalBrowser(panel);
+          localStorage.setItem(dismissedKey, "1");
+          button.textContent = isIos() ? "주소 복사 완료" : "브라우저 선택창 여는 중";
+        } catch (_) {
+          button.disabled = false;
+          button.textContent = "다시 시도";
+          panel.querySelector(".push-onboarding__copy p").textContent = "주소를 복사하지 못했어요. 외부 브라우저 주소창에 onaeng.com을 직접 입력해 주세요.";
+        }
+        return;
+      }
+      if (iosNeedsInstall) return close(panel, dismissedKey);
       button.disabled = true;
       button.textContent = "설정 중";
       try {

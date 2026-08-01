@@ -579,6 +579,34 @@ body {
   line-height: 1.6;
 }
 
+.external-browser-guide > strong {
+  display: block;
+  color: #26372f;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.external-browser-guide ol {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  color: #647168;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.external-browser-guide .my-primary-button {
+  margin-top: 17px;
+}
+
+.external-browser-guide > small {
+  display: block;
+  margin-top: 10px;
+  color: #929b96;
+  font-size: 10px;
+  line-height: 1.55;
+  text-align: center;
+}
+
 .notice-toolbar {
   display: flex;
   align-items: center;
