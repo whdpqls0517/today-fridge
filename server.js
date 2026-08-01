@@ -2970,11 +2970,14 @@ app.get('/api/push/config', (_req, res) => {
 });
 
 app.get('/api/push/subscriptions/status', requireAuth, async (req, res) => {
-  const { count, error } = await supabaseAdmin
+  const endpoint = String(req.query?.endpoint || '').trim();
+  let query = supabaseAdmin
     .from('web_push_subscriptions')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', req.user.id)
     .eq('is_active', true);
+  if (endpoint) query = query.eq('endpoint', endpoint);
+  const { count, error } = await query;
   if (error) return res.status(400).json({ success: false, error: error.message });
   res.set('Cache-Control', 'private, no-store, max-age=0');
   res.json({
@@ -3005,6 +3008,19 @@ app.post('/api/push/subscriptions', requireAuth, async (req, res) => {
     .select('id')
     .single();
   if (error) return res.status(400).json({ success: false, error: error.message });
+
+  await supabaseAdmin
+    .from('profiles')
+    .update({
+      notification_settings: {
+        enabled: true,
+        all: true,
+        arrival: true,
+        inquiry: true,
+        important: true
+      }
+    })
+    .eq('id', req.user.id);
 
   // 알림이 먼저 생성되고 기기 구독이 나중에 완료된 경우, 최근 알림을 놓치지 않도록 즉시 재전송합니다.
   let resumedNotificationCount = 0;

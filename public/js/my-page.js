@@ -12,7 +12,7 @@
   let authenticated = false;
   let pushRegistered = false;
 
-  const defaultSettings = { enabled: true };
+  const defaultSettings = { enabled: false };
 
   function readJSON(key, fallback) {
     try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (_) { return fallback; }
@@ -60,6 +60,7 @@
       || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches
       || window.navigator.standalone === true;
+    const isNaverInApp = /NAVER/i.test(navigator.userAgent);
     if (!window.isSecureContext) {
       throw new Error("알림은 https로 시작하는 보안 주소에서만 받을 수 있어요.");
     }
@@ -67,6 +68,9 @@
       throw new Error("아이폰은 Safari 공유 버튼에서 ‘홈 화면에 추가’한 뒤, 설치된 아이콘으로 열어 알림을 켜 주세요.");
     }
     if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      if (isNaverInApp) {
+        throw new Error("네이버 앱 안에서는 웹 푸시를 지원하지 않아요. 메뉴에서 ‘외부 브라우저로 열기’를 선택한 뒤 Android는 Chrome에서 알림을 켜 주세요.");
+      }
       throw new Error("현재 브라우저는 웹 푸시를 지원하지 않아요. Android는 Chrome, iPhone은 홈 화면에 추가한 앱에서 열어 주세요.");
     }
     if (Notification.permission === "denied") {
@@ -110,15 +114,51 @@
     return true;
   }
 
+  async function disableWebPush() {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      pushRegistered = false;
+      return;
+    }
+    const registration = await navigator.serviceWorker.getRegistration("/service-worker.js");
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) {
+      pushRegistered = false;
+      return;
+    }
+    const token = accessToken() || await refreshedAccessToken();
+    if (token) {
+      await fetch("/api/push/subscriptions", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ endpoint: subscription.endpoint })
+      });
+    }
+    await subscription.unsubscribe();
+    pushRegistered = false;
+  }
+
   async function loadPushRegistrationStatus() {
     if (!isLoggedIn()) {
+      pushRegistered = false;
+      return false;
+    }
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      pushRegistered = false;
+      return false;
+    }
+    const registration = await navigator.serviceWorker.getRegistration("/service-worker.js");
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) {
       pushRegistered = false;
       return false;
     }
     const token = accessToken() || await refreshedAccessToken();
     if (!token) return false;
     try {
-      const response = await fetch("/api/push/subscriptions/status", {
+      const response = await fetch(`/api/push/subscriptions/status?endpoint=${encodeURIComponent(subscription.endpoint)}`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store"
       });
@@ -315,12 +355,17 @@
 
   function notificationSettingsHTML() {
     const value = settings();
+    const enabled = value.enabled && pushRegistered;
+    const pushSupported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+    const isNaverInApp = /NAVER/i.test(navigator.userAgent);
     const permissionText = !window.isSecureContext
       ? "HTTPS 배포 후 연결 가능"
-      : ("Notification" in window && Notification.permission === "granted"
+      : (!pushSupported
+        ? (isNaverInApp ? "Chrome에서 알림을 켜 주세요" : "이 브라우저는 웹 푸시 미지원")
+        : (Notification.permission === "granted"
         ? (pushRegistered ? "이 기기 알림 사용 중" : "알림 연결을 완료해 주세요")
-        : "기기 알림 허용 필요");
-    const toggle = `<div class="my-setting-row"><span><strong>전체 알림 받기</strong><small>입고, 입금 확인, 주문 변경, 문의 답변과 새 보따리 소식을 모두 받아요.</small></span><button class="setting-switch ${value.enabled ? "is-on" : ""}" type="button" role="switch" aria-checked="${value.enabled}" data-all-notifications><i></i></button></div>`;
+        : "기기 알림 허용 필요"));
+    const toggle = `<div class="my-setting-row"><span><strong>전체 알림 받기</strong><small>입고, 입금 확인, 주문 변경, 문의 답변과 새 보따리 소식을 모두 받아요.</small></span><button class="setting-switch ${enabled ? "is-on" : ""}" type="button" role="switch" aria-checked="${enabled}" data-all-notifications><i></i></button></div>`;
     return `<div class="push-status-card"><span class="status-dot"></span><div><strong>${permissionText}</strong><small>${pushRegistered ? "이 브라우저가 서버의 알림 대상에 등록되어 있어요." : "전체 알림을 켜면 브라우저 허용과 서버 연결을 함께 진행해요."}</small></div></div>${toggle}<p class="setting-note">처음에 건너뛰었어도 언제든 이 토글을 켜서 다시 연결할 수 있어요. 알림을 꺼도 사이트 안 알림센터에는 이용 내역이 남아요.</p>`;
   }
   async function inquiryHTML() {
@@ -382,9 +427,10 @@
 
     const settingButton = event.target.closest("[data-all-notifications]");
     if (settingButton) {
-      const enabled = !settings().enabled;
+      const enabled = !(settings().enabled && pushRegistered);
       try {
         if (enabled) await enableWebPush();
+        else await disableWebPush();
         const saved = await saveNotificationSettings({ enabled });
         const savedEnabled = saved.enabled !== false;
         settingButton.classList.toggle("is-on", savedEnabled);
