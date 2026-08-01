@@ -1,5 +1,5 @@
 (function () {
-  const DISMISSED_KEY = "todayFridgePushOnboardingDismissed";
+  const DISMISSED_KEY_PREFIX = "todayFridgePushOnboardingDismissed";
 
   function readAccessToken() {
     const direct = localStorage.getItem("todayFridgeAccessToken");
@@ -24,6 +24,15 @@
   function isStandalone() {
     return window.matchMedia("(display-mode: standalone)").matches
       || window.navigator.standalone === true;
+  }
+
+  function userKey(token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      return payload?.sub ? `${DISMISSED_KEY_PREFIX}:${payload.sub}` : DISMISSED_KEY_PREFIX;
+    } catch (_) {
+      return DISMISSED_KEY_PREFIX;
+    }
   }
 
   function base64UrlToUint8Array(value) {
@@ -68,13 +77,14 @@
     }
   }
 
-  function close(panel, remember = true) {
+  function close(panel, dismissedKey, remember = true) {
     panel.remove();
-    if (remember) localStorage.setItem(DISMISSED_KEY, "1");
+    if (remember) localStorage.setItem(dismissedKey, "1");
   }
 
   function showOnboarding(token) {
     const iosNeedsInstall = isIos() && !isStandalone();
+    const dismissedKey = userKey(token);
     const panel = document.createElement("section");
     panel.className = "push-onboarding";
     panel.setAttribute("role", "dialog");
@@ -87,13 +97,13 @@
           ? "Safari의 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택하고, 설치된 오늘의 냉장고에서 알림을 켜 주세요."
           : "신청 상품 입고, 입금 확인, 문의 답변 같은 필요한 소식만 보내드려요."}</p>
       </div>
-      <button class="push-onboarding__primary" type="button">${iosNeedsInstall ? "확인" : "알림 받기"}</button>
+      <button class="push-onboarding__primary" type="button">${iosNeedsInstall ? "설치 방법 확인" : "알림 받기"}</button>
       <button class="push-onboarding__close" type="button" aria-label="나중에 하기">×</button>
     `;
     document.body.appendChild(panel);
-    panel.querySelector(".push-onboarding__close").addEventListener("click", () => close(panel));
+    panel.querySelector(".push-onboarding__close").addEventListener("click", () => close(panel, dismissedKey));
     panel.querySelector(".push-onboarding__primary").addEventListener("click", async (event) => {
-      if (iosNeedsInstall) return close(panel);
+      if (iosNeedsInstall) return close(panel, dismissedKey);
       const button = event.currentTarget;
       button.disabled = true;
       button.textContent = "설정 중";
@@ -101,7 +111,7 @@
         const permission = await Notification.requestPermission();
         if (permission !== "granted") throw new Error("브라우저 설정에서 알림을 허용해 주세요.");
         await subscribe(token);
-        close(panel);
+        close(panel, dismissedKey);
       } catch (error) {
         button.disabled = false;
         button.textContent = "다시 시도";
@@ -121,7 +131,7 @@
       return;
     }
     if (Notification.permission === "denied") return;
-    if (localStorage.getItem(DISMISSED_KEY) === "1") return;
+    if (localStorage.getItem(userKey(token)) === "1") return;
     showOnboarding(token);
   }
 
