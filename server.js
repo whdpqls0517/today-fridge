@@ -26,9 +26,9 @@ const VAPID_SUBJECT = VAPID_SUBJECT_INPUT.includes('@') && !VAPID_SUBJECT_INPUT.
   : VAPID_SUBJECT_INPUT;
 const PAYMENT_EXPIRY_GRACE_MINUTES = Math.max(0, Number(process.env.PAYMENT_EXPIRY_GRACE_MINUTES) || 0);
 const PUBLIC_APP_URL = String(process.env.PUBLIC_APP_URL || '').trim().replace(/\/+$/, '');
-const PAYMENT_BANK_NAME = String(process.env.PAYMENT_BANK_NAME || '').trim();
+const PAYMENT_BANK_NAME = decodeBase64Korean(process.env.PAYMENT_BANK_NAME);
 const PAYMENT_ACCOUNT_NUMBER = String(process.env.PAYMENT_ACCOUNT_NUMBER || '').replace(/[^\d]/g, '');
-const PAYMENT_ACCOUNT_HOLDER = String(process.env.PAYMENT_ACCOUNT_HOLDER || '').trim();
+const PAYMENT_ACCOUNT_HOLDER = decodeBase64Korean(process.env.PAYMENT_ACCOUNT_HOLDER);
 const PAYMENT_TOSS_DEEP_LINK = String(process.env.PAYMENT_TOSS_DEEP_LINK || '').trim();
 const PAYMENT_KAKAOPAY_DEEP_LINK = String(process.env.PAYMENT_KAKAOPAY_DEEP_LINK || '').trim();
 const KAKAO_REQUIRED_TERMS_TAGS = (process.env.KAKAO_REQUIRED_TERMS_TAGS || '')
@@ -3270,18 +3270,26 @@ app.listen(PORT, '0.0.0.0', () => {
 
 // 1. 디코딩 함수 (최상단 위치 유지)
 // ✅ 수정 후: Cloudflare Workers 표준 UTF-8 디코딩
-function decodeBase64Korean(base64Str) {
-  if (!base64Str) return "";
+function decodeBase64Korean(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) return '';
+  if (/[가-힣]/.test(rawValue)) return rawValue;
+
+  const hasPrefix = /^base64:/i.test(rawValue);
+  const encodedValue = hasPrefix ? rawValue.replace(/^base64:/i, '').trim() : rawValue;
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(encodedValue) || encodedValue.length % 4 !== 0) {
+    return rawValue;
+  }
   try {
-    // 1. Base64 문자열을 바이너리(Uint8Array)로 변환
-    const binaryString = atob(base64Str);
+    const binaryString = atob(encodedValue);
     const bytes = Uint8Array.from(binaryString, (char) => char.charCodeAt(0));
-    
-    // 2. TextDecoder로 UTF-8 한글 문자열 복원
-    return new TextDecoder('utf-8').decode(bytes);
+    const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes).trim();
+    if (!decoded || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFD]/.test(decoded)) {
+      return rawValue;
+    }
+    return decoded;
   } catch (e) {
-    console.error("Base64 디코딩 실패:", e);
-    return base64Str;
+    return rawValue;
   }
 }
 
@@ -3292,25 +3300,6 @@ export default {
 
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-
-    // 계좌 정보 요청 API 엔드포인트 (/api/account)
-    if (url.pathname === "/api/account") {
-      const rawBank = env.PAYMENT_BANK_NAME;
-      const rawHolder = env.PAYMENT_ACCOUNT_HOLDER;
-
-      const bankName = decodeBase64Korean(rawBank);
-      const accountHolder = decodeBase64Korean(rawHolder);
-
-      const accountData = {
-        bankName: bankName,            
-        accountHolder: accountHolder,  
-        accountNumber: env.PAYMENT_ACCOUNT_NUMBER || "" 
-      };
-
-      return new Response(JSON.stringify(accountData), {
-        headers: { "Content-Type": "application/json; charset=utf-8" }
-      });
-    }
 
     // 기존 Express / Hono 앱이 요청을 처리하도록 연결
     if (typeof app !== "undefined" && typeof app.fetch === "function") {
