@@ -539,21 +539,27 @@
   notificationTitle?.addEventListener("input", syncNotificationPreviewCopy);
   notificationBody?.addEventListener("input", syncNotificationPreviewCopy);
 
+  async function verifyNotificationRecipients() {
+    const target = notificationPayload(false);
+    const response = await fetch(`${API_BASE}/api/admin/notifications/preview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
+      body: JSON.stringify(target)
+    });
+    const result = await readNotificationResponse(response);
+    if (!response.ok || !result.success) throw new Error(result.error || "발송 대상을 확인하지 못했습니다.");
+    notificationPreview = { ...target, count: Number(result.data?.count) || 0 };
+    notificationRequestKey = createNotificationRequestKey();
+    if (notificationRecipientCount) notificationRecipientCount.textContent = `${notificationPreview.count}명`;
+    return notificationPreview;
+  }
+
   notificationPreviewButton?.addEventListener("click", async () => {
     const button = notificationPreviewButton;
     button.disabled = true;
     invalidateNotificationPreview("대상 고객을 확인하고 있습니다.");
     try {
-      const response = await fetch(`${API_BASE}/api/admin/notifications/preview`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
-        body: JSON.stringify(notificationPayload(false))
-      });
-      const result = await readNotificationResponse(response);
-      if (!response.ok || !result.success) throw new Error(result.error || "발송 대상을 확인하지 못했습니다.");
-      notificationPreview = { ...notificationPayload(false), count: Number(result.data?.count) || 0 };
-      notificationRequestKey = createNotificationRequestKey();
-      notificationRecipientCount.textContent = `${notificationPreview.count}명`;
+      await verifyNotificationRecipients();
       notificationSendButton.disabled = notificationPreview.count < 1;
       notificationStatus.textContent = notificationPreview.count
         ? `${notificationPreview.count}명에게 보낼 수 있습니다. 제목과 내용을 확인한 뒤 발송해 주세요.`
@@ -569,10 +575,6 @@
 
   notificationForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!notificationPreview || !notificationRequestKey) {
-      invalidateNotificationPreview();
-      return;
-    }
     const title = notificationTitle?.value.trim() || "";
     const body = notificationBody?.value.trim() || "";
     if (title.length < 2 || body.length < 2) {
@@ -580,20 +582,19 @@
       notificationStatus.dataset.tone = "error";
       return;
     }
-    const latestTarget = notificationPayload(false);
-    if (JSON.stringify(latestTarget) !== JSON.stringify({
-      audience: notificationPreview.audience,
-      bundleItemId: notificationPreview.bundleItemId,
-      memberId: notificationPreview.memberId
-    })) {
-      invalidateNotificationPreview("대상이 변경되었습니다. 인원을 다시 확인해 주세요.");
-      return;
-    }
-    if (!window.confirm(`${notificationPreview.count}명에게 알림을 발송할까요?\n발송 후에는 고객 알림센터에서 회수할 수 없습니다.`)) return;
     notificationSendButton.disabled = true;
-    notificationStatus.textContent = "알림을 등록하고 있습니다.";
+    notificationStatus.textContent = "발송 대상을 최종 확인하고 있습니다.";
     notificationStatus.dataset.tone = "";
     try {
+      const verifiedPreview = await verifyNotificationRecipients();
+      if (verifiedPreview.count < 1) throw new Error("조건에 맞는 고객이 없습니다. 대상을 다시 확인해 주세요.");
+      if (!window.confirm(`${verifiedPreview.count}명에게 알림을 발송할까요?\n발송 후에는 고객 알림센터에서 회수할 수 없습니다.`)) {
+        notificationStatus.textContent = `${verifiedPreview.count}명에게 보낼 수 있습니다.`;
+        notificationStatus.dataset.tone = "success";
+        notificationSendButton.disabled = false;
+        return;
+      }
+      notificationStatus.textContent = "알림을 등록하고 있습니다.";
       const response = await fetch(`${API_BASE}/api/admin/notifications/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },

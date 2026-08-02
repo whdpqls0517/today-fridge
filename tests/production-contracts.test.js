@@ -71,6 +71,9 @@ test("관리자 수동 알림은 권한 보호·대상 재계산·중복 방지�
   assert.match(server, /dedupe_key:\s*`admin-notice:\$\{requestKey\}`/);
   assert.match(server, /const queued = await upsertNotifications\(rows\)/);
   assert.match(server, /action:\s*'manual_notification_sent'/);
+  const admin = read("public/js/admin.js");
+  assert.match(admin, /async function verifyNotificationRecipients/);
+  assert.match(admin, /const verifiedPreview = await verifyNotificationRecipients\(\)/);
   assert.match(migration, /admin_notice/);
 });
 
