@@ -455,6 +455,22 @@
     return payload;
   }
 
+  function createNotificationRequestKey() {
+    if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+    const randomPart = Math.random().toString(36).slice(2, 14);
+    return `notice-${Date.now()}-${randomPart}`;
+  }
+
+  async function readNotificationResponse(response) {
+    const raw = await response.text();
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch (_) {
+      throw new Error(`서버 응답을 확인하지 못했습니다. (${response.status})`);
+    }
+  }
+
   function invalidateNotificationPreview(message = "대상 인원을 먼저 확인해 주세요.") {
     notificationPreview = null;
     notificationRequestKey = "";
@@ -533,10 +549,10 @@
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
         body: JSON.stringify(notificationPayload(false))
       });
-      const result = await response.json();
+      const result = await readNotificationResponse(response);
       if (!response.ok || !result.success) throw new Error(result.error || "발송 대상을 확인하지 못했습니다.");
       notificationPreview = { ...notificationPayload(false), count: Number(result.data?.count) || 0 };
-      notificationRequestKey = crypto.randomUUID();
+      notificationRequestKey = createNotificationRequestKey();
       notificationRecipientCount.textContent = `${notificationPreview.count}명`;
       notificationSendButton.disabled = notificationPreview.count < 1;
       notificationStatus.textContent = notificationPreview.count
@@ -583,13 +599,15 @@
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
         body: JSON.stringify(notificationPayload(true))
       });
-      const result = await response.json();
+      const result = await readNotificationResponse(response);
       if (!response.ok || !result.success) throw new Error(result.error || "알림을 발송하지 못했습니다.");
-      notificationStatus.textContent = `${result.data.count}명의 알림센터에 등록했습니다. 웹 푸시는 허용된 기기에 순차 발송됩니다.`;
+      const savedCount = Number(result.data?.newlyQueued) || 0;
+      if (savedCount < 1) throw new Error("새로 저장된 알림이 없습니다. 대상 인원을 다시 확인한 뒤 재시도해 주세요.");
+      notificationStatus.textContent = `${savedCount}명의 알림센터에 등록했습니다. 웹 푸시는 허용된 기기에 순차 발송됩니다.`;
       notificationStatus.dataset.tone = "success";
       notificationRequestKey = "";
       notificationPreview = null;
-      notificationRecipientCount.textContent = `${result.data.count}명 발송 완료`;
+      notificationRecipientCount.textContent = `${savedCount}명 발송 완료`;
     } catch (error) {
       notificationStatus.textContent = error.message || "알림을 발송하지 못했습니다.";
       notificationStatus.dataset.tone = "error";

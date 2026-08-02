@@ -1556,7 +1556,16 @@ app.post('/api/admin/notifications/send', ...adminOnly, async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(error.status || 400).json({ success: false, error: error.message });
+    const constraintMissing = String(error?.message || '').includes('notifications_type_check')
+      || (String(error?.message || '').includes('violates check constraint') && String(error?.details || '').includes('admin_notice'));
+    res.status(error.status || (constraintMissing ? 500 : 400)).json({
+      success: false,
+      error: constraintMissing
+        ? '수동 알림 DB 설정이 아직 적용되지 않았습니다. Supabase에서 023_admin_manual_notifications.sql을 실행해 주세요.'
+        : error.message,
+      setupRequired: constraintMissing,
+      migration: constraintMissing ? '023_admin_manual_notifications.sql' : undefined
+    });
   }
 });
 

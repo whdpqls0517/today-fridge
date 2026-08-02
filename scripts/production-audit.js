@@ -207,7 +207,7 @@ async function cleanup() {
 }
 
 async function main() {
-  await check("001~016 핵심 테이블·컬럼", async () => {
+  await check("001~023 핵심 테이블·컬럼", async () => {
     const probes = [
       ["profiles", "id,nickname,role,no_show_count,notification_settings"],
       ["products", "id,show_original_price,prepayment_only,stock_quantity,is_recommended"],
@@ -253,6 +253,27 @@ async function main() {
     return "3개 계정";
   });
   if (!usersReady) return;
+
+  await check("수동 알림 유형 DB 적용", async () => {
+    const dedupeKey = `audit-admin-notice:${runId}`;
+    const { data, error } = await adminDb.from("notifications").insert({
+      user_id: admin.id,
+      type: "admin_notice",
+      title: "배포 점검",
+      body: "수동 알림 유형 저장 점검",
+      link: "./notifications.html",
+      dedupe_key: dedupeKey,
+      push_next_retry_at: null
+    }).select("id").single();
+    if (error) {
+      if (String(error.message || "").includes("notifications_type_check")) {
+        throw new Error("023_admin_manual_notifications.sql이 운영 DB에 적용되지 않았습니다.");
+      }
+      throw error;
+    }
+    const { error: deleteError } = await adminDb.from("notifications").delete().eq("id", data.id);
+    if (deleteError) throw deleteError;
+  });
 
   await check("관리자 API 역할 차단", async () => {
     const adminResult = await api("/api/admin/system-status", admin.token);
