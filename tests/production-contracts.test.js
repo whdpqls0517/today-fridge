@@ -69,6 +69,7 @@ test("관리자 수동 알림은 권한 보호·대상 재계산·중복 방지�
   assert.match(server, /app\.post\('\/api\/admin\/notifications\/send', \.\.\.adminOnly/);
   assert.match(server, /resolveAdminNotificationAudience/);
   assert.match(server, /dedupe_key:\s*`admin-notice:\$\{requestKey\}`/);
+  assert.match(server, /const queued = await upsertNotifications\(rows\)/);
   assert.match(server, /action:\s*'manual_notification_sent'/);
   assert.match(migration, /admin_notice/);
 });

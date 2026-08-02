@@ -1528,7 +1528,10 @@ app.post('/api/admin/notifications/send', ...adminOnly, async (req, res) => {
       link,
       dedupe_key: `admin-notice:${requestKey}`
     }));
-    const queued = await queueNotifications(rows);
+    // 관리자 수동 알림은 예약 작업을 기다리지 않고 다른 운영 알림과
+    // 동일하게 저장 직후 푸시까지 시도한다. 실패한 푸시는 기존 재시도
+    // 스케줄러가 push_next_retry_at을 기준으로 다시 처리한다.
+    const queued = await upsertNotifications(rows);
     await recordAdminAudit({
       adminId: req.user.id,
       action: 'manual_notification_sent',

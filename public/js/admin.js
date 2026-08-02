@@ -603,7 +603,7 @@
       if (!response.ok || !result.success) throw new Error(result.error || "알림을 발송하지 못했습니다.");
       const savedCount = Number(result.data?.newlyQueued) || 0;
       if (savedCount < 1) throw new Error("새로 저장된 알림이 없습니다. 대상 인원을 다시 확인한 뒤 재시도해 주세요.");
-      notificationStatus.textContent = `${savedCount}명의 알림센터에 등록했습니다. 웹 푸시는 허용된 기기에 순차 발송됩니다.`;
+      notificationStatus.textContent = `${savedCount}명의 알림센터에 등록하고 웹 푸시 발송을 요청했습니다.`;
       notificationStatus.dataset.tone = "success";
       notificationRequestKey = "";
       notificationPreview = null;
