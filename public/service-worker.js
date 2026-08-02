@@ -7,8 +7,7 @@ self.addEventListener("push", (event) => {
   }
   event.waitUntil(self.registration.showNotification(data.title || "오늘의 냉장고", {
     body: data.body || "새로운 알림이 도착했습니다.",
-    icon: "./favicon.ico",
-    badge: "./favicon.ico",
+    icon: "/assets/brand/push-icon-192.png",
     data: {
       link: data.link || "./notifications.html",
       notificationId: data.notificationId || null
