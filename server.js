@@ -346,6 +346,29 @@ function adminNotificationLink(linkTarget, productId) {
   return './notifications.html';
 }
 
+async function resolveAdminNotificationProduct(bundleItemId) {
+  if (!bundleItemId) {
+    const error = new Error('보따리 상세로 이동하려면 보따리를 선택해 주세요.');
+    error.status = 400;
+    throw error;
+  }
+  const { data: bundleItem, error: bundleError } = await supabaseAdmin
+    .from('bundle_items')
+    .select('product_id, products(id, name, category)')
+    .eq('id', bundleItemId)
+    .maybeSingle();
+  if (bundleError) throw bundleError;
+  if (!bundleItem || bundleItem.products?.category !== 'bundle') {
+    const error = new Error('이동할 보따리 정보를 찾지 못했습니다.');
+    error.status = 404;
+    throw error;
+  }
+  return {
+    productId: bundleItem.product_id,
+    productName: bundleItem.products?.name || null
+  };
+}
+
 async function recordAdminAudit({ adminId, action, targetType, targetId, before, after, metadata }) {
   const { error } = await supabaseAdmin.from('admin_audit_logs').insert({
     admin_id: adminId || null,
@@ -1519,7 +1542,10 @@ app.post('/api/admin/notifications/send', ...adminOnly, async (req, res) => {
     if (!resolved.userIds.length) {
       return res.status(400).json({ success: false, error: '조건에 맞는 고객이 없습니다. 대상을 다시 확인해 주세요.' });
     }
-    const link = adminNotificationLink(linkTarget, resolved.productId);
+    const linkProduct = linkTarget === 'bundle_detail' && !resolved.productId
+      ? await resolveAdminNotificationProduct(String(req.body?.bundleItemId || '').trim() || null)
+      : { productId: resolved.productId, productName: resolved.productName };
+    const link = adminNotificationLink(linkTarget, linkProduct.productId);
     const rows = resolved.userIds.map((userId) => ({
       user_id: userId,
       type: 'admin_notice',
@@ -1543,8 +1569,8 @@ app.post('/api/admin/notifications/send', ...adminOnly, async (req, res) => {
         audience,
         recipient_count: resolved.userIds.length,
         queued_count: queued.length,
-        product_id: resolved.productId,
-        product_name: resolved.productName,
+        product_id: linkProduct.productId,
+        product_name: linkProduct.productName,
         title,
         body,
         link,
