@@ -34,7 +34,6 @@
       <!-- 상단 통계 현황 카드 -->
       <section class="stat-grid" id="admin-home-stats">
         <button class="stat-card" type="button" onclick="openPackingFilter('today-orders')">
-          <div class="stat-icon">01</div>
           <div class="stat-info">
             <h3>오늘 접수</h3>
             <p id="stat-today-orders">0건</p>
@@ -42,7 +41,6 @@
           </div>
         </button>
         <button class="stat-card" type="button" onclick="openPackingFilter('today-pickups')">
-          <div class="stat-icon">02</div>
           <div class="stat-info">
             <h3>오늘 수령 예정</h3>
             <p id="stat-today-pickups">0명</p>
@@ -50,28 +48,12 @@
             <small class="stat-alert" id="stat-today-unpaid" hidden>미입금 0건</small>
           </div>
         </button>
-      </section>
-
-      <section class="admin-task-queue" id="admin-home-tasks" aria-labelledby="admin-task-queue-title">
-        <div class="admin-task-queue__heading">
-          <div>
-            <span class="admin-task-queue__eyebrow">지금 확인할 업무</span>
-            <h2 id="admin-task-queue-title">처리할 일</h2>
-          </div>
-          <p>확인이 필요한 항목만 모았습니다.</p>
-        </div>
-        <div class="admin-task-queue__items">
-          <button type="button" class="admin-task-item" onclick="openPackingFilter('pending-transfer')">
-            <span class="admin-task-item__dot is-payment" aria-hidden="true"></span>
-            <span class="admin-task-item__copy"><strong>입금 확인 대기</strong><small>입금 내역을 확인하고 승인해 주세요.</small></span>
-            <b id="task-pending-approval">0건</b><span class="admin-task-item__arrow" aria-hidden="true">›</span>
-          </button>
-          <button type="button" class="admin-task-item" onclick="openExpiredHistory('today')">
-            <span class="admin-task-item__dot is-expired" aria-hidden="true"></span>
-            <span class="admin-task-item__copy"><strong>오늘 미수령 만료</strong><small>만료 내역을 확인하거나 상태를 원복할 수 있어요.</small></span>
-            <b id="task-expired-orders">0건</b><span class="admin-task-item__arrow" aria-hidden="true">›</span>
-          </button>
-        </div>
+        <button class="stat-card" type="button" onclick="openPackingFilter('pending-transfer')">
+          <div class="stat-info"><h3>입금 확인 대기</h3><p id="stat-pending-approval">0건</p><small>확인이 필요한 주문</small></div>
+        </button>
+        <button class="stat-card" type="button" onclick="openExpiredHistory('today')">
+          <div class="stat-info"><h3>미수령 만료</h3><p id="stat-expired-orders">0건</p><small>확인 및 원복 가능</small></div>
+        </button>
       </section>
 
       <!-- 관리 탭 메뉴 -->
@@ -287,10 +269,16 @@
 
       <!-- 탭 내용 2: 노쇼 및 미수령 관리 -->
       <div id="tab-noshow" class="admin-tab-content" style="display:none;">
-        <div class="panel-card">
+        <nav class="noshow-subtabs" aria-label="미수령 및 노쇼 관리 구분">
+          <button class="is-active" type="button" data-noshow-tab="unclaimed" onclick="switchNoShowSection('unclaimed')">미수령 처리</button>
+          <button type="button" data-noshow-tab="history" onclick="switchNoShowSection('history')">처리 내역</button>
+          <button type="button" data-noshow-tab="members" onclick="switchNoShowSection('members')">노쇼 관리</button>
+        </nav>
+
+        <div class="panel-card noshow-section" data-noshow-section="history" hidden>
           <div class="admin-section-heading">
             <div>
-              <h2>미수령 만료 내역</h2>
+              <h2>만료 처리 내역</h2>
               <p class="panel-desc">실제 만료 처리 시각을 기준으로 최근 내역을 확인합니다.</p>
             </div>
             <p class="expired-total">누적 <strong id="expired-history-total">0</strong>건</p>
@@ -317,9 +305,9 @@
           </div>
         </div>
 
-        <div class="panel-card">
-          <h2>🚫 미수령 만료 강제 회수 엔진</h2>
-          <p class="panel-desc">수령 마감 시각이 지난 주문 건에 대해 회수 처리를 진행합니다. 만료 시 바코드가 차단되며 노쇼 1스택이 누적됩니다.</p>
+        <div class="panel-card noshow-section" data-noshow-section="unclaimed">
+          <h2>미수령 처리</h2>
+          <p class="panel-desc">수령 마감 시각이 지난 주문을 만료 처리합니다. 처리하면 바코드가 차단되고 노쇼 1회가 반영됩니다.</p>
           <table class="admin-table">
             <thead>
               <tr>
@@ -337,8 +325,8 @@
           </table>
         </div>
 
-        <div class="panel-card" style="margin-top: 20px;">
-          <h2>회원별 노쇼 스택 관리</h2>
+        <div class="panel-card noshow-section" data-noshow-section="members" hidden>
+          <h2>노쇼 관리</h2>
           <p class="panel-desc">회원 관리에서 고객을 선택한 뒤 스택을 조정할 수 있습니다. 모든 수동 변경은 관리자 조정 이력으로 남습니다.</p>
           <div id="member-noshow-panel" style="display:flex; align-items:center; justify-content:space-between; background:#f8f9fa; padding:15px; border-radius:12px; border:1px solid #edf0f2;">
             <div>

@@ -415,6 +415,7 @@
   let packingScope = "all";
   let adminOrdersSyncing = false;
   let expiredRange = "today";
+  let currentNoShowSection = "unclaimed";
   let selectedNoShowMember = null;
   let memberCache = new Map();
   let notificationPreview = null;
@@ -477,6 +478,20 @@
     expiredRange = range;
     syncExpiredRangeButtons();
     window.switchAdminTab("noshow");
+    window.switchNoShowSection("history");
+  };
+
+  window.switchNoShowSection = function (section) {
+    currentNoShowSection = section;
+    document.querySelectorAll("[data-noshow-section]").forEach((panel) => {
+      panel.hidden = panel.dataset.noshowSection !== section;
+    });
+    document.querySelectorAll("[data-noshow-tab]").forEach((button) => {
+      button.classList.toggle("is-active", button.dataset.noshowTab === section);
+    });
+    if (section === "unclaimed") renderUnclaimedOrders();
+    if (section === "history") renderExpiredHistory();
+    if (section === "members") renderUserNoShowPanel();
   };
 
   window.switchAdminTab = function (tab) {
@@ -491,9 +506,7 @@
     const isHomeTab = tab === "display";
     document.querySelector(".admin-main")?.classList.toggle("is-home-tab", isHomeTab);
     const homeStats = document.getElementById("admin-home-stats");
-    const homeTasks = document.getElementById("admin-home-tasks");
     if (homeStats) homeStats.hidden = !isHomeTab;
-    if (homeTasks) homeTasks.hidden = !isHomeTab;
 
     const targetTab = document.getElementById(`tab-${tab}`);
     if (targetTab) {
@@ -1253,10 +1266,6 @@
     }
     if (statPendingApproval) statPendingApproval.textContent = `${pendingApprovalCount}건`;
     if (statExpiredOrders) statExpiredOrders.textContent = `${expiredCount}건`;
-    const taskPendingApproval = document.getElementById("task-pending-approval");
-    const taskExpiredOrders = document.getElementById("task-expired-orders");
-    if (taskPendingApproval) taskPendingApproval.textContent = `${pendingApprovalCount}건`;
-    if (taskExpiredOrders) taskExpiredOrders.textContent = `${expiredCount}건`;
   }
 
   function populateProductFilter() {
