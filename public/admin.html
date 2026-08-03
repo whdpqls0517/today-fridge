@@ -51,8 +51,8 @@
         <button class="stat-card" type="button" onclick="openPackingFilter('pending-transfer')">
           <div class="stat-info"><h3>입금 확인 대기</h3><p id="stat-pending-approval">0건</p><small>확인이 필요한 주문</small></div>
         </button>
-        <button class="stat-card" type="button" onclick="openUnclaimedOrders()">
-          <div class="stat-info"><h3>미수령 건</h3><p id="stat-expired-orders">0건</p><small>전날까지 미수령</small></div>
+        <button class="stat-card" type="button" onclick="openExpiredHistory('today')">
+          <div class="stat-info"><h3>오늘 만료 처리</h3><p id="stat-expired-orders">0건</p><small>자정 이후 자동 처리</small></div>
         </button>
       </section>
 
@@ -270,8 +270,7 @@
       <!-- 탭 내용 2: 노쇼 및 미수령 관리 -->
       <div id="tab-noshow" class="admin-tab-content" style="display:none;">
         <nav class="noshow-subtabs" aria-label="미수령 및 노쇼 관리 구분">
-          <button class="is-active" type="button" data-noshow-tab="unclaimed" onclick="switchNoShowSection('unclaimed')">미수령 현황</button>
-          <button type="button" data-noshow-tab="history" onclick="switchNoShowSection('history')">만료 처리 내역</button>
+          <button class="is-active" type="button" data-noshow-tab="history" onclick="switchNoShowSection('history')">만료 처리 내역</button>
           <button type="button" data-noshow-tab="members" onclick="switchNoShowSection('members')">노쇼 관리</button>
         </nav>
 
@@ -303,26 +302,6 @@
               <tbody id="expired-history-table"></tbody>
             </table>
           </div>
-        </div>
-
-        <div class="panel-card noshow-section" data-noshow-section="unclaimed">
-          <h2>미수령 현황</h2>
-          <p class="panel-desc">수령일이 전날까지였지만 아직 수령하지 않은 주문입니다. 만료 처리하면 바코드가 차단되고 노쇼 1회가 반영됩니다.</p>
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>주문번호</th>
-                <th>고객명</th>
-                <th>상품명</th>
-                <th>예약일시</th>
-                <th>결제유형</th>
-                <th>만료 처리</th>
-              </tr>
-            </thead>
-            <tbody id="unclaimed-orders-table">
-              <!-- JS로 렌더링 -->
-            </tbody>
-          </table>
         </div>
 
         <div class="panel-card noshow-section" data-noshow-section="members" hidden>

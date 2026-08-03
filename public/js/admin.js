@@ -377,7 +377,6 @@
   const packingFilterReset = document.getElementById("packing-filter-reset");
 
   const packingTable = document.getElementById("packing-orders-table");
-  const unclaimedTable = document.getElementById("unclaimed-orders-table");
   const expiredHistoryTable = document.getElementById("expired-history-table");
   const expiredHistoryTotal = document.getElementById("expired-history-total");
   const expiredRangeButtons = document.querySelectorAll("[data-expired-range]");
@@ -418,7 +417,7 @@
   let packingScope = "all";
   let adminOrdersSyncing = false;
   let expiredRange = "today";
-  let currentNoShowSection = "unclaimed";
+  let currentNoShowSection = "history";
   let selectedNoShowMember = null;
   let memberCache = new Map();
   let notificationPreview = null;
@@ -480,15 +479,6 @@
     }).format(date);
   }
 
-  function isUnprocessedMissedPickup(order, today = localISO()) {
-    const status = String(order?.status || "").toLowerCase();
-    const pickupDate = pickupDateISO(order);
-    if (!pickupDate || pickupDate >= today) return false;
-    if (["cancelled", "canceled", "completed", "expired"].includes(status)) return false;
-    if (order?.receivedAt || order?.expiredAt || order?.restoredAt) return false;
-    return ["pending", "applied", "ready"].includes(status);
-  }
-
   function filterOrdersByScope(orders) {
     const today = localISO();
     const active = (order) => !["cancelled", "canceled"].includes(String(order.status || "").toLowerCase());
@@ -513,11 +503,6 @@
     window.switchNoShowSection("history");
   };
 
-  window.openUnclaimedOrders = function () {
-    window.switchAdminTab("noshow");
-    window.switchNoShowSection("unclaimed");
-  };
-
   window.switchNoShowSection = function (section) {
     currentNoShowSection = section;
     document.querySelectorAll("[data-noshow-section]").forEach((panel) => {
@@ -526,7 +511,6 @@
     document.querySelectorAll("[data-noshow-tab]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.noshowTab === section);
     });
-    if (section === "unclaimed") renderUnclaimedOrders();
     if (section === "history") renderExpiredHistory();
     if (section === "members") renderUserNoShowPanel();
   };
@@ -563,7 +547,6 @@
       renderAdminOrders();
     } else if (currentAdminTab === "noshow") {
       renderExpiredHistory();
-      renderUnclaimedOrders();
       renderUserNoShowPanel();
     } else if (currentAdminTab === "reviews") {
       renderReviewsPanel();
@@ -1289,7 +1272,10 @@
     const pendingApprovalCount = activeOrders.filter(o =>
       o.paymentType === "transfer" && ["pending", "applied", "ready"].includes(o.status) && !o.transferApproved
     ).length;
-    const expiredCount = orders.filter((order) => isUnprocessedMissedPickup(order, today)).length;
+    const expiredCount = orders.filter((order) =>
+      (order.status === "expired" || order.expiredAt || order.restoredAt)
+      && expirationDateISO(order) === today
+    ).length;
 
     if (statTodayOrders) statTodayOrders.textContent = `${todayOrderQuantity}개`;
     if (statTodayOrdersDetail) statTodayOrdersDetail.textContent = `주문 ${todayOrders.length}건 · 상품 ${todayOrderQuantity}개`;
@@ -1661,72 +1647,6 @@
   }));
   expiredHistorySearch?.addEventListener("input", renderExpiredHistory);
   expiredHistoryStatus?.addEventListener("change", renderExpiredHistory);
-
-  function renderUnclaimedOrders() {
-    if (!unclaimedTable) return;
-
-    const orders = window.FridgeDB.getOrders();
-    const account = window.FridgeDB.getUserAccount();
-    unclaimedTable.innerHTML = "";
-
-    const activeOrders = orders
-      .filter((order) => isUnprocessedMissedPickup(order))
-      .sort((a, b) => pickupDateISO(a).localeCompare(pickupDateISO(b)));
-
-    if (activeOrders.length === 0) {
-      unclaimedTable.innerHTML = `<tr><td colspan="6" class="admin-empty-row"><strong>확인할 미수령 주문이 없습니다.</strong><span>수령일이 오늘 이후인 주문은 여기에 표시되지 않습니다.</span></td></tr>`;
-      return;
-    }
-
-    activeOrders.forEach(o => {
-      let payTypeKo = o.paymentType === "onsite" ? "현장결제" : "계좌이체";
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><code>${o.id}</code></td>
-        <td><strong>${o.customerName || o.userName || account?.name || "고객"}</strong></td>
-        <td><strong>${o.productName}</strong></td>
-        <td>${o.pickupDate}</td>
-        <td>${payTypeKo}</td>
-        <td>
-          <button onclick="expireOrder('${o.id}')" class="expire-btn">만료 회수 처리</button>
-        </td>
-      `;
-      unclaimedTable.appendChild(tr);
-    });
-  }
-
-  window.expireOrder = async function (orderId) {
-    const orders = window.FridgeDB.getOrders();
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-
-    try {
-      const response = await fetch(`${API_BASE}/api/admin/orders/${encodeURIComponent(orderId)}/no-show`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken()}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({})
-      });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error || "미수령 만료 처리에 실패했습니다.");
-    } catch (error) {
-      alert(error.message);
-      return;
-    }
-
-    const updates = { status: "expired", expiredAt: new Date().toISOString(), restoredAt: null, barcodeLocked: true };
-    
-    const noShowIncremented = true;
-    updates.userNoShowStacked = true;
-
-    window.FridgeDB.updateOrder(orderId, updates);
-    alert(`🚨 미수령 만료 처리가 완료되었습니다.\n\n- 바코드 강제 잠금\n- 빨간색 만료 스탬프 오버레이\n${noShowIncremented ? '- 고객 노쇼 1스택 누적 (현장결제 자동 제한 여부 갱신)' : ''}`);
-    renderAdminDashboard();
-    refreshPreviewIframe();
-  };
 
   window.restoreOrder = async function (orderId) {
     const orders = window.FridgeDB.getOrders();
