@@ -23,7 +23,7 @@
     completeToast: "수령 완료 처리됨",
     paymentWaiting: "결제 대기",
     checked: "확인 완료",
-    expiredContact: "미수령 만료 건은 매장에 문의해 주세요",
+    expiredContact: "https://open.kakao.com/o/sUxQSL3h",
     dateChange: "날짜 변경",
     dateChanged: "수령 예정일이 변경됨"
   };
