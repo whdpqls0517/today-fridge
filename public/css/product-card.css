@@ -204,6 +204,25 @@
   white-space:normal;
 }
 
+.search-screen .popular-card > strong {
+  display:block;
+  overflow:visible;
+  text-overflow:clip;
+  overflow-wrap:anywhere;
+  white-space:normal;
+}
+
+.search-screen .popular-card > small {
+  display:block;
+  height:auto;
+  overflow:visible;
+  margin-top:4px;
+  padding-left:0;
+  text-overflow:clip;
+  overflow-wrap:anywhere;
+  white-space:pre-line;
+}
+
 /* 가격 스타일 */
 .product-master-price {
   display: flex;
