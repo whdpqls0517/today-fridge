@@ -47,16 +47,15 @@
 
 /* (1) 상품 제목 */
 .fruit-list-copy h3 {
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
   margin: 0 0 10px 0; /* 제목 ↔ 가격 간격 확대 */
   color: #111827;
   font-size: 18px;
   font-weight: 700;
   line-height: 1.35;
   letter-spacing: -0.02em;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 /* (2) 가격 */
@@ -100,16 +99,15 @@
 
 /* (3) 한 줄 소개 */
 .fruit-list-description {
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
   margin: 0 0 8px 0;
   color: #6b7280;
   font-size: 13px;
   font-weight: 400;
   line-height: 1.5;   /* 글자 줄간격 여유있게 지정 */
   letter-spacing: -0.01em;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 /* (4) 평점 */

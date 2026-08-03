@@ -161,26 +161,24 @@
 }
 
 .product-master-copy > strong {
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
   color: #202e28;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
   letter-spacing: -.03em;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .product-master-copy > p {
-  display: -webkit-box;
+  display: block;
   margin: 4px 0 5px;
-  overflow: hidden;
   color: #818c86;
   font-size: 10px;
   line-height: 1.5;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 .popular-card p {
@@ -190,24 +188,20 @@
 }
 
 .popular-card > small {
-  display:-webkit-box;
+  display:block;
   margin-top:4px;
-  overflow:hidden;
   color:#7f8a84;
   font-size:10px;
   line-height:1.5;
+  overflow-wrap:anywhere;
   white-space:pre-line;
-  -webkit-box-orient:vertical;
-  -webkit-line-clamp:2;
 }
 
 .popular-card > strong {
-  display:-webkit-box;
-  overflow:hidden;
+  display:block;
   line-height:1.35;
+  overflow-wrap:anywhere;
   white-space:normal;
-  -webkit-box-orient:vertical;
-  -webkit-line-clamp:2;
 }
 
 /* 가격 스타일 */

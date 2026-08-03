@@ -2,7 +2,7 @@
 @import url("./main.css");
 @import url("./search.css");
 @import url("./receipt.css");
-@import url("./product-card.css");
+@import url("./product-card.css?v=20260803-2");
 @import url("./receipt-launcher.css");
 .arrival-status-sheet {
   overflow-y: auto;
