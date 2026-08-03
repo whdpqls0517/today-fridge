@@ -117,6 +117,8 @@
 
   function updateCategoryPanels() {
     const category = selectedCategory();
+    const reviewGroupField = document.querySelector("[data-review-group-field]");
+    if (reviewGroupField) reviewGroupField.hidden = category !== "bundle";
     const fruitTypeField = document.querySelector("[data-fruit-type-field]");
     const fruitTypeSelect = form.elements.fruitTypeId;
     if (fruitTypeField) fruitTypeField.hidden = category !== "fruit";
@@ -315,6 +317,7 @@
     const categoryRadio = form.querySelector(`input[name="category"][value="${editingProduct.category}"]`);
     if (categoryRadio) categoryRadio.checked = true;
     setValue("name", editingProduct.name);
+    setValue("reviewGroupName", editingProduct.reviewGroupName || editingProduct.name);
     setValue("description", editingProduct.description);
     setValue("productCategory", editingProduct.productCategory || "");
     setValue("fruitTypeId", editingProduct.fruitTypeId || "");
@@ -410,6 +413,9 @@
       bundleId: editingProduct?.bundleId,
       bundleItemId: editingProduct?.bundleItemId,
       name: String(data.get("name") || "").trim(),
+      reviewGroupName: category === "bundle"
+        ? String(data.get("reviewGroupName") || data.get("name") || "").trim()
+        : "",
       category,
       categoryLabel: category === "bundle" ? "공구" : category === "fruit" ? "오늘의 과일" : "매장픽",
       purchaseMode: category === "bundle" ? "reservation" : "store",

@@ -35,6 +35,11 @@
         <div class="section-heading"><b>2</b><div><h2>기본 정보</h2><p>목록 카드와 상세페이지에 공통으로 표시됩니다.</p></div></div>
         <div class="field-grid">
           <label class="wide"><span>상품명 *</span><input name="name" maxlength="60" required placeholder="예: 제주 감귤 보따리" /></label>
+          <label class="wide review-group-field" data-review-group-field>
+            <span>후기 연결 이름</span>
+            <input name="reviewGroupName" maxlength="80" placeholder="예: 제주 감귤 보따리" />
+            <small>예전에 판매한 동일 보따리와 같은 이름을 입력하면 기존 후기가 함께 표시됩니다. 비워두면 상품명을 사용합니다.</small>
+          </label>
           <label class="wide"><span>상품 소개 * <small>최대 2줄</small></span><textarea name="description" rows="2" maxlength="120" required placeholder="상품의 핵심 특징을 최대 두 줄로 적어주세요"></textarea></label>
           <label class="wide"><span>상품 카테고리 *</span><select name="productCategory" required>
             <option value="">카테고리를 선택해 주세요</option>

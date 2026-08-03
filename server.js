@@ -1039,6 +1039,39 @@ function subjectWithParticle(value) {
   return `${subject}${hasKoreanFinalConsonant(subject) ? '이' : '가'}`;
 }
 
+const REVIEW_GROUP_TAG_PREFIX = '__review_group:';
+
+function normalizeReviewGroupKey(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .toLocaleLowerCase('ko-KR')
+    .replace(/[^0-9a-z가-힣]/g, '');
+}
+
+function reviewGroupNameFromTags(tags) {
+  const tag = (Array.isArray(tags) ? tags : []).find((item) => String(item).startsWith(REVIEW_GROUP_TAG_PREFIX));
+  if (!tag) return '';
+  try { return decodeURIComponent(String(tag).slice(REVIEW_GROUP_TAG_PREFIX.length)); } catch (_) { return ''; }
+}
+
+function reviewGroupKeyForProduct(product) {
+  return normalizeReviewGroupKey(reviewGroupNameFromTags(product?.tags) || product?.name);
+}
+
+async function bundleReviewProductIds(productId) {
+  const { data: target, error: targetError } = await supabaseAdmin
+    .from('products').select('id, name, category, tags').eq('id', productId).maybeSingle();
+  if (targetError) throw targetError;
+  if (!target || target.category !== 'bundle') return [productId];
+  const targetKey = reviewGroupKeyForProduct(target);
+  if (!targetKey) return [productId];
+  const { data: products, error } = await supabaseAdmin
+    .from('products').select('id, name, tags').eq('category', 'bundle').limit(2000);
+  if (error) throw error;
+  const ids = (products || []).filter((product) => reviewGroupKeyForProduct(product) === targetKey).map((product) => product.id);
+  return ids.length ? ids : [productId];
+}
+
 function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitReviewStats = null) {
   const bundle = bundleItem?.bundles || null;
   const images = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
@@ -1059,6 +1092,7 @@ function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitRev
     id: product.id,
     productId: product.id,
     externalKey: product.external_key || null,
+    reviewGroupName: reviewGroupNameFromTags(productTags) || (product.category === 'bundle' ? product.name : ''),
     bundleItemId: bundleItem?.id || null,
     bundleId: bundle?.id || null,
     name: product.name,
@@ -1355,9 +1389,12 @@ function productPayload(body) {
   const publicTags = Array.isArray(body.tags)
     ? body.tags.filter((tag) => !String(tag).startsWith('__'))
     : [];
-  const internalTags = body.category === 'bundle' && body.showDeadlineTime === false
-    ? ['__hide_deadline_time__']
-    : [];
+  const internalTags = [];
+  if (body.category === 'bundle' && body.showDeadlineTime === false) internalTags.push('__hide_deadline_time__');
+  const reviewGroupName = String(body.reviewGroupName || body.name || '').trim().slice(0, 80);
+  if (body.category === 'bundle' && reviewGroupName) {
+    internalTags.push(`${REVIEW_GROUP_TAG_PREFIX}${encodeURIComponent(reviewGroupName)}`);
+  }
 
   return {
     external_key: body.externalKey || null,
@@ -1454,6 +1491,7 @@ app.post('/api/admin/products', ...adminOnly, async (req, res) => {
     const { data: product, error } = await supabaseAdmin.from('products').insert(values).select().single();
     if (error) throw error;
     await upsertBundleForProduct(product, req.body || {}, req.user.id);
+    await refreshProductReviewStats(product.id);
     const catalog = await readCatalog(true);
     const savedProduct = catalog.find((item) => item.id === product.id);
     let publishNotificationCount = 0;
@@ -2721,6 +2759,7 @@ app.patch('/api/admin/products/:id', ...adminOnly, async (req, res) => {
       .single();
     if (error) throw error;
     await upsertBundleForProduct(product, req.body || {}, req.user.id);
+    await refreshProductReviewStats(product.id);
     const catalog = await readCatalog(true);
     const savedProduct = catalog.find((item) => item.id === product.id);
     let restockNotificationCount = 0;
@@ -2937,10 +2976,11 @@ app.patch('/api/admin/products-legacy/:id', ...adminOnly, async (req, res) => {
 
 async function refreshProductReviewStats(productId) {
   if (!productId) return;
+  const productIds = await bundleReviewProductIds(productId);
   const { data: ratings, error: ratingsError } = await supabaseAdmin
     .from('reviews')
     .select('rating')
-    .eq('product_id', productId)
+    .in('product_id', productIds)
     .eq('is_visible', true);
   if (ratingsError) throw ratingsError;
   const values = (ratings || []).map((item) => Number(item.rating || 0));
@@ -2948,7 +2988,7 @@ async function refreshProductReviewStats(productId) {
   const { error } = await supabaseAdmin.from('products').update({
     reviews_count: values.length,
     rating
-  }).eq('id', productId);
+  }).in('id', productIds);
   if (error) throw error;
   publicCatalogCache = { data: null, expiresAt: 0 };
 }
@@ -2964,7 +3004,12 @@ app.get('/api/reviews', async (req, res) => {
 
   // 쿼리 파라미터가 유효하게 전달된 경우에만 eq 조건 추가
   if (req.query.productId && req.query.productId !== 'undefined' && req.query.productId !== 'null') {
-    query = query.eq('product_id', req.query.productId);
+    try {
+      const productIds = await bundleReviewProductIds(req.query.productId);
+      query = query.in('product_id', productIds);
+    } catch (groupError) {
+      return res.status(400).json({ success: false, error: groupError.message });
+    }
   }
   if (req.query.fruitTypeId && req.query.fruitTypeId !== 'undefined' && req.query.fruitTypeId !== 'null') {
     query = query.eq('fruit_type_id', req.query.fruitTypeId);
