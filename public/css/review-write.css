@@ -108,7 +108,7 @@ body { background:#eef2ef; }
 
 .review-write-page fieldset {
   margin:0;
-  padding:25px 0 27px;
+  padding:0 0 29px;
   border:0;
   border-bottom:1px solid var(--review-line);
   text-align:left;
@@ -116,23 +116,36 @@ body { background:#eef2ef; }
 
 .review-write-page legend {
   width:100%;
-  margin-bottom:16px;
+  margin-bottom:18px;
+  padding-top:28px;
   font-size:14px;
   font-weight:750;
   letter-spacing:-.025em;
 }
 
-.rating-picker { display:flex; justify-content:flex-start; gap:9px; }
+.rating-picker { display:flex; justify-content:center; gap:12px; }
 .rating-picker button {
+  position:relative;
+  width:36px;
+  height:38px;
   padding:0;
   border:0;
   background:transparent;
-  color:#dce3df;
-  font-size:36px;
+  color:#c9d3cd;
+  font-size:0;
   line-height:1;
   transition:color .15s ease, transform .15s ease;
 }
+.rating-picker button::before {
+  content:"☆";
+  display:block;
+  font-family:"Segoe UI Symbol","Apple Symbols",sans-serif;
+  font-size:34px;
+  font-weight:400;
+  line-height:38px;
+}
 .rating-picker button.is-active { color:var(--review-sage); }
+.rating-picker button.is-active::before { content:"★"; font-size:32px; }
 .rating-picker button:active { transform:scale(.92); }
 
 .review-write-page form>label {
@@ -243,6 +256,6 @@ body { background:#eef2ef; }
 
 @media (max-width:360px) {
   .review-write-page { padding-inline:16px; }
-  .rating-picker { gap:6px; }
-  .rating-picker button { font-size:33px; }
+  .rating-picker { gap:8px; }
+  .rating-picker button { width:34px; }
 }
