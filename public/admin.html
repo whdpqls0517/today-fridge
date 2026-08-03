@@ -92,17 +92,18 @@
 
       <!-- 관리 탭 메뉴 -->
       <nav class="admin-tabs">
-        <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>7개 업무</span></div>
-        <button class="admin-tab-btn active" data-menu-code="01" onclick="switchAdminTab('products')">상품·보따리</button>
-        <button class="admin-tab-btn" data-menu-code="02" onclick="switchAdminTab('arrivals')">입고 상태</button>
-        <button class="admin-tab-btn" data-menu-code="03" onclick="switchAdminTab('packing')">패킹·주문</button>
-        <button class="admin-tab-btn" data-menu-code="04" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
-        <button class="admin-tab-btn" data-menu-code="05" onclick="switchAdminTab('reviews')">후기·문의</button>
-        <button class="admin-tab-btn" data-menu-code="06" onclick="switchAdminTab('members')">회원 관리</button>
-        <button class="admin-tab-btn" data-menu-code="07" onclick="switchAdminTab('notifications')">알림 발송</button>
+        <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>8개 업무</span></div>
+        <button class="admin-tab-btn active" data-menu-code="01" onclick="switchAdminTab('products')">상품 관리</button>
+        <button class="admin-tab-btn" data-menu-code="02" onclick="switchAdminTab('display')">화면 노출 설정</button>
+        <button class="admin-tab-btn" data-menu-code="03" onclick="switchAdminTab('arrivals')">입고 상태</button>
+        <button class="admin-tab-btn" data-menu-code="04" onclick="switchAdminTab('packing')">패킹·주문</button>
+        <button class="admin-tab-btn" data-menu-code="05" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
+        <button class="admin-tab-btn" data-menu-code="06" onclick="switchAdminTab('reviews')">후기·문의</button>
+        <button class="admin-tab-btn" data-menu-code="07" onclick="switchAdminTab('members')">회원 관리</button>
+        <button class="admin-tab-btn" data-menu-code="08" onclick="switchAdminTab('notifications')">알림 발송</button>
       </nav>
 
-      <div id="tab-products" class="admin-tab-content">
+      <div id="tab-display" class="admin-tab-content" style="display:none;">
         <div class="panel-card fruit-hero-admin">
           <div class="admin-section-heading">
             <div>
@@ -153,11 +154,14 @@
           </div>
         </div>
 
+      </div>
+
+      <div id="tab-products" class="admin-tab-content">
         <div class="panel-card">
           <div class="admin-section-heading">
             <div>
-              <h2>상품 노출 및 판매 설정</h2>
-              <p class="panel-desc">고객 목록·상세페이지의 가격 표시와 마감 상태를 같은 규칙으로 제어합니다.</p>
+              <h2>상품 관리</h2>
+              <p class="panel-desc">상품을 등록하고 가격·재고·추천·판매 상태를 관리합니다.</p>
             </div>
             <a class="admin-primary-btn" href="./admin-product-form.html">새 상품 등록</a>
           </div>

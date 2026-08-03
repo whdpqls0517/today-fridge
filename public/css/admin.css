@@ -1762,24 +1762,23 @@
   }
 
   .admin-tab-content { grid-area: content; min-width: 0; }
-  #tab-products {
+  #tab-display {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
     align-items: start;
   }
-  #tab-products > .panel-card { min-width: 0; height: 100%; }
-  #tab-products > .panel-card:last-child { grid-column: 1 / -1; height: auto; }
-  #tab-products .fruit-hero-admin,
-  #tab-products .recommended-search-admin { margin-bottom: 0; }
-  #tab-products .fruit-hero-form { grid-template-columns: 1fr; }
-  #tab-products .fruit-hero-form__actions {
+  #tab-display > .panel-card { min-width: 0; height: 100%; }
+  #tab-display .fruit-hero-admin,
+  #tab-display .recommended-search-admin { margin-bottom: 0; }
+  #tab-display .fruit-hero-form { grid-template-columns: 1fr; }
+  #tab-display .fruit-hero-form__actions {
     min-width: 0;
     align-items: stretch;
     flex-direction: row;
     justify-content: space-between;
   }
-  #tab-products .fruit-hero-form__actions p { text-align: left; }
+  #tab-display .fruit-hero-form__actions p { text-align: left; }
 }
 
 .admin-task-queue {
@@ -1875,8 +1874,7 @@
 .admin-table td { vertical-align: middle; }
 
 @media (max-width: 1240px) and (min-width: 1025px) {
-  #tab-products { grid-template-columns: 1fr; }
-  #tab-products > .panel-card:last-child { grid-column: auto; }
+  #tab-display { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 1024px) {

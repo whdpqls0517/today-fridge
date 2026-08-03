@@ -485,13 +485,9 @@
       btn.classList.toggle("active", btn.getAttribute("onclick").includes(tab));
     });
     
-    document.getElementById("tab-packing").style.display = "none";
-    document.getElementById("tab-products").style.display = "none";
-    document.getElementById("tab-arrivals").style.display = "none";
-    document.getElementById("tab-noshow").style.display = "none";
-    document.getElementById("tab-reviews").style.display = "none";
-    document.getElementById("tab-members").style.display = "none";
-    document.getElementById("tab-notifications").style.display = "none";
+    document.querySelectorAll(".admin-tab-content").forEach((content) => {
+      content.style.display = "none";
+    });
 
     const targetTab = document.getElementById(`tab-${tab}`);
     if (targetTab) {
