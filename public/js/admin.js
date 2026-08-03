@@ -289,6 +289,9 @@
           barcodeLocked: order.barcode_locked,
           receivedAt: order.received_at,
           cancelledAt: order.cancelled_at,
+          expiredAt: order.expired_at,
+          restoredAt: order.restored_at,
+          updatedAt: order.updated_at,
           createdAt: order.created_at
         };
       }));
@@ -454,7 +457,27 @@
   }
 
   function expirationDateISO(order) {
-    return String(order.expiredAt || order.pickupDateISO || order.pickupDate || "").slice(0, 10);
+    const timestamp = order.expiredAt
+      || (String(order.status || "").toLowerCase() === "expired" ? order.updatedAt : "");
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    return Number.isNaN(date.getTime()) ? String(timestamp).slice(0, 10) : localISO(date);
+  }
+
+  function expirationTimeText(order) {
+    const timestamp = order.expiredAt
+      || (String(order.status || "").toLowerCase() === "expired" ? order.updatedAt : "");
+    if (!timestamp) return "-";
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return String(timestamp);
+    return new Intl.DateTimeFormat("ko-KR", {
+      timeZone: "Asia/Seoul",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).format(date);
   }
 
   function isUnprocessedMissedPickup(order, today = localISO()) {
@@ -1611,7 +1634,7 @@
       lastDate = date;
       const restored = Boolean(order.restoredAt);
       return `${dateRow}<tr>
-        <td>${date}</td>
+        <td>${expirationTimeText(order)}</td>
         <td><strong>${order.customerName || order.userName || account?.name || "고객"}</strong></td>
         <td>${order.productName || "-"}</td>
         <td>${order.pickupDate || order.pickupDateISO || "-"}</td>

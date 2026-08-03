@@ -414,7 +414,7 @@ async function expireOverduePickupOrders({ userId = null, limit = 500 } = {}) {
 
     const { data: expiredOrder, error: updateError } = await supabaseAdmin
       .from('orders')
-      .update({ status: 'expired', barcode_locked: true })
+      .update({ status: 'expired', barcode_locked: true, expired_at: new Date().toISOString(), restored_at: null })
       .eq('id', order.id)
       .in('status', ['applied', 'ready', 'pending'])
       .is('received_at', null)
@@ -2504,7 +2504,7 @@ app.post('/api/admin/orders/:id/no-show', ...adminOnly, async (req, res) => {
 
   const { error: orderUpdateError } = await supabaseAdmin
     .from('orders')
-    .update({ status: 'expired', barcode_locked: true })
+    .update({ status: 'expired', barcode_locked: true, expired_at: new Date().toISOString(), restored_at: null })
     .eq('id', order.id);
   if (orderUpdateError) return res.status(400).json({ success: false, error: orderUpdateError.message });
 
@@ -2556,7 +2556,8 @@ app.delete('/api/admin/orders/:id/no-show', ...adminOnly, async (req, res) => {
     .update({
       status: 'ready',
       barcode_locked: false,
-      pickup_date: seoulDateISO()
+      pickup_date: seoulDateISO(),
+      restored_at: new Date().toISOString()
     })
     .eq('id', req.params.id);
   if (orderError) return res.status(400).json({ success: false, error: orderError.message });

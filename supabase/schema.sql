@@ -192,6 +192,8 @@ create table if not exists public.orders (
   pickup_postponed_at timestamptz,
   received_at timestamptz,
   cancelled_at timestamptz,
+  expired_at timestamptz,
+  restored_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
