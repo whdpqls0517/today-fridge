@@ -4,6 +4,7 @@
 body { margin:0; background:var(--bg); color:#202723; font-family:"Pretendard Variable","Pretendard","Apple SD Gothic Neo",sans-serif; }
 button,input,textarea,select { font:inherit; }
 .bulk-auth { display:grid; place-items:center; min-height:100vh; text-align:center; }
+.bulk-auth[hidden],.bulk-page[hidden] { display:none !important; }
 .bulk-auth p { color:var(--muted); }
 .bulk-page { width:min(100%,920px); margin:0 auto; padding:0 22px 120px; }
 .bulk-header { position:sticky; top:0; z-index:10; display:grid; grid-template-columns:46px 1fr; align-items:center; padding:21px 0 17px; background:rgba(243,245,244,.94); backdrop-filter:blur(12px); }
