@@ -457,6 +457,15 @@
     return String(order.expiredAt || order.pickupDateISO || order.pickupDate || "").slice(0, 10);
   }
 
+  function isUnprocessedMissedPickup(order, today = localISO()) {
+    const status = String(order?.status || "").toLowerCase();
+    const pickupDate = pickupDateISO(order);
+    if (!pickupDate || pickupDate >= today) return false;
+    if (["cancelled", "canceled", "completed", "expired"].includes(status)) return false;
+    if (order?.receivedAt || order?.expiredAt || order?.restoredAt) return false;
+    return ["pending", "applied", "ready"].includes(status);
+  }
+
   function filterOrdersByScope(orders) {
     const today = localISO();
     const active = (order) => !["cancelled", "canceled"].includes(String(order.status || "").toLowerCase());
@@ -479,6 +488,11 @@
     syncExpiredRangeButtons();
     window.switchAdminTab("noshow");
     window.switchNoShowSection("history");
+  };
+
+  window.openUnclaimedOrders = function () {
+    window.switchAdminTab("noshow");
+    window.switchNoShowSection("unclaimed");
   };
 
   window.switchNoShowSection = function (section) {
@@ -1252,9 +1266,7 @@
     const pendingApprovalCount = activeOrders.filter(o =>
       o.paymentType === "transfer" && ["pending", "applied", "ready"].includes(o.status) && !o.transferApproved
     ).length;
-    const expiredCount = orders.filter((order) =>
-      (order.status === "expired" || order.expiredAt) && expirationDateISO(order) === today
-    ).length;
+    const expiredCount = orders.filter((order) => isUnprocessedMissedPickup(order, today)).length;
 
     if (statTodayOrders) statTodayOrders.textContent = `${todayOrderQuantity}개`;
     if (statTodayOrdersDetail) statTodayOrdersDetail.textContent = `주문 ${todayOrders.length}건 · 상품 ${todayOrderQuantity}개`;
@@ -1634,10 +1646,12 @@
     const account = window.FridgeDB.getUserAccount();
     unclaimedTable.innerHTML = "";
 
-    const activeOrders = orders.filter(o => o.status === "pending");
+    const activeOrders = orders
+      .filter((order) => isUnprocessedMissedPickup(order))
+      .sort((a, b) => pickupDateISO(a).localeCompare(pickupDateISO(b)));
 
     if (activeOrders.length === 0) {
-      unclaimedTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999;">현재 관리 대상인 대기 주문 건이 없습니다.</td></tr>`;
+      unclaimedTable.innerHTML = `<tr><td colspan="6" class="admin-empty-row"><strong>확인할 미수령 주문이 없습니다.</strong><span>수령일이 오늘 이후인 주문은 여기에 표시되지 않습니다.</span></td></tr>`;
       return;
     }
 
