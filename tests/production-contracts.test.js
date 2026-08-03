@@ -141,3 +141,15 @@ test("매장 상품 후기는 주문 없이 작성하고 보따리는 완료 주
   assert.match(reviewWrite, /productId: fruitSelect\.value\.slice\(7\)/);
   assert.match(home, /후기 작성/);
 });
+
+test("보따리는 선택한 과일 종류의 후기와 연결되고 오늘의 과일 가격은 단일·다중 입력을 모두 지원한다", () => {
+  const server = read("server.js");
+  const form = read("public/js/admin-product-form.js");
+  const detail = read("public/product-detail.html");
+  assert.match(server, /\['fruit', 'bundle'\]\.includes\(body\.category\)/);
+  assert.match(server, /bundle_items\(product_id, products\(fruit_type_id\)\)/);
+  assert.match(server, /fruit_type_id:\s*order\.bundle_items\.products\?\.fruit_type_id/);
+  assert.match(form, /\["fruit", "bundle"\]\.includes\(category\)/);
+  assert.match(form, /enteredPrice\s*\|\|\s*Number\(configuredFruitPrices\[0\]/);
+  assert.match(detail, /if \(currentProduct\?\.fruitTypeId\)/);
+});

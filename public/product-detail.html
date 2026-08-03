@@ -214,8 +214,9 @@
       font-weight: 900;
       line-height: 1.2;
     }
-    .detail-fruit-prices { display:grid; gap:8px; }
-    .detail-fruit-prices > div { display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding:11px 13px; border-radius:10px; background:#f5f8f6; }
+    .detail-fruit-prices { display:grid; border-top:1px solid #e7ece9; border-bottom:1px solid #e7ece9; }
+    .detail-fruit-prices > div { display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding:12px 2px; }
+    .detail-fruit-prices > div + div { border-top:1px solid #edf1ef; }
     .detail-fruit-prices span { color:#65736c; font-size:13px; font-weight:650; }
     .detail-fruit-prices strong { color:#17231d; font-size:18px; font-weight:850; white-space:nowrap; }
     .detail-badge-list {
@@ -731,7 +732,7 @@
       const tabBtn = document.getElementById("tab-reviews-btn");
       const reviews = window.FridgeDB.getReviews().filter(r => {
         if (r.isVisible === false) return false;
-        if (currentProduct?.category === "fruit" && currentProduct?.fruitTypeId) {
+        if (currentProduct?.fruitTypeId) {
           return r.fruitTypeId === currentProduct.fruitTypeId;
         }
         return r.productId === productId;

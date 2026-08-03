@@ -1415,7 +1415,7 @@ function productPayload(body) {
     initial_stock_quantity: Math.max(1, Number(body.totalStock) || 1),
     is_recommended: body.isRecommended === true,
     prepayment_only: body.prepaymentOnly === true,
-    fruit_type_id: body.category === 'fruit' && body.fruitTypeId ? body.fruitTypeId : null,
+    fruit_type_id: ['fruit', 'bundle'].includes(body.category) && body.fruitTypeId ? body.fruitTypeId : null,
     is_active: body.isActive !== false
   };
 }
@@ -2977,11 +2977,16 @@ app.patch('/api/admin/products-legacy/:id', ...adminOnly, async (req, res) => {
 async function refreshProductReviewStats(productId) {
   if (!productId) return;
   const productIds = await bundleReviewProductIds(productId);
-  const { data: ratings, error: ratingsError } = await supabaseAdmin
+  const { data: target } = await supabaseAdmin
+    .from('products').select('fruit_type_id').eq('id', productId).maybeSingle();
+  let ratingsQuery = supabaseAdmin
     .from('reviews')
     .select('rating')
-    .in('product_id', productIds)
     .eq('is_visible', true);
+  ratingsQuery = target?.fruit_type_id
+    ? ratingsQuery.or(`product_id.in.(${productIds.join(',')}),fruit_type_id.eq.${target.fruit_type_id}`)
+    : ratingsQuery.in('product_id', productIds);
+  const { data: ratings, error: ratingsError } = await ratingsQuery;
   if (ratingsError) throw ratingsError;
   const values = (ratings || []).map((item) => Number(item.rating || 0));
   const rating = values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
@@ -3006,7 +3011,12 @@ app.get('/api/reviews', async (req, res) => {
   if (req.query.productId && req.query.productId !== 'undefined' && req.query.productId !== 'null') {
     try {
       const productIds = await bundleReviewProductIds(req.query.productId);
-      query = query.in('product_id', productIds);
+      const { data: target, error: targetError } = await supabaseAdmin
+        .from('products').select('fruit_type_id').eq('id', req.query.productId).maybeSingle();
+      if (targetError) throw targetError;
+      query = target?.fruit_type_id
+        ? query.or(`product_id.in.(${productIds.join(',')}),fruit_type_id.eq.${target.fruit_type_id}`)
+        : query.in('product_id', productIds);
     } catch (groupError) {
       return res.status(400).json({ success: false, error: groupError.message });
     }
@@ -3137,7 +3147,7 @@ app.post('/api/reviews', requireAuth, async (req, res) => {
   }
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')
-    .select('id, user_id, status, bundle_items(product_id)')
+    .select('id, user_id, status, bundle_items(product_id, products(fruit_type_id))')
     .eq('id', orderId)
     .eq('user_id', req.user.id)
     .maybeSingle();
@@ -3152,6 +3162,7 @@ app.post('/api/reviews', requireAuth, async (req, res) => {
   const { data, error } = await supabaseAdmin.from('reviews').insert({
     user_id: req.user.id,
     product_id: order.bundle_items.product_id,
+    fruit_type_id: order.bundle_items.products?.fruit_type_id || null,
     order_id: order.id,
     rating: Number(rating),
     content: cleanContent,

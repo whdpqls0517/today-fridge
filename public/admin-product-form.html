@@ -54,22 +54,22 @@
             <option value="etc">기타</option>
           </select><small>보따리·오늘의 과일·둘러보기 상품 어디에 등록하든 실제 상품 분류는 별도로 선택합니다.</small></label>
           <label class="wide fruit-type-field" data-fruit-type-field hidden>
-            <span>과일 종류 *</span>
+            <span>과일 후기 연결 <small>오늘의 과일은 필수</small></span>
             <div class="fruit-type-control">
               <select name="fruitTypeId">
                 <option value="">과일 종류를 선택해 주세요</option>
               </select>
               <button id="add-fruit-type-button" type="button">새 종류 추가</button>
             </div>
-            <small>여기에 연결된 후기는 오늘 판매 글을 지워도 계속 보존됩니다.</small>
+            <small>보따리도 과일 종류를 선택하면 해당 과일에 쌓인 후기와 함께 연결됩니다.</small>
           </label>
-          <label data-standard-price-field><span>판매가 *</span><div class="input-suffix"><input name="price" type="number" min="0" required /><i>원</i></div></label>
+          <label data-standard-price-field><span>판매가</span><div class="input-suffix"><input name="price" type="number" min="0" /><i>원</i></div></label>
           <label data-standard-price-field><span>할인 전 가격</span><div class="input-suffix"><input name="originalPrice" type="number" min="0" /><i>원</i></div></label>
           <div class="wide fruit-price-field" data-fruit-price-field hidden>
-            <span>가격 구성 *</span>
+            <span>가격 구성 <small>선택 입력</small></span>
             <div class="fruit-price-rows" id="fruit-price-rows"></div>
             <button id="add-fruit-price-button" type="button">+ 가격 구성 추가</button>
-            <small>예: 규격에 ‘1팩 · 5과’, 가격에 ‘8500’을 입력하세요.</small>
+            <small>가격이 하나면 판매가만 입력하고, 규격별 가격이 다를 때만 추가해 주세요.</small>
           </div>
           <label class="wide switch-field" data-standard-price-field><span><strong>할인 전 가격 표시</strong><small>켜면 목록과 상세에 취소선 가격이 표시됩니다.</small></span><input name="showOriginalPrice" type="checkbox" /></label>
           <label data-stock-field><span>전체 입고 수량 *</span><div class="input-suffix"><input name="totalStock" type="number" min="1" required /><i>개</i></div></label>

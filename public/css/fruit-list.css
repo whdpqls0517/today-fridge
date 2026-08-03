@@ -69,9 +69,34 @@
   letter-spacing: -0.01em;
 }
 
-.fruit-list-price-options { display:grid; gap:4px; margin:0 0 10px; }
-.fruit-list-price-option { display:flex; align-items:baseline; gap:7px; color:#53605a; font-size:11px; }
-.fruit-list-price-option strong { color:#111827; font-size:16px; font-weight:800; }
+.fruit-list-price-options {
+  display: grid;
+  gap: 5px;
+  width: fit-content;
+  margin: 0 0 12px;
+}
+.fruit-list-price-option {
+  display: grid;
+  grid-template-columns: minmax(46px, auto) auto;
+  align-items: center;
+  gap: 9px;
+  color: #65716b;
+  font-size: 10px;
+}
+.fruit-list-price-option span {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #f1f5f3;
+  text-align: center;
+  white-space: nowrap;
+}
+.fruit-list-price-option strong {
+  color: #17231d;
+  font-size: 15px;
+  font-weight: 780;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
 
 /* (3) 한 줄 소개 */
 .fruit-list-description {

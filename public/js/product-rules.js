@@ -277,7 +277,7 @@
             </div>
             <div class="bundle-card-schedule-row deadline">
               <span>신청 마감</span>
-              <b>${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? ` ${deadlineTime}` : ""}</b>
+              <b>${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? `&nbsp;${deadlineTime}` : ""}</b>
             </div>
           </div>`
         : ""}

@@ -121,18 +121,18 @@
     if (reviewGroupField) reviewGroupField.hidden = category !== "bundle";
     const fruitTypeField = document.querySelector("[data-fruit-type-field]");
     const fruitTypeSelect = form.elements.fruitTypeId;
-    if (fruitTypeField) fruitTypeField.hidden = category !== "fruit";
+    if (fruitTypeField) fruitTypeField.hidden = !["fruit", "bundle"].includes(category);
     if (fruitTypeSelect) {
       fruitTypeSelect.required = category === "fruit";
-      fruitTypeSelect.disabled = category !== "fruit";
+      fruitTypeSelect.disabled = !["fruit", "bundle"].includes(category);
     }
     const fruitPriceField = document.querySelector("[data-fruit-price-field]");
     if (fruitPriceField) fruitPriceField.hidden = category !== "fruit";
     document.querySelectorAll("[data-standard-price-field]").forEach((field) => {
       const input = field.querySelector("input");
-      field.hidden = category === "fruit";
+      field.hidden = false;
       if (input) {
-        input.disabled = category === "fruit";
+        input.disabled = false;
         input.required = category !== "fruit" && input.name === "price";
       }
     });
@@ -327,7 +327,7 @@
     setValue("totalStock", editingProduct.totalStock);
     setValue("stock", editingProduct.stock);
     const savedFruitPrices = (editingProduct.detailSpecs || []).filter((spec) => spec?.type === "price" && Number(spec.price) > 0);
-    renderFruitPriceOptions(savedFruitPrices.length ? savedFruitPrices : [{ title: "", price: editingProduct.price }]);
+    renderFruitPriceOptions(savedFruitPrices);
     setValue("image", editingProduct.image);
     setValue("images", (editingProduct.images || []).filter((image) => image !== editingProduct.image).join("\n"));
     imageItems = (editingProduct.images?.length ? editingProduct.images : [editingProduct.image])
@@ -400,7 +400,8 @@
     const rawDeadlineTime = data.get("deadlineTime");
     const deadlineTime = category === "bundle" ? (rawDeadlineTime || "23:59") : null;
     const configuredFruitPrices = category === "fruit" ? fruitPriceOptions() : [];
-    const primaryPrice = category === "fruit" ? Number(configuredFruitPrices[0]?.price || 0) : Number(data.get("price")) || 0;
+    const enteredPrice = Number(data.get("price")) || 0;
+    const primaryPrice = category === "fruit" ? (enteredPrice || Number(configuredFruitPrices[0]?.price || 0)) : enteredPrice;
 
     let orderDeadlineIso = null;
     if (category === "bundle" && deadlineDate) {
@@ -421,7 +422,7 @@
       purchaseMode: category === "bundle" ? "reservation" : "store",
       description: String(data.get("description") || "").trim(),
       productCategory: String(data.get("productCategory") || "").trim(),
-      fruitTypeId: category === "fruit" ? String(data.get("fruitTypeId") || "") : null,
+      fruitTypeId: ["fruit", "bundle"].includes(category) ? String(data.get("fruitTypeId") || "") || null : null,
       detailDescription: String(data.get("detailDescription") || "").trim(),
       price: primaryPrice,
       originalPrice: Number(data.get("originalPrice")) || 0,
@@ -467,7 +468,8 @@
     if (!isDraft) {
       const data = new FormData(form);
       const configuredFruitPrices = data.get("category") === "fruit" ? fruitPriceOptions() : [];
-      const price = data.get("category") === "fruit" ? Number(configuredFruitPrices[0]?.price || 0) : Number(data.get("price")) || 0;
+      const enteredPrice = Number(data.get("price")) || 0;
+      const price = data.get("category") === "fruit" ? (enteredPrice || Number(configuredFruitPrices[0]?.price || 0)) : enteredPrice;
       const originalPrice = Number(data.get("originalPrice")) || 0;
       const stock = Number(data.get("stock")) || 0;
       const totalStock = Number(data.get("totalStock")) || 0;
@@ -479,8 +481,12 @@
         showToast("할인 전 가격은 판매가보다 높아야 합니다.");
         return;
       }
-      if (data.get("category") === "fruit" && (!configuredFruitPrices.length || configuredFruitPrices.some((option) => !option.title || option.price <= 0))) {
-        showToast("오늘의 과일은 규격과 가격을 모두 입력해 주세요.");
+      if (data.get("category") === "fruit" && configuredFruitPrices.some((option) => !option.title || option.price <= 0)) {
+        showToast("추가한 가격 구성에는 규격과 가격을 모두 입력해 주세요.");
+        return;
+      }
+      if (data.get("category") === "fruit" && price <= 0) {
+        showToast("판매가 또는 가격 구성 중 하나를 입력해 주세요.");
         return;
       }
       if (data.get("category") !== "fruit" && stock > totalStock) {
