@@ -102,7 +102,7 @@
 .fruit-list-description {
   display: -webkit-box;
   overflow: hidden;
-  margin: 0 0 14px 0; /* 한 줄 소개 ↔ 평점 간격 확대 */
+  margin: 0 0 8px 0;
   color: #6b7280;
   font-size: 13px;
   font-weight: 400;

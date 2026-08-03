@@ -64,10 +64,10 @@
 .category-screen .popular-badge.urgent { background:#bd2832 !important; }
 .category-screen .popular-badge.popular { background:#0f4c3a !important; }
 .category-screen .popular-badge.muted { background:#77817c !important; }
-.category-screen .popular-card > strong { display:block; overflow:hidden; color:#303733; font-size:12px; line-height:1.4; text-overflow:ellipsis; white-space:nowrap; }
+.category-screen .popular-card > strong { display:-webkit-box; overflow:hidden; color:#303733; font-size:12px; line-height:1.4; white-space:normal; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
 .category-screen .popular-card > p { margin:5px 0 4px; color:#252b27; font-size:14px; font-weight:800; }
 .category-screen .popular-card del { margin-left:5px; color:#a0a8a4; font-size:10px; font-weight:500; }
-.category-screen .popular-card > small { display:block; overflow:hidden; color:#8c9590; font-size:9px; line-height:1.4; text-overflow:ellipsis; white-space:nowrap; }
+.category-screen .popular-card > small { display:-webkit-box; overflow:hidden; margin-top:4px; color:#8c9590; font-size:9px; line-height:1.4; white-space:normal; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
 .category-screen .popular-card-meta { display:flex; flex-direction:column; gap:2px; margin-top:5px; color:#919a95; font-size:8px; }
 .category-screen .popular-card.is-sold-out .popular-thumb img { filter:grayscale(.8) brightness(.72); }
 .category-screen .popular-card.is-sold-out .popular-badges {
