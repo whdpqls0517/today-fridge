@@ -11,6 +11,7 @@
   const editingId = new URLSearchParams(window.location.search).get("id");
   const MAX_IMAGES = 30;
   const MAX_SOURCE_IMAGE_BYTES = 15 * 1024 * 1024;
+  const fruitPriceRows = document.getElementById("fruit-price-rows");
   let editingProduct = null;
   let imageItems = [];
   let mainImageSrc = "";
@@ -77,6 +78,43 @@
     return form.elements.category.value;
   }
 
+  function addFruitPriceRow(option = {}) {
+    if (!fruitPriceRows) return;
+    const row = document.createElement("div");
+    row.className = "fruit-price-row";
+    const label = document.createElement("input");
+    label.name = "fruitPriceLabel";
+    label.maxLength = 40;
+    label.placeholder = "규격 · 구성 (예: 1팩 · 5과)";
+    label.value = String(option.title || option.label || "");
+    const price = document.createElement("input");
+    price.name = "fruitPriceAmount";
+    price.type = "number";
+    price.min = "0";
+    price.placeholder = "가격";
+    price.value = Number(option.price) > 0 ? String(Number(option.price)) : "";
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.setAttribute("aria-label", "가격 구성 삭제");
+    remove.textContent = "×";
+    row.append(label, price, remove);
+    fruitPriceRows.appendChild(row);
+  }
+
+  function fruitPriceOptions() {
+    return Array.from(fruitPriceRows?.querySelectorAll(".fruit-price-row") || []).map((row) => ({
+      type: "price",
+      title: String(row.querySelector('[name="fruitPriceLabel"]')?.value || "").trim(),
+      price: Number(row.querySelector('[name="fruitPriceAmount"]')?.value) || 0
+    })).filter((option) => option.title || option.price);
+  }
+
+  function renderFruitPriceOptions(options = []) {
+    if (!fruitPriceRows) return;
+    fruitPriceRows.innerHTML = "";
+    (options.length ? options : [{}]).forEach(addFruitPriceRow);
+  }
+
   function updateCategoryPanels() {
     const category = selectedCategory();
     const fruitTypeField = document.querySelector("[data-fruit-type-field]");
@@ -86,6 +124,17 @@
       fruitTypeSelect.required = category === "fruit";
       fruitTypeSelect.disabled = category !== "fruit";
     }
+    const fruitPriceField = document.querySelector("[data-fruit-price-field]");
+    if (fruitPriceField) fruitPriceField.hidden = category !== "fruit";
+    document.querySelectorAll("[data-standard-price-field]").forEach((field) => {
+      const input = field.querySelector("input");
+      field.hidden = category === "fruit";
+      if (input) {
+        input.disabled = category === "fruit";
+        input.required = category !== "fruit" && input.name === "price";
+      }
+    });
+    if (category === "fruit" && fruitPriceRows && !fruitPriceRows.children.length) addFruitPriceRow();
     document.querySelectorAll("[data-category-panel]").forEach((panel) => {
       const active = panel.dataset.categoryPanel === category;
       panel.hidden = !active;
@@ -274,6 +323,8 @@
     setValue("showOriginalPrice", editingProduct.showOriginalPrice);
     setValue("totalStock", editingProduct.totalStock);
     setValue("stock", editingProduct.stock);
+    const savedFruitPrices = (editingProduct.detailSpecs || []).filter((spec) => spec?.type === "price" && Number(spec.price) > 0);
+    renderFruitPriceOptions(savedFruitPrices.length ? savedFruitPrices : [{ title: "", price: editingProduct.price }]);
     setValue("image", editingProduct.image);
     setValue("images", (editingProduct.images || []).filter((image) => image !== editingProduct.image).join("\n"));
     imageItems = (editingProduct.images?.length ? editingProduct.images : [editingProduct.image])
@@ -345,6 +396,8 @@
     const deadlineDate = data.get("deadline");
     const rawDeadlineTime = data.get("deadlineTime");
     const deadlineTime = category === "bundle" ? (rawDeadlineTime || "23:59") : null;
+    const configuredFruitPrices = category === "fruit" ? fruitPriceOptions() : [];
+    const primaryPrice = category === "fruit" ? Number(configuredFruitPrices[0]?.price || 0) : Number(data.get("price")) || 0;
 
     let orderDeadlineIso = null;
     if (category === "bundle" && deadlineDate) {
@@ -364,7 +417,7 @@
       productCategory: String(data.get("productCategory") || "").trim(),
       fruitTypeId: category === "fruit" ? String(data.get("fruitTypeId") || "") : null,
       detailDescription: String(data.get("detailDescription") || "").trim(),
-      price: Number(data.get("price")) || 0,
+      price: primaryPrice,
       originalPrice: Number(data.get("originalPrice")) || 0,
       showOriginalPrice: data.get("showOriginalPrice") === "on",
       image: mainImage,
@@ -386,7 +439,7 @@
       barcodeValue: category === "bundle" ? String(data.get("barcodeValue") || "").trim() : null,
       arrivalStatus: category === "bundle" ? (editingProduct?.arrivalStatus || "scheduled") : null,
       arrivedAt: category === "bundle" ? (editingProduct?.arrivedAt || null) : null,
-      detailSpecs: [],
+      detailSpecs: category === "fruit" ? configuredFruitPrices : [],
       marketGuide: category === "market" ? String(data.get("marketGuide") || "").trim() : "",
       salesCount: editingProduct?.salesCount || 0,
       rating: editingProduct?.rating || 0,
@@ -407,7 +460,8 @@
     if (!isDraft && !form.reportValidity()) return;
     if (!isDraft) {
       const data = new FormData(form);
-      const price = Number(data.get("price")) || 0;
+      const configuredFruitPrices = data.get("category") === "fruit" ? fruitPriceOptions() : [];
+      const price = data.get("category") === "fruit" ? Number(configuredFruitPrices[0]?.price || 0) : Number(data.get("price")) || 0;
       const originalPrice = Number(data.get("originalPrice")) || 0;
       const stock = Number(data.get("stock")) || 0;
       const totalStock = Number(data.get("totalStock")) || 0;
@@ -417,6 +471,10 @@
       }
       if (originalPrice > 0 && originalPrice < price) {
         showToast("할인 전 가격은 판매가보다 높아야 합니다.");
+        return;
+      }
+      if (data.get("category") === "fruit" && (!configuredFruitPrices.length || configuredFruitPrices.some((option) => !option.title || option.price <= 0))) {
+        showToast("오늘의 과일은 규격과 가격을 모두 입력해 주세요.");
         return;
       }
       if (data.get("category") !== "fruit" && stock > totalStock) {
@@ -524,6 +582,18 @@
       showToast(error.message || "과일 종류를 추가하지 못했습니다.");
     }
   });
+
+  document.getElementById("add-fruit-price-button")?.addEventListener("click", () => addFruitPriceRow());
+  fruitPriceRows?.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    const rows = fruitPriceRows.querySelectorAll(".fruit-price-row");
+    if (rows.length <= 1) {
+      rows[0]?.querySelectorAll("input").forEach((input) => { input.value = ""; });
+      return;
+    }
+    button.closest(".fruit-price-row")?.remove();
+  });
   form.elements.image.addEventListener("input", syncUrlImages);
   form.elements.images.addEventListener("input", syncUrlImages);
   fileInput.addEventListener("change", async () => {
@@ -557,6 +627,7 @@
     saveProduct(false);
   });
 
+  renderFruitPriceOptions();
   updateCategoryPanels();
   verifyAdmin().then(async (allowed) => {
     if (!allowed) return;

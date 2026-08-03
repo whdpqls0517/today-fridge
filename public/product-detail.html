@@ -214,6 +214,10 @@
       font-weight: 900;
       line-height: 1.2;
     }
+    .detail-fruit-prices { display:grid; gap:8px; }
+    .detail-fruit-prices > div { display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding:11px 13px; border-radius:10px; background:#f5f8f6; }
+    .detail-fruit-prices span { color:#65736c; font-size:13px; font-weight:650; }
+    .detail-fruit-prices strong { color:#17231d; font-size:18px; font-weight:850; white-space:nowrap; }
     .detail-badge-list {
       display: flex;
       gap: 6px;
@@ -566,6 +570,7 @@
       currentImageIndex = 0;
       const isReservationProduct = currentProduct.purchaseMode === "reservation" || currentProduct.category === "bundle";
       const isFruitProduct = currentProduct.category === "fruit";
+      const fruitPriceOptions = (currentProduct.detailSpecs || []).filter((spec) => spec?.type === "price" && Number(spec.price) > 0);
       const badgeListHTML = window.ProductRules.badges(currentProduct)
         .map((badge) => {
           const tone = badge.tone === "popular" ? "green" : badge.tone === "deadline" ? "yellow" : "red";
@@ -580,6 +585,10 @@
       let priceSection = "";
       if (isSoldOut) {
         priceSection = "";
+      } else if (isFruitProduct && fruitPriceOptions.length) {
+        priceSection = `<div class="detail-fruit-prices">${fruitPriceOptions.map((option) => `
+          <div><span>${option.title}</span><strong>${Number(option.price).toLocaleString("ko-KR")}원</strong></div>
+        `).join("")}</div>`;
       } else {
         priceSection = `
           <h2>
@@ -621,7 +630,7 @@
               <strong>${getPickupDateText(currentProduct)}</strong>
             </div>
           ` : ''}
-          <p class="detail-description">${currentProduct.description}</p>
+          <p class="detail-description" style="white-space:pre-line">${currentProduct.description}</p>
           <div class="detail-price-box">${priceSection}</div>
           <div class="detail-badge-list" style="margin-top: 14px;">${badgeListHTML}</div>
           ${!isReservationProduct ? `<div class="store-purchase-note">이 상품은 매장에서 직접 보고 현장 구매하는 상품입니다.</div>` : ''}
@@ -631,7 +640,7 @@
       // 4. 탭 정보 채우기
       // 상세설명 탭
       if (isFruitProduct) {
-        const specs = currentProduct.detailSpecs || [];
+        const specs = (currentProduct.detailSpecs || []).filter((spec) => spec?.type !== "price");
         document.getElementById("tab-desc").innerHTML = `
           <div class="detail-spec-list">
             ${specs.map((spec) => `

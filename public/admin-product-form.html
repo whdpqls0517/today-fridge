@@ -35,7 +35,7 @@
         <div class="section-heading"><b>2</b><div><h2>기본 정보</h2><p>목록 카드와 상세페이지에 공통으로 표시됩니다.</p></div></div>
         <div class="field-grid">
           <label class="wide"><span>상품명 *</span><input name="name" maxlength="60" required placeholder="예: 제주 감귤 보따리" /></label>
-          <label class="wide"><span>한 줄 소개 *</span><input name="description" maxlength="100" required placeholder="상품의 핵심 특징을 한 문장으로 적어주세요" /></label>
+          <label class="wide"><span>상품 소개 * <small>최대 2줄</small></span><textarea name="description" rows="2" maxlength="120" required placeholder="상품의 핵심 특징을 최대 두 줄로 적어주세요"></textarea></label>
           <label class="wide"><span>상품 카테고리 *</span><select name="productCategory" required>
             <option value="">카테고리를 선택해 주세요</option>
             <option value="fruit">과일</option>
@@ -58,9 +58,15 @@
             </div>
             <small>여기에 연결된 후기는 오늘 판매 글을 지워도 계속 보존됩니다.</small>
           </label>
-          <label><span>판매가 *</span><div class="input-suffix"><input name="price" type="number" min="0" required /><i>원</i></div></label>
-          <label><span>할인 전 가격</span><div class="input-suffix"><input name="originalPrice" type="number" min="0" /><i>원</i></div></label>
-          <label class="wide switch-field"><span><strong>할인 전 가격 표시</strong><small>켜면 목록과 상세에 취소선 가격이 표시됩니다.</small></span><input name="showOriginalPrice" type="checkbox" /></label>
+          <label data-standard-price-field><span>판매가 *</span><div class="input-suffix"><input name="price" type="number" min="0" required /><i>원</i></div></label>
+          <label data-standard-price-field><span>할인 전 가격</span><div class="input-suffix"><input name="originalPrice" type="number" min="0" /><i>원</i></div></label>
+          <div class="wide fruit-price-field" data-fruit-price-field hidden>
+            <span>가격 구성 *</span>
+            <div class="fruit-price-rows" id="fruit-price-rows"></div>
+            <button id="add-fruit-price-button" type="button">+ 가격 구성 추가</button>
+            <small>예: 규격에 ‘1팩 · 5과’, 가격에 ‘8500’을 입력하세요.</small>
+          </div>
+          <label class="wide switch-field" data-standard-price-field><span><strong>할인 전 가격 표시</strong><small>켜면 목록과 상세에 취소선 가격이 표시됩니다.</small></span><input name="showOriginalPrice" type="checkbox" /></label>
           <label data-stock-field><span>전체 입고 수량 *</span><div class="input-suffix"><input name="totalStock" type="number" min="1" required /><i>개</i></div></label>
           <label data-stock-field><span>현재 판매 가능 수량 *</span><div class="input-suffix"><input name="stock" type="number" min="0" required /><i>개</i></div></label>
         </div>

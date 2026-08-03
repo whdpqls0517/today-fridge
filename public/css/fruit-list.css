@@ -69,6 +69,10 @@
   letter-spacing: -0.01em;
 }
 
+.fruit-list-price-options { display:grid; gap:4px; margin:0 0 10px; }
+.fruit-list-price-option { display:flex; align-items:baseline; gap:7px; color:#53605a; font-size:11px; }
+.fruit-list-price-option strong { color:#111827; font-size:16px; font-weight:800; }
+
 /* (3) 한 줄 소개 */
 .fruit-list-description {
   display: -webkit-box;
