@@ -3006,8 +3006,12 @@ app.get('/api/reviews', async (req, res) => {
 app.post('/api/reviews', requireAuth, async (req, res) => {
   const { orderId, fruitTypeId, productId, rating, content, photoUrls } = req.body || {};
   const cleanContent = String(content || '').trim();
+  const reviewPhotoUrls = Array.isArray(photoUrls) ? photoUrls.filter(Boolean) : [];
   if ((!orderId && !fruitTypeId && !productId) || !cleanContent || Number(rating) < 1 || Number(rating) > 5) {
     return res.status(400).json({ success: false, error: '후기 대상, 별점, 후기 내용을 확인해 주세요.' });
+  }
+  if (reviewPhotoUrls.length > 5) {
+    return res.status(400).json({ success: false, error: '후기 사진은 최대 5장까지 등록할 수 있습니다.' });
   }
 
   if (fruitTypeId) {
@@ -3041,7 +3045,7 @@ app.post('/api/reviews', requireAuth, async (req, res) => {
       order_id: null,
       rating: Number(rating),
       content: cleanContent,
-      photo_urls: Array.isArray(photoUrls) ? photoUrls.filter(Boolean).slice(0, 10) : []
+      photo_urls: reviewPhotoUrls
     }).select().single();
     if (error) return res.status(400).json({ success: false, error: error.message });
     return res.status(201).json({ success: true, data });
@@ -3080,7 +3084,7 @@ app.post('/api/reviews', requireAuth, async (req, res) => {
       order_id: null,
       rating: Number(rating),
       content: cleanContent,
-      photo_urls: Array.isArray(photoUrls) ? photoUrls.filter(Boolean).slice(0, 10) : []
+      photo_urls: reviewPhotoUrls
     }).select().single();
     if (error) return res.status(400).json({ success: false, error: error.message });
     await refreshProductReviewStats(productId);
@@ -3106,7 +3110,7 @@ app.post('/api/reviews', requireAuth, async (req, res) => {
     order_id: order.id,
     rating: Number(rating),
     content: cleanContent,
-    photo_urls: Array.isArray(photoUrls) ? photoUrls.filter(Boolean).slice(0, 10) : []
+    photo_urls: reviewPhotoUrls
   }).select().single();
   if (error) return res.status(400).json({ success: false, error: error.message });
   await refreshProductReviewStats(order.bundle_items.product_id);

@@ -166,14 +166,14 @@
 
   photoInput?.addEventListener("change", () => {
     selectedPhotos.forEach((item) => URL.revokeObjectURL(item.preview));
-    selectedPhotos = Array.from(photoInput.files || []).slice(0, 10).map((file) => ({
+    selectedPhotos = Array.from(photoInput.files || []).slice(0, 5).map((file) => ({
       file,
       preview: URL.createObjectURL(file)
     }));
     photoPreview.innerHTML = selectedPhotos.map((item) =>
       `<img src="${item.preview}" alt="첨부 사진 미리보기">`
     ).join("");
-    if ((photoInput.files?.length || 0) > 10) message.textContent = "사진은 최대 10장까지 등록됩니다.";
+    if ((photoInput.files?.length || 0) > 5) message.textContent = "후기 사진은 최대 5장까지 등록됩니다.";
   });
 
   form.addEventListener("submit", async (event) => {
