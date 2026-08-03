@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>오늘의 과일 여러 개 등록 | 오늘의 냉장고</title>
+  <link rel="stylesheet" href="./css/admin-fruit-bulk.css" />
+</head>
+<body>
+  <section class="bulk-auth" id="bulk-auth" role="status">
+    <strong>관리자 권한을 확인하고 있어요</strong>
+    <p>확인이 끝나면 등록 화면이 열립니다.</p>
+  </section>
+
+  <main class="bulk-page" id="bulk-page" hidden>
+    <header class="bulk-header">
+      <a href="./admin.html" aria-label="관리자 상품 관리로 돌아가기">‹</a>
+      <div><span>상품 관리</span><h1>오늘의 과일 여러 개 등록</h1></div>
+    </header>
+
+    <section class="bulk-guide">
+      <div><strong>오늘 준비된 과일을 한 번에 등록하세요</strong><p>상품별 정보를 입력한 뒤 하단에서 한 번에 저장할 수 있습니다.</p></div>
+      <label><input id="bulk-active" type="checkbox" checked /> 등록 즉시 공개</label>
+    </section>
+
+    <form id="bulk-fruit-form">
+      <div id="fruit-entry-list" class="fruit-entry-list"></div>
+      <button id="add-fruit-entry" class="add-entry-button" type="button">+ 과일 추가</button>
+      <div class="bulk-submit-bar">
+        <div><strong id="bulk-count">1개 상품</strong><small>입력한 순서대로 저장됩니다.</small></div>
+        <button id="bulk-submit" type="submit">전체 등록하기</button>
+      </div>
+    </form>
+  </main>
+
+  <div class="bulk-toast" id="bulk-toast" role="status" aria-live="polite"></div>
+  <script src="./js/auth-session.js"></script>
+  <script src="./js/admin-fruit-bulk.js"></script>
+</body>
+</html>
