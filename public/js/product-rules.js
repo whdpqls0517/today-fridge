@@ -3,7 +3,7 @@
     return product?.category === "bundle" || product?.purchaseMode === "reservation";
   }
 
-  // 💡 날짜 문자열 정밀 파싱
+  // 💡 [수정] 날짜 문자열 정밀 파싱
   function parseDate(value) {
     if (!value || value === "상시 판매") return null;
     
@@ -25,7 +25,7 @@
       && date.getDate() === now.getDate());
   }
 
-  // 💡 마감 시각 추출 도구 (HH:mm 형식 유연하게 지원)
+  // 💡 [수정] 마감 시각 추출 도구 (HH:mm 형식 유연하게 지원)
   function getDeadlineDateTime(product) {
     if (!isBundle(product) || !product?.deadline || product.deadline === "상시 판매") return null;
 
@@ -234,27 +234,23 @@
     }[char]));
   }
 
-  // 💡 [슬림형 UI 디자인 적용] UI 카드 생성 함수
+  // [source: 7] product-rules.js 하단 createProductCard 함수 교체
+
   function createProductCard(product) {
     const card = document.createElement("article");
     const favorite = window.Favorites?.has(product.id) === true;
     const productBadges = badges(product).slice(0, 2);
     const price = priceView(product);
+    const tagList = Array.isArray(product.tags) ? product.tags.slice(0, 2) : [];
     
-    // 수령일 및 마감일 파싱
+    // ✨ 마감시간(HH:mm) 노출 여부 체크
+    const showDeadlineTime = product?.showDeadlineTime !== false;
     const pickup = effectivePickupDate(product);
     const deadline = parseDate(product.deadline);
-    const showDeadlineTime = product?.showDeadlineTime !== false;
     const deadlineTime = formatDeadlineTime(product).trim();
-
-    // 제목 양식 조합 (예: 🧺 3일(월) [통큰 낙곱새])
-    const pickupPrefix = pickup ? `🧺 ${formatFriendlyDate(pickup)} ` : "";
-    const fullTitle = `${pickupPrefix}[${product.name}]`;
-
     card.className = `popular-card${isSoldOut(product) ? " is-sold-out" : ""}`;
     card.dataset.productId = product.id;
     card.dataset.productName = product.name;
-    
     card.innerHTML = `
       <div class="popular-thumb">
         <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" />
@@ -266,27 +262,31 @@
           ${favorite ? "♥" : "♡"}
         </button>
       </div>
-
-      <div class="product-master-copy">
-        <strong>${escapeHTML(fullTitle)}</strong>
-        ${price.hidden ? "" : `<div class="product-master-price"><b>${formatPrice(price.current)}</b>${price.showOriginal ? `<del>${formatPrice(price.original)}</del>` : ""}</div>`}
+      <strong>${escapeHTML(product.name)}</strong>
+      ${price.hidden ? "" : `<p>${formatPrice(price.current)}${price.showOriginal ? `<del>${formatPrice(price.original)}</del>` : ""}</p>`}
+      <small>${escapeHTML(product.description || "")}</small>
+      <div class="popular-card-meta">
+        <span>${tagList.map((tag) => escapeHTML(tag)).join(" · ")}</span>
+        <span>★ ${Number(product.rating || 0).toFixed(1)} (${Number(product.reviewsCount || 0)})</span>
       </div>
-
       ${isBundle(product) && !isSoldOut(product)
-        ? `<div class="bundle-card-schedule" aria-label="주문 마감 일정">
+        ? `<div class="bundle-card-schedule" aria-label="수령 및 주문 마감 일정">
+            <div class="bundle-card-schedule-row pickup">
+              <span>수령일</span>
+              <b>${formatFriendlyDate(pickup)}</b>
+            </div>
             <div class="bundle-card-schedule-row deadline">
               <span>신청 마감</span>
               <b>${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? `&nbsp;${deadlineTime}` : ""}</b>
             </div>
           </div>`
         : ""}
-    `;
+      `;
 
     card.addEventListener("click", (event) => {
       if (event.target.closest("button")) return;
       window.location.href = `./product-detail.html?id=${encodeURIComponent(product.id)}`;
     });
-
     return card;
   }
 
