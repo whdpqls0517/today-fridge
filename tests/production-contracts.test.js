@@ -127,5 +127,17 @@ test("오늘의 과일 후기는 판매 글이 아닌 과일 종류에 누적된
   assert.match(server, /fruit_type_id:\s*fruitTypeId/);
   assert.match(server, /todayStartedAt/);
   assert.match(form, /fruitTypeId/);
-  assert.match(reviewWrite, /type=fruit/);
+  assert.match(reviewWrite, /openReviewMode/);
+});
+
+test("매장 상품 후기는 주문 없이 작성하고 보따리는 완료 주문을 요구한다", () => {
+  const server = read("server.js");
+  const reviewWrite = read("public/js/review-write.js");
+  const home = read("public/index.html");
+  assert.match(server, /if \(productId && !orderId\)/);
+  assert.match(server, /\.eq\('category', 'market'\)/);
+  assert.match(server, /order\.status !== 'completed'/);
+  assert.match(reviewWrite, /api\/catalog\?category=market/);
+  assert.match(reviewWrite, /productId: fruitSelect\.value\.slice\(7\)/);
+  assert.match(home, /후기 작성/);
 });

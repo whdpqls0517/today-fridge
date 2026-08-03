@@ -1,6 +1,6 @@
 (function () {
   const orderId = new URLSearchParams(location.search).get("orderId");
-  const fruitMode = new URLSearchParams(location.search).get("type") === "fruit";
+  const openReviewMode = ["fruit", "general"].includes(new URLSearchParams(location.search).get("type"));
   const initialFruitTypeId = new URLSearchParams(location.search).get("fruitTypeId") || "";
   const form = document.getElementById("review-write-form");
   const card = document.getElementById("review-order-card");
@@ -66,23 +66,28 @@
     const auth = token();
     form.hidden = true;
     if (!auth) {
-      const next = fruitMode ? "review-write.html?type=fruit" : `review-write.html?orderId=${orderId || ""}`;
+      const next = openReviewMode ? "review-write.html?type=general" : `review-write.html?orderId=${orderId || ""}`;
       location.replace(`./login.html?next=${encodeURIComponent(next)}`);
       return;
     }
-    if (fruitMode) {
-      message.textContent = "과일 종류를 불러오고 있어요.";
+    if (openReviewMode) {
+      message.textContent = "후기 작성 대상을 불러오고 있어요.";
       try {
-        const response = await fetch(`${location.origin}/api/fruit-types`, { cache: "no-store" });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.error || "과일 종류를 불러오지 못했습니다.");
-        fruitTypes = result.data || [];
-        fruitSelect.innerHTML = `<option value="">과일을 선택해 주세요</option>${fruitTypes.map((item) =>
-          `<option value="${item.id}">${escapeHTML(item.name)}</option>`
-        ).join("")}`;
-        fruitSelect.value = initialFruitTypeId;
+        const [fruitResponse, catalogResponse] = await Promise.all([
+          fetch(`${location.origin}/api/fruit-types`, { cache: "no-store" }),
+          fetch(`${location.origin}/api/catalog?category=market`, { cache: "no-store" })
+        ]);
+        const [fruitResult, catalogResult] = await Promise.all([fruitResponse.json(), catalogResponse.json()]);
+        if (!fruitResponse.ok || !fruitResult.success) throw new Error(fruitResult.error || "과일 종류를 불러오지 못했습니다.");
+        if (!catalogResponse.ok || !catalogResult.success) throw new Error(catalogResult.error || "매장 상품을 불러오지 못했습니다.");
+        fruitTypes = fruitResult.data || [];
+        const marketProducts = (catalogResult.data || []).filter((item) => item.category === "market" && item.isActive !== false);
+        fruitSelect.innerHTML = `<option value="">상품을 선택해 주세요</option>
+          <optgroup label="오늘의 과일">${fruitTypes.map((item) => `<option value="fruit:${item.id}">${escapeHTML(item.name)}</option>`).join("")}</optgroup>
+          <optgroup label="매장 상품">${marketProducts.map((item) => `<option value="market:${item.id}">${escapeHTML(item.name)}</option>`).join("")}</optgroup>`;
+        fruitSelect.value = initialFruitTypeId ? `fruit:${initialFruitTypeId}` : "";
         fruitPicker.hidden = false;
-        card.innerHTML = `<div><strong>오늘의 과일 후기</strong><span>과일 종류를 선택하면 판매 글과 관계없이 후기가 계속 보관됩니다.</span></div>`;
+        card.innerHTML = `<div><strong>후기 작성</strong><span>오늘의 과일 또는 매장에서 구매한 상품을 선택해 주세요. 보따리 후기는 주문내역에서 작성할 수 있습니다.</span></div>`;
         message.textContent = "";
         form.hidden = false;
       } catch (error) {
@@ -159,8 +164,8 @@
       message.textContent = auth ? "후기 내용을 입력해 주세요." : "로그인 후 후기를 작성해 주세요.";
       return;
     }
-    if (fruitMode && !fruitSelect.value) {
-      message.textContent = "후기를 남길 과일을 선택해 주세요.";
+    if (openReviewMode && !fruitSelect.value) {
+      message.textContent = "후기를 남길 상품을 선택해 주세요.";
       fruitSelect.focus();
       return;
     }
@@ -178,8 +183,10 @@
           "Content-Type": "application/json",
           Authorization: `Bearer ${auth}`
         },
-        body: JSON.stringify(fruitMode
-          ? { fruitTypeId: fruitSelect.value, rating, content: text, photoUrls }
+        body: JSON.stringify(openReviewMode
+          ? (fruitSelect.value.startsWith("fruit:")
+            ? { fruitTypeId: fruitSelect.value.slice(6), rating, content: text, photoUrls }
+            : { productId: fruitSelect.value.slice(7), rating, content: text, photoUrls })
           : { orderId: order.id, rating, content: text, photoUrls })
       });
       const result = await response.json();

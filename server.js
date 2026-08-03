@@ -2935,6 +2935,24 @@ app.patch('/api/admin/products-legacy/:id', ...adminOnly, async (req, res) => {
   res.json({ success: true, data });
 });
 
+async function refreshProductReviewStats(productId) {
+  if (!productId) return;
+  const { data: ratings, error: ratingsError } = await supabaseAdmin
+    .from('reviews')
+    .select('rating')
+    .eq('product_id', productId)
+    .eq('is_visible', true);
+  if (ratingsError) throw ratingsError;
+  const values = (ratings || []).map((item) => Number(item.rating || 0));
+  const rating = values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+  const { error } = await supabaseAdmin.from('products').update({
+    reviews_count: values.length,
+    rating
+  }).eq('id', productId);
+  if (error) throw error;
+  publicCatalogCache = { data: null, expiresAt: 0 };
+}
+
 // 🛠️ [수정 완료] 리뷰 조회 API (productId가 없어도 400에러를 내지 않고 전체 반환)
 app.get('/api/reviews', async (req, res) => {
   let query = supabaseAdmin
@@ -2986,9 +3004,9 @@ app.get('/api/reviews', async (req, res) => {
 });
 
 app.post('/api/reviews', requireAuth, async (req, res) => {
-  const { orderId, fruitTypeId, rating, content, photoUrls } = req.body || {};
+  const { orderId, fruitTypeId, productId, rating, content, photoUrls } = req.body || {};
   const cleanContent = String(content || '').trim();
-  if ((!orderId && !fruitTypeId) || !cleanContent || Number(rating) < 1 || Number(rating) > 5) {
+  if ((!orderId && !fruitTypeId && !productId) || !cleanContent || Number(rating) < 1 || Number(rating) > 5) {
     return res.status(400).json({ success: false, error: '후기 대상, 별점, 후기 내용을 확인해 주세요.' });
   }
 
@@ -3028,6 +3046,46 @@ app.post('/api/reviews', requireAuth, async (req, res) => {
     if (error) return res.status(400).json({ success: false, error: error.message });
     return res.status(201).json({ success: true, data });
   }
+
+  if (productId && !orderId) {
+    const { data: marketProduct, error: productError } = await supabaseAdmin
+      .from('products')
+      .select('id, name, category, is_active')
+      .eq('id', productId)
+      .eq('category', 'market')
+      .eq('is_active', true)
+      .maybeSingle();
+    if (productError) return res.status(400).json({ success: false, error: productError.message });
+    if (!marketProduct) {
+      return res.status(404).json({ success: false, error: '후기를 작성할 수 있는 매장 상품을 찾지 못했습니다.' });
+    }
+    const todayKst = kstDateTimeParts(new Date())?.date;
+    const todayStartedAt = new Date(`${todayKst}T00:00:00+09:00`).toISOString();
+    const { data: recentReviews, error: recentError } = await supabaseAdmin
+      .from('reviews')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .eq('product_id', productId)
+      .is('order_id', null)
+      .gte('created_at', todayStartedAt)
+      .limit(1);
+    if (recentError) return res.status(400).json({ success: false, error: recentError.message });
+    if ((recentReviews || []).length) {
+      return res.status(409).json({ success: false, error: '같은 상품 후기는 하루에 한 번 작성할 수 있습니다.' });
+    }
+    const { data, error } = await supabaseAdmin.from('reviews').insert({
+      user_id: req.user.id,
+      product_id: productId,
+      fruit_type_id: null,
+      order_id: null,
+      rating: Number(rating),
+      content: cleanContent,
+      photo_urls: Array.isArray(photoUrls) ? photoUrls.filter(Boolean).slice(0, 10) : []
+    }).select().single();
+    if (error) return res.status(400).json({ success: false, error: error.message });
+    await refreshProductReviewStats(productId);
+    return res.status(201).json({ success: true, data });
+  }
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')
     .select('id, user_id, status, bundle_items(product_id)')
@@ -3051,6 +3109,7 @@ app.post('/api/reviews', requireAuth, async (req, res) => {
     photo_urls: Array.isArray(photoUrls) ? photoUrls.filter(Boolean).slice(0, 10) : []
   }).select().single();
   if (error) return res.status(400).json({ success: false, error: error.message });
+  await refreshProductReviewStats(order.bundle_items.product_id);
   res.status(201).json({ success: true, data });
 });
 

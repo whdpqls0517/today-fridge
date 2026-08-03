@@ -731,6 +731,10 @@
   font-size: 13px;
 }
 
+.review-title-actions { display:flex; align-items:center; gap:10px; white-space:nowrap; }
+.review-title-actions a:first-child { color:#245b43; font-weight:800; }
+.review-title-actions a + a { padding-left:10px; border-left:1px solid #dfe5e1; }
+
 .review-tabs {
   display: flex;
   gap: 8px;
