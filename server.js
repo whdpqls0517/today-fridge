@@ -1039,7 +1039,7 @@ function subjectWithParticle(value) {
   return `${subject}${hasKoreanFinalConsonant(subject) ? '이' : '가'}`;
 }
 
-function mapCatalogItem(product, bundleItem = null, requestCounts = {}) {
+function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitReviewStats = null) {
   const bundle = bundleItem?.bundles || null;
   const images = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
   const productTags = Array.isArray(product.tags) ? product.tags : [];
@@ -1079,8 +1079,9 @@ function mapCatalogItem(product, bundleItem = null, requestCounts = {}) {
     stock: bundleItem?.stock_quantity ?? product.stock_quantity ?? 0,
     totalStock: bundleItem?.initial_stock_quantity ?? product.initial_stock_quantity ?? 1,
     salesCount: product.sales_count || 0,
-    rating: Number(product.rating || 0),
-    reviewsCount: product.reviews_count || 0,
+    rating: fruitReviewStats ? fruitReviewStats.rating : Number(product.rating || 0),
+    reviewsCount: fruitReviewStats ? fruitReviewStats.count : (product.reviews_count || 0),
+    fruitTypeId: product.fruit_type_id || null,
     isRecommended: product.is_recommended === true,
     prepaymentOnly: product.prepayment_only === true,
     isActive: product.is_active !== false,
@@ -1110,17 +1111,21 @@ async function readCatalog(includeInactive = false) {
   const [
     { data: products, error: productsError },
     { data: items, error: itemsError },
-    { data: subscriptions, error: subscriptionsError }
+    { data: subscriptions, error: subscriptionsError },
+    { data: fruitReviews, error: fruitReviewsError }
   ] = await Promise.all([
     productQuery,
     supabaseAdmin.from('bundle_items').select('*, bundles(*)').order('created_at', { ascending: false }),
-    supabaseAdmin.from('restock_subscriptions').select('product_id, request_type').eq('is_active', true)
+    supabaseAdmin.from('restock_subscriptions').select('product_id, request_type').eq('is_active', true),
+    supabaseAdmin.from('reviews').select('fruit_type_id, rating').not('fruit_type_id', 'is', null).eq('is_visible', true)
   ]);
   if (productsError) throw productsError;
   if (itemsError) throw itemsError;
   if (subscriptionsError) throw subscriptionsError;
+  if (fruitReviewsError) throw fruitReviewsError;
   const itemByProduct = new Map();
   const requestCountsByProduct = new Map();
+  const fruitReviewStatsByType = new Map();
   (items || []).forEach((item) => {
     if (!itemByProduct.has(item.product_id)) itemByProduct.set(item.product_id, item);
   });
@@ -1129,12 +1134,20 @@ async function readCatalog(includeInactive = false) {
     counts[item.request_type === 'waitlist' ? 'waitlist' : 'restock'] += 1;
     requestCountsByProduct.set(item.product_id, counts);
   });
+  (fruitReviews || []).forEach((review) => {
+    const stats = fruitReviewStatsByType.get(review.fruit_type_id) || { count: 0, total: 0, rating: 0 };
+    stats.count += 1;
+    stats.total += Number(review.rating || 0);
+    stats.rating = stats.count ? stats.total / stats.count : 0;
+    fruitReviewStatsByType.set(review.fruit_type_id, stats);
+  });
   return (products || [])
     .filter((product) => !(product.tags || []).includes('__deleted__'))
     .map((product) => mapCatalogItem(
       product,
       itemByProduct.get(product.id),
-      requestCountsByProduct.get(product.id)
+      requestCountsByProduct.get(product.id),
+      product.fruit_type_id ? fruitReviewStatsByType.get(product.fruit_type_id) : null
     ));
 }
 
@@ -1265,6 +1278,79 @@ app.get('/api/admin/catalog', ...adminOnly, async (_req, res) => {
   }
 });
 
+app.get('/api/fruit-types', async (_req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('fruit_types')
+    .select('id, name, is_active, created_at')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.json({ success: true, data: data || [] });
+});
+
+app.get('/api/admin/fruit-types', ...adminOnly, async (_req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('fruit_types')
+    .select('id, name, is_active, created_at, products(count), reviews(count)')
+    .order('name', { ascending: true });
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.json({ success: true, data: data || [] });
+});
+
+app.post('/api/admin/fruit-types', ...adminOnly, async (req, res) => {
+  const name = String(req.body?.name || '').trim().replace(/\s+/g, ' ');
+  if (name.length < 1 || name.length > 30) {
+    return res.status(400).json({ success: false, error: '과일 종류 이름은 1~30자로 입력해 주세요.' });
+  }
+  const { data, error } = await supabaseAdmin
+    .from('fruit_types')
+    .insert({ name, created_by: req.user.id })
+    .select('id, name, is_active, created_at')
+    .single();
+  if (error) {
+    const duplicate = String(error.code) === '23505';
+    return res.status(duplicate ? 409 : 400).json({
+      success: false,
+      error: duplicate ? '이미 등록된 과일 종류입니다.' : error.message
+    });
+  }
+  await recordAdminAudit({
+    adminId: req.user.id,
+    action: 'fruit_type_created',
+    targetType: 'fruit_type',
+    targetId: data.id,
+    after: data
+  });
+  res.status(201).json({ success: true, data });
+});
+
+app.patch('/api/admin/fruit-types/:id', ...adminOnly, async (req, res) => {
+  const updates = {};
+  if (typeof req.body?.name === 'string') {
+    const name = req.body.name.trim().replace(/\s+/g, ' ');
+    if (!name || name.length > 30) {
+      return res.status(400).json({ success: false, error: '과일 종류 이름은 1~30자로 입력해 주세요.' });
+    }
+    updates.name = name;
+  }
+  if (typeof req.body?.isActive === 'boolean') updates.is_active = req.body.isActive;
+  if (!Object.keys(updates).length) {
+    return res.status(400).json({ success: false, error: '변경할 내용이 없습니다.' });
+  }
+  updates.updated_at = new Date().toISOString();
+  const { data, error } = await supabaseAdmin
+    .from('fruit_types')
+    .update(updates)
+    .eq('id', req.params.id)
+    .select('id, name, is_active, created_at')
+    .single();
+  if (error) return res.status(String(error.code) === '23505' ? 409 : 400).json({
+    success: false,
+    error: String(error.code) === '23505' ? '이미 등록된 과일 종류입니다.' : error.message
+  });
+  res.json({ success: true, data });
+});
+
 function productPayload(body) {
   const publicTags = Array.isArray(body.tags)
     ? body.tags.filter((tag) => !String(tag).startsWith('__'))
@@ -1292,6 +1378,7 @@ function productPayload(body) {
     initial_stock_quantity: Math.max(1, Number(body.totalStock) || 1),
     is_recommended: body.isRecommended === true,
     prepayment_only: body.prepaymentOnly === true,
+    fruit_type_id: body.category === 'fruit' && body.fruitTypeId ? body.fruitTypeId : null,
     is_active: body.isActive !== false
   };
 }
@@ -2755,7 +2842,7 @@ app.delete('/api/admin/products/:id', ...adminOnly, async (req, res) => {
     const deletedAt = new Date().toISOString();
     const { data: currentProduct, error: currentError } = await supabaseAdmin
       .from('products')
-      .select('id, name, tags')
+      .select('id, name, category, tags, images, fruit_type_id')
       .eq('id', req.params.id)
       .maybeSingle();
     if (currentError) throw currentError;
@@ -2763,9 +2850,11 @@ app.delete('/api/admin/products/:id', ...adminOnly, async (req, res) => {
       return res.status(404).json({ success: false, error: '상품을 찾지 못했습니다.' });
     }
     const tags = [...new Set([...(currentProduct.tags || []), '__deleted__'])];
+    const productUpdates = { is_active: false, tags };
+    if (currentProduct.category === 'fruit') productUpdates.images = [];
     const { data: product, error } = await supabaseAdmin
       .from('products')
-      .update({ is_active: false, tags })
+      .update(productUpdates)
       .eq('id', req.params.id)
       .select('id, name')
       .maybeSingle();
@@ -2777,6 +2866,22 @@ app.delete('/api/admin/products/:id', ...adminOnly, async (req, res) => {
       .eq('product_id', req.params.id)
       .select('bundle_id');
     const cleanupWarnings = [];
+    if (currentProduct.category === 'fruit') {
+      const objectPaths = (currentProduct.images || []).map((url) => {
+        try {
+          const pathname = new URL(url).pathname;
+          const marker = '/storage/v1/object/public/product-images/';
+          const markerIndex = pathname.indexOf(marker);
+          return markerIndex >= 0 ? decodeURIComponent(pathname.slice(markerIndex + marker.length)) : null;
+        } catch (_) {
+          return null;
+        }
+      }).filter(Boolean);
+      if (objectPaths.length) {
+        const { error: imageCleanupError } = await supabaseAdmin.storage.from('product-images').remove(objectPaths);
+        if (imageCleanupError) cleanupWarnings.push(`상품 사진 정리 실패: ${imageCleanupError.message}`);
+      }
+    }
     if (itemError) cleanupWarnings.push(`보따리 입고 상태 정리 실패: ${itemError.message}`);
     const bundleIds = [...new Set((bundleItems || []).map((item) => item.bundle_id).filter(Boolean))];
     if (bundleIds.length) {
@@ -2834,7 +2939,7 @@ app.patch('/api/admin/products-legacy/:id', ...adminOnly, async (req, res) => {
 app.get('/api/reviews', async (req, res) => {
   let query = supabaseAdmin
     .from('reviews')
-    .select('id, user_id, product_id, order_id, rating, content, photo_urls, admin_reply, created_at, products(name, category)')
+    .select('id, user_id, product_id, fruit_type_id, order_id, rating, content, photo_urls, admin_reply, created_at, products(name, category, images, fruit_type_id), fruit_types(name)')
     .eq('is_visible', true)
     .order('created_at', { ascending: false })
     .limit(200);
@@ -2842,6 +2947,9 @@ app.get('/api/reviews', async (req, res) => {
   // 쿼리 파라미터가 유효하게 전달된 경우에만 eq 조건 추가
   if (req.query.productId && req.query.productId !== 'undefined' && req.query.productId !== 'null') {
     query = query.eq('product_id', req.query.productId);
+  }
+  if (req.query.fruitTypeId && req.query.fruitTypeId !== 'undefined' && req.query.fruitTypeId !== 'null') {
+    query = query.eq('fruit_type_id', req.query.fruitTypeId);
   }
 
   const { data: reviews, error } = await query;
@@ -2860,9 +2968,11 @@ app.get('/api/reviews', async (req, res) => {
     data: (reviews || []).map((review) => ({
       id: review.id,
       productId: review.product_id,
+      fruitTypeId: review.fruit_type_id,
       orderId: review.order_id,
-      productName: review.products?.name || '',
-      productCategory: review.products?.category || 'market',
+      productName: review.fruit_types?.name || review.products?.name || '',
+      productCategory: review.fruit_type_id ? 'fruit' : (review.products?.category || 'market'),
+      productImage: review.products?.images?.[0] || '',
       userName: names.get(review.user_id) || '고객',
       rating: review.rating,
       comment: review.content,
@@ -2876,10 +2986,47 @@ app.get('/api/reviews', async (req, res) => {
 });
 
 app.post('/api/reviews', requireAuth, async (req, res) => {
-  const { orderId, rating, content, photoUrls } = req.body || {};
+  const { orderId, fruitTypeId, rating, content, photoUrls } = req.body || {};
   const cleanContent = String(content || '').trim();
-  if (!orderId || !cleanContent || Number(rating) < 1 || Number(rating) > 5) {
-    return res.status(400).json({ success: false, error: '주문, 별점, 후기 내용을 확인해 주세요.' });
+  if ((!orderId && !fruitTypeId) || !cleanContent || Number(rating) < 1 || Number(rating) > 5) {
+    return res.status(400).json({ success: false, error: '후기 대상, 별점, 후기 내용을 확인해 주세요.' });
+  }
+
+  if (fruitTypeId) {
+    const { data: fruitType, error: fruitTypeError } = await supabaseAdmin
+      .from('fruit_types')
+      .select('id, name')
+      .eq('id', fruitTypeId)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (fruitTypeError) return res.status(400).json({ success: false, error: fruitTypeError.message });
+    if (!fruitType) return res.status(404).json({ success: false, error: '선택한 과일 종류를 찾을 수 없습니다.' });
+
+    const todayKst = kstDateTimeParts(new Date())?.date;
+    const todayStartedAt = new Date(`${todayKst}T00:00:00+09:00`).toISOString();
+    const { data: recentReviews, error: recentError } = await supabaseAdmin
+      .from('reviews')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .eq('fruit_type_id', fruitTypeId)
+      .gte('created_at', todayStartedAt)
+      .limit(1);
+    if (recentError) return res.status(400).json({ success: false, error: recentError.message });
+    if ((recentReviews || []).length) {
+      return res.status(409).json({ success: false, error: '같은 과일 후기는 하루에 한 번 작성할 수 있습니다.' });
+    }
+
+    const { data, error } = await supabaseAdmin.from('reviews').insert({
+      user_id: req.user.id,
+      product_id: null,
+      fruit_type_id: fruitTypeId,
+      order_id: null,
+      rating: Number(rating),
+      content: cleanContent,
+      photo_urls: Array.isArray(photoUrls) ? photoUrls.filter(Boolean).slice(0, 10) : []
+    }).select().single();
+    if (error) return res.status(400).json({ success: false, error: error.message });
+    return res.status(201).json({ success: true, data });
   }
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')

@@ -48,6 +48,16 @@
             <option value="seasoning-sauce">조미료·소스</option>
             <option value="etc">기타</option>
           </select><small>보따리·오늘의 과일·둘러보기 상품 어디에 등록하든 실제 상품 분류는 별도로 선택합니다.</small></label>
+          <label class="wide fruit-type-field" data-fruit-type-field hidden>
+            <span>과일 종류 *</span>
+            <div class="fruit-type-control">
+              <select name="fruitTypeId">
+                <option value="">과일 종류를 선택해 주세요</option>
+              </select>
+              <button id="add-fruit-type-button" type="button">새 종류 추가</button>
+            </div>
+            <small>여기에 연결된 후기는 오늘 판매 글을 지워도 계속 보존됩니다.</small>
+          </label>
           <label><span>판매가 *</span><div class="input-suffix"><input name="price" type="number" min="0" required /><i>원</i></div></label>
           <label><span>할인 전 가격</span><div class="input-suffix"><input name="originalPrice" type="number" min="0" /><i>원</i></div></label>
           <label class="wide switch-field"><span><strong>할인 전 가격 표시</strong><small>켜면 목록과 상세에 취소선 가격이 표시됩니다.</small></span><input name="showOriginalPrice" type="checkbox" /></label>

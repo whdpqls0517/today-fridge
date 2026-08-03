@@ -720,7 +720,13 @@
     function renderProductReviews() {
       const container = document.getElementById("tab-reviews");
       const tabBtn = document.getElementById("tab-reviews-btn");
-      const reviews = window.FridgeDB.getReviews().filter(r => r.productId === productId && r.isVisible);
+      const reviews = window.FridgeDB.getReviews().filter(r => {
+        if (r.isVisible === false) return false;
+        if (currentProduct?.category === "fruit" && currentProduct?.fruitTypeId) {
+          return r.fruitTypeId === currentProduct.fruitTypeId;
+        }
+        return r.productId === productId;
+      });
       
       if (tabBtn) {
         tabBtn.textContent = `후기란 (${reviews.length})`;

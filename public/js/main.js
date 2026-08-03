@@ -85,6 +85,14 @@
     return "★".repeat(count) + "☆".repeat(5 - count);
   }
 
+  function reviewProductLink(review) {
+    const products = getDB()?.getProducts?.() || [];
+    const product = review.fruitTypeId
+      ? products.find((item) => item.category === "fruit" && item.fruitTypeId === review.fruitTypeId && item.isActive !== false)
+      : products.find((item) => item.id === review.productId);
+    return product?.id ? `./product-detail.html?id=${encodeURIComponent(product.id)}` : "./reviews.html";
+  }
+
   function renderHomeReviews(category = "all") {
     if (!reviewTrack) return;
 
@@ -107,7 +115,7 @@
     filteredReviews.forEach((review) => {
       const card = document.createElement("a");
       card.className = `review-card ${review.photoClass ? "with-photo" : ""}`;
-      card.href = `./product-detail.html?id=${encodeURIComponent(review.productId)}`;
+      card.href = reviewProductLink(review);
 
       const replyHTML = review.reply
         ? `<div class="owner-reply"><strong>사장님 답글</strong>${review.reply}</div>`

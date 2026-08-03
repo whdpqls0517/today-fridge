@@ -9,6 +9,12 @@
 .reviews-filter::-webkit-scrollbar { display:none; }
 .reviews-filter button { flex:0 0 auto; min-height:35px; padding:0 15px; border-radius:999px; background:#f2f4f3; color:#5c6761; font-size:11px; font-weight:750; }
 .reviews-filter button.is-active { background:var(--deep-green); color:#fff; }
+.fruit-review-entry { display:grid; grid-template-columns:1fr auto; align-items:center; gap:12px; margin:0 0 18px; padding:17px; border:1px solid #dfe8e3; border-radius:15px; background:#f5f8f6; }
+.fruit-review-entry div { display:grid; gap:4px; }
+.fruit-review-entry span { color:#397058; font-size:9px; font-weight:800; }
+.fruit-review-entry strong { color:#26342d; font-size:13px; letter-spacing:-.025em; }
+.fruit-review-entry p { margin:0; color:#7a857f; font-size:9px; line-height:1.45; }
+.fruit-review-entry a { padding:10px 12px; border-radius:10px; background:#245b43; color:#fff; font-size:10px; font-weight:750; white-space:nowrap; }
 .reviews-list { display:grid; gap:11px; }
 .review-list-card { display:grid; grid-template-columns:1fr 62px; gap:13px; padding:17px; border:1px solid #e9edeb; border-radius:15px; background:#fff; color:#2e3732; box-shadow:0 7px 20px rgba(37,54,45,.045); }
 .review-list-copy { min-width:0; }

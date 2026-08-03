@@ -38,15 +38,19 @@
       return;
     }
     list.innerHTML = reviews.map((review) => {
-      const product = products.find((item) => item.id === review.productId);
+      const product = review.fruitTypeId
+        ? products.find((item) => item.category === "fruit" && item.fruitTypeId === review.fruitTypeId && item.isActive !== false)
+        : products.find((item) => item.id === review.productId);
+      const href = product?.id ? `./product-detail.html?id=${encodeURIComponent(product.id)}` : "#";
+      const image = product?.image || review.productImage || review.photoUrls?.[0] || "";
       return `
-        <a class="review-list-card" href="./product-detail.html?id=${encodeURIComponent(review.productId)}">
+        <a class="review-list-card${product?.id ? "" : " is-review-only"}" href="${href}">
           <div class="review-list-copy">
             <div class="review-list-head"><strong>${stars(review.rating)} ${escapeHTML(review.userName)}</strong><time>${escapeHTML(review.date)}</time></div>
             <p>${escapeHTML(review.comment)}</p>
-            <span class="review-list-product">${escapeHTML(review.productName)}</span>
+            <span class="review-list-product">${review.fruitTypeId ? "오늘의 과일 · " : ""}${escapeHTML(review.productName)}</span>
           </div>
-          ${product?.image ? `<img src="${escapeHTML(product.image)}" alt="" />` : ""}
+          ${image ? `<img src="${escapeHTML(image)}" alt="" />` : ""}
           ${review.reply ? `<div class="review-owner-reply"><strong>사장님 답변</strong>${escapeHTML(review.reply)}</div>` : ""}
         </a>`;
     }).join("");

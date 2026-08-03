@@ -15,6 +15,18 @@
   let imageItems = [];
   let mainImageSrc = "";
 
+  async function loadFruitTypes(selectedId = "") {
+    const select = form.elements.fruitTypeId;
+    if (!select) return;
+    const response = await fetch(`${API_BASE}/api/fruit-types`, { cache: "no-store" });
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.error || "과일 종류를 불러오지 못했습니다.");
+    select.innerHTML = `<option value="">과일 종류를 선택해 주세요</option>${(result.data || []).map((item) =>
+      `<option value="${item.id}">${String(item.name).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}</option>`
+    ).join("")}`;
+    if (selectedId) select.value = selectedId;
+  }
+
   function readJSON(value) {
     try { return JSON.parse(value); } catch (_) { return null; }
   }
@@ -67,6 +79,13 @@
 
   function updateCategoryPanels() {
     const category = selectedCategory();
+    const fruitTypeField = document.querySelector("[data-fruit-type-field]");
+    const fruitTypeSelect = form.elements.fruitTypeId;
+    if (fruitTypeField) fruitTypeField.hidden = category !== "fruit";
+    if (fruitTypeSelect) {
+      fruitTypeSelect.required = category === "fruit";
+      fruitTypeSelect.disabled = category !== "fruit";
+    }
     document.querySelectorAll("[data-category-panel]").forEach((panel) => {
       const active = panel.dataset.categoryPanel === category;
       panel.hidden = !active;
@@ -249,6 +268,7 @@
     setValue("name", editingProduct.name);
     setValue("description", editingProduct.description);
     setValue("productCategory", editingProduct.productCategory || "");
+    setValue("fruitTypeId", editingProduct.fruitTypeId || "");
     setValue("price", editingProduct.price);
     setValue("originalPrice", editingProduct.originalPrice);
     setValue("showOriginalPrice", editingProduct.showOriginalPrice);
@@ -342,6 +362,7 @@
       purchaseMode: category === "bundle" ? "reservation" : "store",
       description: String(data.get("description") || "").trim(),
       productCategory: String(data.get("productCategory") || "").trim(),
+      fruitTypeId: category === "fruit" ? String(data.get("fruitTypeId") || "") : null,
       detailDescription: String(data.get("detailDescription") || "").trim(),
       price: Number(data.get("price")) || 0,
       originalPrice: Number(data.get("originalPrice")) || 0,
@@ -485,6 +506,24 @@
   document.querySelectorAll('input[name="category"]').forEach((input) => {
     input.addEventListener("change", updateCategoryPanels);
   });
+  document.getElementById("add-fruit-type-button")?.addEventListener("click", async () => {
+    const name = prompt("추가할 과일 종류 이름을 입력해 주세요.\n예: 샤인머스캣");
+    if (!name?.trim()) return;
+    const token = accessToken();
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/fruit-types`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: name.trim() })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "과일 종류를 추가하지 못했습니다.");
+      await loadFruitTypes(result.data.id);
+      showToast(`${result.data.name} 종류를 추가했습니다.`);
+    } catch (error) {
+      showToast(error.message || "과일 종류를 추가하지 못했습니다.");
+    }
+  });
   form.elements.image.addEventListener("input", syncUrlImages);
   form.elements.images.addEventListener("input", syncUrlImages);
   fileInput.addEventListener("change", async () => {
@@ -519,7 +558,13 @@
   });
 
   updateCategoryPanels();
-  verifyAdmin().then((allowed) => {
-    if (allowed) loadEditingProduct();
+  verifyAdmin().then(async (allowed) => {
+    if (!allowed) return;
+    try {
+      await loadFruitTypes();
+      await loadEditingProduct();
+    } catch (error) {
+      showToast(error.message || "과일 종류를 불러오지 못했습니다.");
+    }
   });
 })();

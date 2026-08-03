@@ -1,5 +1,7 @@
 (function () {
   const orderId = new URLSearchParams(location.search).get("orderId");
+  const fruitMode = new URLSearchParams(location.search).get("type") === "fruit";
+  const initialFruitTypeId = new URLSearchParams(location.search).get("fruitTypeId") || "";
   const form = document.getElementById("review-write-form");
   const card = document.getElementById("review-order-card");
   const content = document.getElementById("review-content");
@@ -10,6 +12,15 @@
   let selectedPhotos = [];
   let order = null;
   let product = null;
+  let fruitTypes = [];
+  const fruitPicker = document.getElementById("fruit-type-picker");
+  const fruitSelect = document.getElementById("review-fruit-type");
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+    }[character]));
+  }
 
   function token() {
     const direct = localStorage.getItem("todayFridgeAccessToken");
@@ -51,11 +62,32 @@
     return result.url;
   }
 
-  async function loadOrder() {
+  async function loadTarget() {
     const auth = token();
     form.hidden = true;
     if (!auth) {
-      location.replace(`./login.html?next=${encodeURIComponent(`review-write.html?orderId=${orderId || ""}`)}`);
+      const next = fruitMode ? "review-write.html?type=fruit" : `review-write.html?orderId=${orderId || ""}`;
+      location.replace(`./login.html?next=${encodeURIComponent(next)}`);
+      return;
+    }
+    if (fruitMode) {
+      message.textContent = "과일 종류를 불러오고 있어요.";
+      try {
+        const response = await fetch(`${location.origin}/api/fruit-types`, { cache: "no-store" });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || "과일 종류를 불러오지 못했습니다.");
+        fruitTypes = result.data || [];
+        fruitSelect.innerHTML = `<option value="">과일을 선택해 주세요</option>${fruitTypes.map((item) =>
+          `<option value="${item.id}">${escapeHTML(item.name)}</option>`
+        ).join("")}`;
+        fruitSelect.value = initialFruitTypeId;
+        fruitPicker.hidden = false;
+        card.innerHTML = `<div><strong>오늘의 과일 후기</strong><span>과일 종류를 선택하면 판매 글과 관계없이 후기가 계속 보관됩니다.</span></div>`;
+        message.textContent = "";
+        form.hidden = false;
+      } catch (error) {
+        message.textContent = error.message || "과일 종류를 불러오지 못했습니다.";
+      }
       return;
     }
     message.textContent = "주문 정보를 확인하고 있어요.";
@@ -127,6 +159,11 @@
       message.textContent = auth ? "후기 내용을 입력해 주세요." : "로그인 후 후기를 작성해 주세요.";
       return;
     }
+    if (fruitMode && !fruitSelect.value) {
+      message.textContent = "후기를 남길 과일을 선택해 주세요.";
+      fruitSelect.focus();
+      return;
+    }
     const submit = form.querySelector('[type="submit"]');
     submit.disabled = true;
     message.textContent = selectedPhotos.length ? "사진과 후기를 등록하고 있어요." : "후기를 등록하고 있어요.";
@@ -141,7 +178,9 @@
           "Content-Type": "application/json",
           Authorization: `Bearer ${auth}`
         },
-        body: JSON.stringify({ orderId: order.id, rating, content: text, photoUrls })
+        body: JSON.stringify(fruitMode
+          ? { fruitTypeId: fruitSelect.value, rating, content: text, photoUrls }
+          : { orderId: order.id, rating, content: text, photoUrls })
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "후기를 등록하지 못했습니다.");
@@ -153,5 +192,5 @@
   });
 
   renderRating();
-  loadOrder();
+  loadTarget();
 })();

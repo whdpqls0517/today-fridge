@@ -84,6 +84,17 @@ as $$
   );
 $$;
 
+create table if not exists public.fruit_types (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  normalized_name text generated always as (lower(regexp_replace(trim(name), '[[:space:]]+', '', 'g'))) stored,
+  is_active boolean not null default true,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (normalized_name)
+);
+
 -- 2. 상품 원본: 상품명/설명/가격/이미지 등 반복해서 사용할 정보
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
@@ -98,6 +109,7 @@ create table if not exists public.products (
   unit text,
   images text[] not null default '{}',
   tags text[] not null default '{}',
+  fruit_type_id uuid references public.fruit_types(id) on delete set null,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -202,7 +214,8 @@ create trigger orders_set_updated_at
 create table if not exists public.restock_subscriptions (
   id uuid not null default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  product_id uuid not null references public.products(id) on delete cascade,
+  product_id uuid references public.products(id) on delete cascade,
+  fruit_type_id uuid references public.fruit_types(id) on delete restrict,
   is_active boolean not null default true,
   request_type text not null default 'restock'
     check (request_type in ('restock', 'waitlist')),
@@ -239,7 +252,8 @@ create table if not exists public.recommended_search_terms (
   sort_order integer not null default 0,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint reviews_target_check check (product_id is not null or fruit_type_id is not null)
 );
 
 create index if not exists recommended_search_terms_active_order_idx
@@ -264,6 +278,8 @@ create table if not exists public.reviews (
 
 create index if not exists reviews_product_idx
   on public.reviews(product_id, is_visible, created_at desc);
+create index if not exists reviews_fruit_type_idx
+  on public.reviews(fruit_type_id, is_visible, created_at desc);
 
 -- 6. 노쇼 기록: 횟수만 덮어쓰지 않고 어떤 주문에서 발생했는지 보존
 create table if not exists public.no_show_events (
@@ -382,6 +398,7 @@ alter table public.search_events enable row level security;
 alter table public.recommended_search_terms enable row level security;
 alter table public.restock_subscriptions enable row level security;
 alter table public.reviews enable row level security;
+alter table public.fruit_types enable row level security;
 
 -- 기존 정책이 있으면 재실행 가능하도록 삭제
 drop policy if exists "profiles_select_own_or_admin" on public.profiles;
@@ -409,6 +426,17 @@ drop policy if exists "restock_own_or_admin" on public.restock_subscriptions;
 drop policy if exists "reviews_read_visible" on public.reviews;
 drop policy if exists "reviews_insert_own" on public.reviews;
 drop policy if exists "reviews_admin_all" on public.reviews;
+drop policy if exists "fruit_types_read_active" on public.fruit_types;
+drop policy if exists "fruit_types_admin_all" on public.fruit_types;
+
+create policy "fruit_types_read_active"
+on public.fruit_types for select to anon, authenticated
+using (is_active = true or public.is_admin());
+
+create policy "fruit_types_admin_all"
+on public.fruit_types for all to authenticated
+using (public.is_admin())
+with check (public.is_admin());
 
 create policy "profiles_select_own_or_admin"
 on public.profiles for select to authenticated
@@ -531,13 +559,14 @@ with check (public.is_admin());
 
 -- 기본 권한: 실제 행 접근 가능 여부는 위 RLS가 최종 판단
 grant usage on schema public to anon, authenticated;
-grant select on public.products, public.bundles, public.bundle_items to anon;
+grant select on public.products, public.bundles, public.bundle_items, public.fruit_types to anon;
 grant select on public.reviews to anon;
 grant select on public.products, public.bundles, public.bundle_items to authenticated;
 grant select on public.profiles, public.orders, public.no_show_events,
   public.favorites, public.inquiries, public.notifications,
   public.web_push_subscriptions to authenticated;
 grant select on public.restock_subscriptions, public.reviews to authenticated;
+grant select on public.fruit_types to authenticated;
 grant insert on public.orders, public.favorites, public.inquiries,
   public.web_push_subscriptions to authenticated;
 grant insert, update, delete on public.restock_subscriptions to authenticated;
@@ -546,6 +575,7 @@ grant delete on public.favorites, public.web_push_subscriptions to authenticated
 
 revoke all on public.search_events from anon, authenticated;
 grant all privileges on public.search_events to service_role;
+grant all privileges on public.fruit_types to service_role;
 grant usage, select on sequence public.search_events_id_seq to service_role;
 revoke all on public.recommended_search_terms from anon, authenticated;
 grant all privileges on public.recommended_search_terms to service_role;

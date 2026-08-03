@@ -207,14 +207,15 @@ async function cleanup() {
 }
 
 async function main() {
-  await check("001~023 핵심 테이블·컬럼", async () => {
+  await check("001~024 핵심 테이블·컬럼", async () => {
     const probes = [
       ["profiles", "id,nickname,role,no_show_count,notification_settings"],
-      ["products", "id,show_original_price,prepayment_only,stock_quantity,is_recommended"],
+      ["products", "id,show_original_price,prepayment_only,stock_quantity,is_recommended,fruit_type_id"],
       ["bundle_items", "id,initial_stock_quantity,waitlist_reserved_quantity,arrival_expected_text"],
       ["orders", "id,depositor_name,payment_reminded_at,pickup_reminded_at,request_key,barcode_locked"],
       ["restock_subscriptions", "id,user_id,bundle_item_id,quantity,payment_type,promoted_order_id,promoted_at"],
-      ["reviews", "id,is_visible,admin_reply"],
+      ["reviews", "id,is_visible,admin_reply,fruit_type_id"],
+      ["fruit_types", "id,name,is_active"],
       ["search_events", "id,normalized_term"],
       ["recommended_search_terms", "id,term,is_active"],
       ["admin_no_show_adjustments", "id,user_id,admin_id"],

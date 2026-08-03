@@ -22,6 +22,10 @@
   const fruitHeroTitleInput = document.getElementById("fruit-hero-title-input");
   const fruitHeroDescriptionInput = document.getElementById("fruit-hero-description-input");
   const fruitHeroStatus = document.getElementById("fruit-hero-status");
+  const fruitTypeForm = document.getElementById("fruit-type-form");
+  const fruitTypeNameInput = document.getElementById("fruit-type-name");
+  const fruitTypeStatus = document.getElementById("fruit-type-status");
+  const fruitTypeList = document.getElementById("fruit-type-list");
   let productCategoryFilter = "all";
 
   function setFruitHeroStatus(message, tone = "") {
@@ -82,6 +86,73 @@
       setFruitHeroStatus(error.message || "문구를 저장하지 못했습니다.", "error");
     } finally {
       submitButton.disabled = false;
+    }
+  });
+
+  function fruitTypeEscape(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+    }[character]));
+  }
+
+  async function loadFruitTypesAdmin() {
+    if (!fruitTypeList) return;
+    fruitTypeList.innerHTML = "<p>과일 종류를 불러오고 있어요.</p>";
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/fruit-types`, {
+        headers: { Authorization: `Bearer ${accessToken()}` },
+        cache: "no-store"
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "과일 종류를 불러오지 못했습니다.");
+      const items = result.data || [];
+      fruitTypeList.innerHTML = items.length ? items.map((item) => `
+        <div class="fruit-type-row" data-fruit-type-id="${item.id}">
+          <strong>${fruitTypeEscape(item.name)}</strong>
+          <span>${item.is_active ? "사용 중" : "숨김"}</span>
+          <button type="button" data-fruit-type-toggle="${item.id}" data-next-active="${item.is_active ? "false" : "true"}">${item.is_active ? "숨기기" : "다시 사용"}</button>
+        </div>`).join("") : "<p>등록된 과일 종류가 없습니다.</p>";
+      if (fruitTypeStatus) fruitTypeStatus.textContent = `총 ${items.length}개 종류`;
+    } catch (error) {
+      fruitTypeList.innerHTML = `<p>${fruitTypeEscape(error.message || "과일 종류를 불러오지 못했습니다.")}</p>`;
+    }
+  }
+
+  fruitTypeForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const name = fruitTypeNameInput.value.trim();
+    if (!name) return;
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/fruit-types`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
+        body: JSON.stringify({ name })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "과일 종류를 추가하지 못했습니다.");
+      fruitTypeNameInput.value = "";
+      await loadFruitTypesAdmin();
+    } catch (error) {
+      fruitTypeStatus.textContent = error.message || "과일 종류를 추가하지 못했습니다.";
+    }
+  });
+
+  fruitTypeList?.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-fruit-type-toggle]");
+    if (!button) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/fruit-types/${button.dataset.fruitTypeToggle}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
+        body: JSON.stringify({ isActive: button.dataset.nextActive === "true" })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "상태를 변경하지 못했습니다.");
+      await loadFruitTypesAdmin();
+    } catch (error) {
+      fruitTypeStatus.textContent = error.message || "상태를 변경하지 못했습니다.";
+      button.disabled = false;
     }
   });
 
@@ -2013,6 +2084,7 @@
     const orderSync = await syncAdminOrdersToLocal();
     populateProductFilter();
     loadFruitHeroAdmin();
+    loadFruitTypesAdmin();
     renderRecommendedSearchAdmin();
     renderAdminDashboard();
     if (!catalogSync?.success && adminProductsTable) {

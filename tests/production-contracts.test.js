@@ -115,3 +115,17 @@ test("고객 알림 설정은 개별 항목 없이 전체 알림 토글 하나�
   assert.match(server, /notificationSettings\.enabled/);
   assert.match(server, /arrival:\s*enabled[\s\S]*inquiry:\s*enabled[\s\S]*important:\s*enabled/);
 });
+
+test("오늘의 과일 후기는 판매 글이 아닌 과일 종류에 누적된다", () => {
+  const server = read("server.js");
+  const migration = read("supabase/migrations/024_fruit_types_and_reviews.sql");
+  const form = read("public/js/admin-product-form.js");
+  const reviewWrite = read("public/js/review-write.js");
+  assert.match(migration, /create table if not exists public\.fruit_types/);
+  assert.match(migration, /add column if not exists fruit_type_id/);
+  assert.match(server, /app\.post\('\/api\/admin\/fruit-types'/);
+  assert.match(server, /fruit_type_id:\s*fruitTypeId/);
+  assert.match(server, /todayStartedAt/);
+  assert.match(form, /fruitTypeId/);
+  assert.match(reviewWrite, /type=fruit/);
+});
