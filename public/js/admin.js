@@ -106,6 +106,8 @@
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "과일 종류를 불러오지 못했습니다.");
       const items = result.data || [];
+      const summaryCount = document.getElementById("fruit-type-summary-count");
+      if (summaryCount) summaryCount.textContent = `${items.length}개`;
       fruitTypeList.innerHTML = items.length ? items.map((item) => `
         <div class="fruit-type-row" data-fruit-type-id="${item.id}">
           <strong>${fruitTypeEscape(item.name)}</strong>
@@ -154,6 +156,16 @@
       fruitTypeStatus.textContent = error.message || "상태를 변경하지 못했습니다.";
       button.disabled = false;
     }
+  });
+
+  const fruitTypeDialog = document.getElementById("fruit-type-dialog");
+  document.getElementById("open-fruit-type-manager")?.addEventListener("click", () => {
+    if (typeof fruitTypeDialog?.showModal === "function") fruitTypeDialog.showModal();
+    else fruitTypeDialog?.setAttribute("open", "");
+  });
+  document.getElementById("close-fruit-type-manager")?.addEventListener("click", () => fruitTypeDialog?.close());
+  fruitTypeDialog?.addEventListener("click", (event) => {
+    if (event.target === fruitTypeDialog) fruitTypeDialog.close();
   });
 
   function readJSON(value) {
@@ -1239,6 +1251,10 @@
     }
     if (statPendingApproval) statPendingApproval.textContent = `${pendingApprovalCount}건`;
     if (statExpiredOrders) statExpiredOrders.textContent = `${expiredCount}건`;
+    const taskPendingApproval = document.getElementById("task-pending-approval");
+    const taskExpiredOrders = document.getElementById("task-expired-orders");
+    if (taskPendingApproval) taskPendingApproval.textContent = `${pendingApprovalCount}건`;
+    if (taskExpiredOrders) taskExpiredOrders.textContent = `${expiredCount}건`;
   }
 
   function populateProductFilter() {

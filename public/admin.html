@@ -68,6 +68,28 @@
         </button>
       </section>
 
+      <section class="admin-task-queue" aria-labelledby="admin-task-queue-title">
+        <div class="admin-task-queue__heading">
+          <div>
+            <span class="admin-task-queue__eyebrow">지금 확인할 업무</span>
+            <h2 id="admin-task-queue-title">처리할 일</h2>
+          </div>
+          <p>확인이 필요한 항목만 모았습니다.</p>
+        </div>
+        <div class="admin-task-queue__items">
+          <button type="button" class="admin-task-item" onclick="openPackingFilter('pending-transfer')">
+            <span class="admin-task-item__dot is-payment" aria-hidden="true"></span>
+            <span class="admin-task-item__copy"><strong>입금 확인 대기</strong><small>입금 내역을 확인하고 승인해 주세요.</small></span>
+            <b id="task-pending-approval">0건</b><span class="admin-task-item__arrow" aria-hidden="true">›</span>
+          </button>
+          <button type="button" class="admin-task-item" onclick="openExpiredHistory('today')">
+            <span class="admin-task-item__dot is-expired" aria-hidden="true"></span>
+            <span class="admin-task-item__copy"><strong>오늘 미수령 만료</strong><small>만료 내역을 확인하거나 상태를 원복할 수 있어요.</small></span>
+            <b id="task-expired-orders">0건</b><span class="admin-task-item__arrow" aria-hidden="true">›</span>
+          </button>
+        </div>
+      </section>
+
       <!-- 관리 탭 메뉴 -->
       <nav class="admin-tabs">
         <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>7개 업무</span></div>
@@ -104,14 +126,12 @@
           </form>
         </div>
 
-        <div class="panel-card fruit-type-admin">
-          <div class="admin-section-heading"><div><h2>과일 종류 관리</h2><p class="panel-desc">오늘의 과일 판매 글과 누적 후기를 연결하는 기준입니다.</p></div></div>
-          <form id="fruit-type-form" class="fruit-type-form">
-            <input id="fruit-type-name" type="text" maxlength="30" placeholder="예: 샤인머스캣" required />
-            <button type="submit">종류 추가</button>
-          </form>
-          <p id="fruit-type-status" class="fruit-type-status" role="status"></p>
-          <div id="fruit-type-list" class="fruit-type-list"></div>
+        <div class="panel-card fruit-type-admin fruit-type-admin--summary">
+          <div class="admin-section-heading"><div><h2>과일 종류</h2><p class="panel-desc">판매 글과 누적 후기를 연결하는 기준입니다.</p></div></div>
+          <div class="fruit-type-summary">
+            <div><strong id="fruit-type-summary-count">0개</strong><span>등록된 과일 종류</span></div>
+            <button id="open-fruit-type-manager" type="button">종류 관리</button>
+          </div>
         </div>
 
         <div class="panel-card recommended-search-admin">
@@ -181,6 +201,19 @@
           </div>
         </div>
       </div>
+
+      <dialog class="fruit-type-dialog" id="fruit-type-dialog" aria-labelledby="fruit-type-dialog-title">
+        <div class="fruit-type-dialog__header">
+          <div><span>상품 설정</span><h2 id="fruit-type-dialog-title">과일 종류 관리</h2><p>종류가 늘어나도 이 창 안에서 관리할 수 있습니다.</p></div>
+          <button id="close-fruit-type-manager" type="button" aria-label="과일 종류 관리 닫기">×</button>
+        </div>
+        <form id="fruit-type-form" class="fruit-type-form">
+          <input id="fruit-type-name" type="text" maxlength="30" placeholder="예: 샤인머스캣" required />
+          <button type="submit">종류 추가</button>
+        </form>
+        <p id="fruit-type-status" class="fruit-type-status" role="status"></p>
+        <div id="fruit-type-list" class="fruit-type-list fruit-type-list--manager"></div>
+      </dialog>
 
       <div id="tab-arrivals" class="admin-tab-content" style="display:none;">
         <div class="panel-card">
