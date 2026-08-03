@@ -18,7 +18,7 @@
   <div class="admin-layout" id="admin-layout" aria-hidden="true">
     
     <!-- 왼쪽: 관리자 대시보드 조작 판넬 -->
-    <main class="admin-main">
+    <main class="admin-main is-home-tab">
       <header class="admin-header">
         <div class="admin-logo">
           <span>오</span>
@@ -32,7 +32,7 @@
       </header>
 
       <!-- 상단 통계 현황 카드 -->
-      <section class="stat-grid">
+      <section class="stat-grid" id="admin-home-stats">
         <button class="stat-card" type="button" onclick="openPackingFilter('today-orders')">
           <div class="stat-icon">01</div>
           <div class="stat-info">
@@ -68,7 +68,7 @@
         </button>
       </section>
 
-      <section class="admin-task-queue" aria-labelledby="admin-task-queue-title">
+      <section class="admin-task-queue" id="admin-home-tasks" aria-labelledby="admin-task-queue-title">
         <div class="admin-task-queue__heading">
           <div>
             <span class="admin-task-queue__eyebrow">지금 확인할 업무</span>
@@ -93,8 +93,8 @@
       <!-- 관리 탭 메뉴 -->
       <nav class="admin-tabs">
         <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>8개 업무</span></div>
-        <button class="admin-tab-btn active" data-menu-code="01" onclick="switchAdminTab('products')">상품 관리</button>
-        <button class="admin-tab-btn" data-menu-code="02" onclick="switchAdminTab('display')">화면 노출 설정</button>
+        <button class="admin-tab-btn active" data-menu-code="01" onclick="switchAdminTab('display')">화면 노출 설정</button>
+        <button class="admin-tab-btn" data-menu-code="02" onclick="switchAdminTab('products')">상품 관리</button>
         <button class="admin-tab-btn" data-menu-code="03" onclick="switchAdminTab('arrivals')">입고 상태</button>
         <button class="admin-tab-btn" data-menu-code="04" onclick="switchAdminTab('packing')">패킹·주문</button>
         <button class="admin-tab-btn" data-menu-code="05" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
@@ -103,7 +103,7 @@
         <button class="admin-tab-btn" data-menu-code="08" onclick="switchAdminTab('notifications')">알림 발송</button>
       </nav>
 
-      <div id="tab-display" class="admin-tab-content" style="display:none;">
+      <div id="tab-display" class="admin-tab-content">
         <div class="panel-card fruit-hero-admin">
           <div class="admin-section-heading">
             <div>
@@ -156,7 +156,7 @@
 
       </div>
 
-      <div id="tab-products" class="admin-tab-content">
+      <div id="tab-products" class="admin-tab-content" style="display:none;">
         <div class="panel-card">
           <div class="admin-section-heading">
             <div>

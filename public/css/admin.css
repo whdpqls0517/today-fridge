@@ -1702,6 +1702,11 @@
   .admin-header { grid-area: header; margin: 0; }
   .stat-grid { grid-area: stats; margin: 0; }
   .admin-task-queue { grid-area: tasks; }
+  .admin-main:not(.is-home-tab) {
+    grid-template-areas:
+      "header header"
+      "menu content";
+  }
   .admin-tabs {
     position: sticky;
     top: 20px;
@@ -1785,6 +1790,7 @@
   display:grid; grid-template-columns:minmax(180px,.62fr) minmax(0,1.8fr); gap:18px; align-items:center;
   padding:16px 18px; border:1px solid #dfe5e1; border-radius:14px; background:#fff;
 }
+.stat-grid[hidden], .admin-task-queue[hidden] { display:none !important; }
 .admin-task-queue__heading h2 { margin:2px 0 0; color:#27322c; font-size:16px; letter-spacing:-.025em; }
 .admin-task-queue__heading p { display:none; margin:0; color:#8a938e; font-size:9px; }
 .admin-task-queue__eyebrow { color:#758079; font-size:9px; font-weight:750; }
@@ -1859,9 +1865,7 @@
   scrollbar-color: #cbd3cf transparent;
 }
 .admin-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  position: static;
   border-bottom:1px solid #d8dfdb;
   background:#eef2f0;
   color:#4b5951;
@@ -1870,6 +1874,7 @@
   letter-spacing:-.01em;
   white-space:nowrap;
 }
+.admin-table-scroll .admin-table thead { position:static; }
 .admin-table tbody tr { transition: background-color .12s ease; }
 .admin-table td { vertical-align: middle; }
 

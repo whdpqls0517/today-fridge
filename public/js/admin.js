@@ -411,7 +411,7 @@
   const notificationRecipientCount = document.getElementById("admin-notification-recipient-count");
   const filterProductSelect = document.getElementById("filter-order-product");
 
-  let currentAdminTab = "products";
+  let currentAdminTab = "display";
   let packingScope = "all";
   let adminOrdersSyncing = false;
   let expiredRange = "today";
@@ -488,6 +488,12 @@
     document.querySelectorAll(".admin-tab-content").forEach((content) => {
       content.style.display = "none";
     });
+    const isHomeTab = tab === "display";
+    document.querySelector(".admin-main")?.classList.toggle("is-home-tab", isHomeTab);
+    const homeStats = document.getElementById("admin-home-stats");
+    const homeTasks = document.getElementById("admin-home-tasks");
+    if (homeStats) homeStats.hidden = !isHomeTab;
+    if (homeTasks) homeTasks.hidden = !isHomeTab;
 
     const targetTab = document.getElementById(`tab-${tab}`);
     if (targetTab) {
