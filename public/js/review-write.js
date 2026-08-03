@@ -15,6 +15,26 @@
   let fruitTypes = [];
   const fruitPicker = document.getElementById("fruit-type-picker");
   const fruitSelect = document.getElementById("review-fruit-type");
+  const backLink = document.getElementById("review-back-link");
+
+  function setupBackLink() {
+    const fallback = orderId ? "./order-history.html" : "./reviews.html";
+    let previousUrl = null;
+    try {
+      const referrer = document.referrer ? new URL(document.referrer) : null;
+      const allowedPages = ["/index.html", "/", "/reviews.html", "/order-history.html"];
+      if (referrer?.origin === location.origin && allowedPages.includes(referrer.pathname)) {
+        previousUrl = referrer.href;
+      }
+    } catch (_) {}
+
+    backLink.href = previousUrl || fallback;
+    backLink.addEventListener("click", (event) => {
+      if (!previousUrl || history.length <= 1) return;
+      event.preventDefault();
+      history.back();
+    });
+  }
 
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
@@ -199,5 +219,6 @@
   });
 
   renderRating();
+  setupBackLink();
   loadTarget();
 })();
