@@ -483,7 +483,7 @@
 
     const targetTab = document.getElementById(`tab-${tab}`);
     if (targetTab) {
-      targetTab.style.display = "block";
+      targetTab.style.display = "";
     }
     renderAdminDashboard();
   };

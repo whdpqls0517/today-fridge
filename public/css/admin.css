@@ -1680,3 +1680,160 @@
   .admin-notification-layout { grid-template-columns: 1fr; }
   .admin-notification-preview { order: -1; }
 }
+
+/* 2026 관리자 업무 화면 개편: 기능은 유지하고 탐색·가독성만 개선 */
+@media (min-width: 1025px) {
+  .admin-main {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    grid-template-areas:
+      "header header"
+      "menu stats"
+      "menu content";
+    align-content: start;
+    column-gap: 24px;
+    row-gap: 18px;
+    width: min(100%, 1600px);
+    margin: 0 auto;
+    padding: 24px 30px 48px;
+  }
+
+  .admin-header { grid-area: header; margin: 0; }
+  .stat-grid { grid-area: stats; margin: 0; }
+  .admin-tabs {
+    position: sticky;
+    top: 20px;
+    grid-area: menu;
+    display: flex;
+    align-self: start;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 10px;
+    overflow: visible;
+    border: 1px solid #e2e7e4;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(34, 51, 43, .035);
+  }
+
+  .admin-tabs-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 4px 6px;
+    padding: 7px 5px 11px;
+    border-bottom: 1px solid #edf0ee;
+  }
+  .admin-tabs-head strong { color: #29352f; font-size: 12px; }
+  .admin-tabs-head span { color: #9aa39e; font-size: 9px; font-weight: 650; }
+
+  .admin-tab-btn {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 42px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    text-align: left;
+  }
+  .admin-tab-btn::before {
+    content: attr(data-menu-code);
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 1px solid #e4e9e6;
+    border-radius: 8px;
+    background: #f7f9f8;
+    color: #7b8881;
+    font-size: 9px;
+    font-weight: 760;
+  }
+  .admin-tab-btn.active { background: #eef4f1; color: #214b37; }
+  .admin-tab-btn.active::before {
+    border-color: #cfe1d8;
+    background: #fff;
+    color: #225b40;
+  }
+
+  .admin-tab-content { grid-area: content; min-width: 0; }
+  #tab-products {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+  #tab-products > .panel-card { min-width: 0; height: 100%; }
+  #tab-products > .panel-card:last-child { grid-column: 1 / -1; height: auto; }
+  #tab-products .fruit-hero-admin,
+  #tab-products .recommended-search-admin { margin-bottom: 0; }
+  #tab-products .fruit-hero-form { grid-template-columns: 1fr; }
+  #tab-products .fruit-hero-form__actions {
+    min-width: 0;
+    align-items: stretch;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  #tab-products .fruit-hero-form__actions p { text-align: left; }
+}
+
+.admin-body { background: #f2f4f3; }
+.admin-header {
+  min-height: 58px;
+  border-bottom-color: #dde3df;
+}
+.admin-logo h1 { font-size: 19px; }
+.admin-logo h1 strong { color: #87918c; font-weight: 600; }
+.go-to-shop-btn {
+  border: 1px solid #dce4df;
+  background: #fff;
+  color: #4d5c54;
+}
+.go-to-shop-btn:hover { background: #f7f9f8; color: #26342d; }
+.go-to-shop-btn--primary,
+.go-to-shop-btn--primary:hover { border-color: #284f3c; background: #284f3c; color: #fff; }
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+.stat-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: transparent;
+}
+.stat-card:hover::after { background: #547966; }
+.stat-info { min-width: 0; }
+.stat-info p { letter-spacing: -.025em; }
+
+.panel-card { background: #fff; }
+.admin-section-heading { min-height: 44px; }
+.admin-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd3cf transparent;
+}
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.admin-table tbody tr { transition: background-color .12s ease; }
+.admin-table td { vertical-align: middle; }
+
+@media (max-width: 1240px) and (min-width: 1025px) {
+  #tab-products { grid-template-columns: 1fr; }
+  #tab-products > .panel-card:last-child { grid-column: auto; }
+}
+
+@media (max-width: 1024px) {
+  .admin-body { height: auto; min-height: 100vh; overflow: auto; }
+  .admin-main { height: auto; min-height: 100vh; padding: 20px 18px 40px; overflow: visible; }
+  .admin-tabs-head { display: none; }
+  .admin-tab-btn::before { display: none; }
+}

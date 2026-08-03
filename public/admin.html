@@ -27,7 +27,7 @@
         <div class="admin-header-actions">
           <a href="./admin-audit-log.html" class="go-to-shop-btn">작업 이력</a>
           <a href="./admin-system-status.html" class="go-to-shop-btn">시스템 상태</a>
-          <a href="./index.html" class="go-to-shop-btn">🛒 손님 화면으로 가기</a>
+          <a href="./index.html" class="go-to-shop-btn go-to-shop-btn--primary">고객 화면</a>
         </div>
       </header>
 
@@ -70,13 +70,14 @@
 
       <!-- 관리 탭 메뉴 -->
       <nav class="admin-tabs">
-        <button class="admin-tab-btn active" onclick="switchAdminTab('products')">상품·보따리</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('arrivals')">입고 상태</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('packing')">패킹·주문</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('reviews')">후기·문의</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('members')">회원 관리</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('notifications')">알림 발송</button>
+        <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>7개 업무</span></div>
+        <button class="admin-tab-btn active" data-menu-code="01" onclick="switchAdminTab('products')">상품·보따리</button>
+        <button class="admin-tab-btn" data-menu-code="02" onclick="switchAdminTab('arrivals')">입고 상태</button>
+        <button class="admin-tab-btn" data-menu-code="03" onclick="switchAdminTab('packing')">패킹·주문</button>
+        <button class="admin-tab-btn" data-menu-code="04" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
+        <button class="admin-tab-btn" data-menu-code="05" onclick="switchAdminTab('reviews')">후기·문의</button>
+        <button class="admin-tab-btn" data-menu-code="06" onclick="switchAdminTab('members')">회원 관리</button>
+        <button class="admin-tab-btn" data-menu-code="07" onclick="switchAdminTab('notifications')">알림 발송</button>
       </nav>
 
       <div id="tab-products" class="admin-tab-content">
