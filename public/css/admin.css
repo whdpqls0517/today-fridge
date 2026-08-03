@@ -1736,35 +1736,15 @@
   .admin-tabs-head span { color: #9aa39e; font-size: 9px; font-weight: 650; }
 
   .admin-tab-btn {
-    display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
+    display: flex;
     align-items: center;
-    gap: 9px;
     width: 100%;
     min-height: 42px;
-    padding: 6px 10px;
+    padding: 8px 13px;
     border-radius: 9px;
     text-align: left;
   }
-  .admin-tab-btn::before {
-    content: attr(data-menu-code);
-    display: grid;
-    width: 28px;
-    height: 28px;
-    place-items: center;
-    border: 1px solid #e4e9e6;
-    border-radius: 8px;
-    background: #f7f9f8;
-    color: #7b8881;
-    font-size: 9px;
-    font-weight: 760;
-  }
   .admin-tab-btn.active { background: #eef4f1; color: #214b37; }
-  .admin-tab-btn.active::before {
-    border-color: #cfe1d8;
-    background: #fff;
-    color: #225b40;
-  }
 
   .admin-tab-content { grid-area: content; min-width: 0; }
   #tab-display {
@@ -1790,6 +1770,7 @@
   display:grid; grid-template-columns:minmax(180px,.62fr) minmax(0,1.8fr); gap:18px; align-items:center;
   padding:16px 18px; border:1px solid #dfe5e1; border-radius:14px; background:#fff;
 }
+.is-home-tab .stat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .stat-grid[hidden], .admin-task-queue[hidden] { display:none !important; }
 .admin-task-queue__heading h2 { margin:2px 0 0; color:#27322c; font-size:16px; letter-spacing:-.025em; }
 .admin-task-queue__heading p { display:none; margin:0; color:#8a938e; font-size:9px; }

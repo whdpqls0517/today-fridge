@@ -50,22 +50,6 @@
             <small class="stat-alert" id="stat-today-unpaid" hidden>미입금 0건</small>
           </div>
         </button>
-        <button class="stat-card" type="button" onclick="openPackingFilter('pending-transfer')">
-          <div class="stat-icon">03</div>
-          <div class="stat-info">
-            <h3>입금 확인 대기</h3>
-            <p id="stat-pending-approval">0건</p>
-            <small>확인이 필요한 주문</small>
-          </div>
-        </button>
-        <button class="stat-card" type="button" onclick="openExpiredHistory('today')">
-          <div class="stat-icon">04</div>
-          <div class="stat-info">
-            <h3>미수령 만료</h3>
-            <p id="stat-expired-orders">0건</p>
-            <small>확인 및 원복 가능</small>
-          </div>
-        </button>
       </section>
 
       <section class="admin-task-queue" id="admin-home-tasks" aria-labelledby="admin-task-queue-title">
@@ -93,14 +77,14 @@
       <!-- 관리 탭 메뉴 -->
       <nav class="admin-tabs">
         <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>8개 업무</span></div>
-        <button class="admin-tab-btn active" data-menu-code="01" onclick="switchAdminTab('display')">화면 노출 설정</button>
-        <button class="admin-tab-btn" data-menu-code="02" onclick="switchAdminTab('products')">상품 관리</button>
-        <button class="admin-tab-btn" data-menu-code="03" onclick="switchAdminTab('arrivals')">입고 상태</button>
-        <button class="admin-tab-btn" data-menu-code="04" onclick="switchAdminTab('packing')">패킹·주문</button>
-        <button class="admin-tab-btn" data-menu-code="05" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
-        <button class="admin-tab-btn" data-menu-code="06" onclick="switchAdminTab('reviews')">후기·문의</button>
-        <button class="admin-tab-btn" data-menu-code="07" onclick="switchAdminTab('members')">회원 관리</button>
-        <button class="admin-tab-btn" data-menu-code="08" onclick="switchAdminTab('notifications')">알림 발송</button>
+        <button class="admin-tab-btn active" onclick="switchAdminTab('display')">화면 노출 설정</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('products')">상품 관리</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('arrivals')">입고 상태</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('packing')">패킹·주문</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('reviews')">후기·문의</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('members')">회원 관리</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('notifications')">알림 발송</button>
       </nav>
 
       <div id="tab-display" class="admin-tab-content">
