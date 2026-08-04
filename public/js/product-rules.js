@@ -241,6 +241,9 @@
     const pickupPrefix = formatPickupPrefix(product);
     const rawName = product.name || "";
 
+    // 한 줄 소개 데이터 추출
+    const subText = product.summary || product.subtitle || product.description || "";
+
     // 마감 일시 계산
     const showDeadlineTime = product?.showDeadlineTime !== false;
     const deadline = parseDate(product.deadline);
@@ -272,13 +275,16 @@
       </div>
 
       <div class="popular-card-body">
-        <!-- 1. 컬리 '샛별배송' 위치: 수령일 표시 (초록색 유지) -->
+        <!-- 1. 수령일 -->
         ${pickupPrefix ? `<div class="product-pickup-line">${escapeHTML(pickupPrefix)}</div>` : ""}
 
-        <!-- 2. 상품명 (2줄 제한) -->
+        <!-- 2. 한 줄 소개 -->
+        ${subText ? `<p>${escapeHTML(subText)}</p>` : ""}
+
+        <!-- 3. 상품명 -->
         <strong>${escapeHTML(rawName)}</strong>
 
-        <!-- 3. 가격 영역 (할인 유무별 대응) -->
+        <!-- 4. 가격 영역 -->
         ${price.hidden ? "" : `
           <div class="product-master-price">
             ${hasDiscount ? `<del>${formatPrice(price.original)}</del>` : ""}
@@ -289,7 +295,7 @@
           </div>
         `}
 
-        <!-- 4. 별점 + 마감일 나란히 배치 -->
+        <!-- 5. 별점 + 마감일 -->
         <div class="popular-card-meta">
           <span class="meta-rating">★ ${Number(product.rating || 0).toFixed(1)} (${Number(product.reviewsCount || 0)})</span>
           ${isBundle(product) && deadline ? `
