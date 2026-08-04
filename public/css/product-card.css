@@ -269,7 +269,7 @@
   word-break: break-all !important;
 }
 
-/* 3순위: 상품 제목 (2줄 제한) */
+/* 3순위: 상품 제목 (슬림 & 미니멀 렌더링 고정) */
 .product-master-copy > strong,
 .popular-card-body > strong,
 .popular-card > strong {
@@ -279,13 +279,22 @@
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  color: #333333;
-  font-size: 12px;
-  font-weight: 250;
-  line-height: 1.35;
-  letter-spacing: -.02em;
+  
+  /* [핵심 1] 브라우저 기본 strong 두께 강제 제거 및 300(Light) 고정 */
+  font-weight: 300 !important;
+  
+  /* [핵심 2] 폰트 색상을 #111 -> #2c323b 로 살짝 풀어주어 두께감 완화 */
+  color: #2c323b !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  letter-spacing: -0.025em !important;
   word-break: keep-all !important;
   white-space: normal !important;
+
+  /* [핵심 3] 안티앨리어싱으로 폰트 외곽선 날카롭게(슬림하게) 다듬기 */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  transform: rotate(-0.00001deg); /* 렌더링 엔진 얇게 강제 트릭 */
 }
 
 .search-screen .popular-card > strong {
