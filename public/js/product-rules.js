@@ -192,6 +192,16 @@
     return result.slice(0, 2);
   }
 
+  // [추천] 원형 배지 HTML 칩 렌더링 함수 추가
+  function renderBadgeChips(product) {
+    const badgeList = badges(product);
+    if (!badgeList || badgeList.length === 0) return "";
+
+    return badgeList.map(badge => {
+      return `<span class="detail-badge ${badge.tone}">${badge.label}</span>`;
+    }).join("");
+  }
+
   function priceView(product) {
     if (isSoldOut(product)) {
       return { hidden: true, current: null, original: null, showOriginal: false };
@@ -325,7 +335,7 @@
   global.ProductRules = {
     isBundle, isSoldOut, isToday, isTodayPickup, stockRatio, isClosingSoon,
     isBeforeDeadline, hasDeadlinePassed, canJoinWaitlist,
-    effectivePickupDate, adjustedPickupDateForSort, badges, recommendationScore, priceView, formatPrice,
+    effectivePickupDate, adjustedPickupDateForSort, badges, renderBadgeChips, recommendationScore, priceView, formatPrice,
     formatPickupPrefix
   };
   global.ProductUI = { createProductCard };
