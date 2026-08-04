@@ -167,7 +167,8 @@
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: -.03em;
-  overflow-wrap: anywhere;
+  word-break: keep-all !important;   /* [핵심] 단어 중간에서 잘리지 않고 '완벽한'이 통째로 넘어감 */
+  overflow-wrap: normal !important;
   white-space: normal;
 }
 
@@ -200,7 +201,8 @@
 .popular-card > strong {
   display:block;
   line-height:1.35;
-  overflow-wrap:anywhere;
+  word-break: keep-all !important;   /* [핵심] 단어 중간에서 잘리지 않고 '완벽한'이 통째로 넘어감 */
+  overflow-wrap: normal !important;
   white-space:normal;
 }
 
@@ -744,8 +746,11 @@
 }
 
 .product-pickup-prefix {
-  color: #00875a; /* 밝고 쨍한 초록 */
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 4px;
+  color: #00875a;
+  font-size: 0.88em;
+  font-weight: 600;
+  padding: 1px 4px !important;       /* [추천] 내부 여백 축소 (위아래 1px, 좌우 4px) */
+  margin-right: 2px !important;      /* [추천] 제목 글자와의 간격을 2px로 좁힘 */
+  
+  vertical-align: middle;
 }
