@@ -208,6 +208,7 @@
 /* =============================================================
    3. Card Details & Elements (순서 및 여백 재설정)
    ============================================================= */
+/* 찜 버튼: 흰 배경, 테두리, 그림자 제거하여 투명 아이콘으로 변경 */
 .product-master-favorite,
 .popular-thumb button[data-favorite-button] {
   position: absolute;
@@ -217,19 +218,20 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .9);
-  color: #0f4c3a;
-  font-size: 18px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font-size: 20px;
+  box-shadow: none !important;
   z-index: 3;
   cursor: pointer;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
 }
 
 .product-master-favorite[aria-pressed="true"],
 .popular-thumb button[data-favorite-button][aria-pressed="true"] { 
-  color: #bd2832; 
+  color: #ff4d4f !important; 
 }
 
 /* 카드 바디: flex-direction 및 order를 통해 정확한 요소 순서 제어 */
