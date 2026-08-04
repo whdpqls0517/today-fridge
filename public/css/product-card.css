@@ -73,18 +73,18 @@
   /* 컬리식 절제된 크기 & 절제된 패딩 */
   height: 20px !important;            /* 22px -> 20px으로 정갈하게 슬림화 */
   padding: 0 6px !important;          /* compact 패딩 적용 */
-  border-radius: 3px !important;      /* 스티커 느낌 없는 정갈한 3px 평면 라운딩 */
+  border-radius: 4px !important;      /* 스티커 느낌 없는 정갈한 3px 평면 라운딩 */
   
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
-  font-size: 10.5px !important;       /* 너무 크지 않은 컬리 규격 (10.5px) */
-  font-weight: 700 !important;        /* 깔끔한 가독성 */
+  font-size: 11px !important;       /* 너무 크지 않은 컬리 규격 (10.5px) */
+  font-weight: 500 !important;        /* 깔끔한 가독성 */
   letter-spacing: -0.02em !important;
   line-height: normal !important;
   box-sizing: border-box !important;
   
   /* 사진과 미세하게 스며드는 반투명 Border + 투명도 처리 */
   border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important; /* 미세한 그림자로 레이어 분리 */
+  box-shadow: none !important; 
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
 }
@@ -119,7 +119,7 @@
 
 
 /* =============================================================
-   2-5. Popular Badge -> Bottom Circular Style (하단 원형 배지 유지)
+   2-5. Popular Badge -> Bottom Circular Style (딥 차콜)
    ============================================================= */
 .master-badge.popular,
 .popular-badge.popular,
@@ -134,14 +134,19 @@
   width: 36px !important;
   height: 36px !important;
   border-radius: 50% !important;
-  background: rgba(16, 185, 129, 0.92) !important; /* 에메랄드 그린 + 92% Alpha */
-  color: #ffffff !important;
+  
+  /* 묵직하고 고급스러운 반투명 딥 차콜 */
+  background: rgba(28, 33, 31, 0.92) !important;
+  color: #FFFFFF !important;
+  
   font-size: 10.5px !important;
   font-weight: 800 !important;
   padding: 0 !important;
   margin: 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+  
+  /* 미세 테두리와 음영으로 붉은 음식 이미지 위에서 시각적 분리 */
+  border: 0.5px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22) !important;
   z-index: 2 !important;
 }
 
