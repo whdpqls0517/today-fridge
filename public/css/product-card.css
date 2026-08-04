@@ -747,10 +747,10 @@
 
 .product-pickup-prefix {
   color: #00875a;
-  font-size: 0.88em;
-  font-weight: 600;
+  font-size: 1.05em;
+  font-weight: 700;
   padding: 1px 4px !important;       /*  내부 여백 축소 (위아래 1px, 좌우 4px) */
-  margin-right: 4px !important;      /*  제목 글자와의 간격을 2px로 좁힘 */
-  margin-left:2px !important;        /*  왼쪽 여백을 2px로 좁힘 */
+  margin-right: 4px !important;      /*  제목 글자와의 간격을 4px로 좁힘 */
+  margin-left: 2px !important;        /*  왼쪽 여백을 2px로 좁힘 */
   vertical-align: middle;
 }
