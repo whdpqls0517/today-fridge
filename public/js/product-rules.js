@@ -151,6 +151,14 @@
     return `${date.getMonth() + 1}.${date.getDate()}(${weekdays[date.getDay()]})`;
   }
 
+  // ✨ [추가] 수령일 프리픽스 전용 포맷터 (예: 🧺 3일(월))
+  function formatPickupPrefix(product) {
+    const date = effectivePickupDate(product);
+    if (!date) return "";
+    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+    return `🧺 ${date.getDate()}일(${weekdays[date.getDay()]})`;
+  }
+
   function isSameCalendarDate(first, second) {
     return Boolean(first && second
       && first.getFullYear() === second.getFullYear()
@@ -234,8 +242,7 @@
     }[char]));
   }
 
-  // [source: 7] product-rules.js 하단 createProductCard 함수 교체
-
+  // 💡 [수정/교체] createProductCard - 수령일 프리픽스 포함 및 하단 신청마감 1줄화
   function createProductCard(product) {
     const card = document.createElement("article");
     const favorite = window.Favorites?.has(product.id) === true;
@@ -243,17 +250,23 @@
     const price = priceView(product);
     const tagList = Array.isArray(product.tags) ? product.tags.slice(0, 2) : [];
     
-    // ✨ 마감시간(HH:mm) 노출 여부 체크
+    // ✨ 수령일 프리픽스 및 제목 가공
+    const pickupPrefix = formatPickupPrefix(product);
+    const rawName = product.name || "";
+    const displayTitle = pickupPrefix ? `${pickupPrefix} ${rawName}` : rawName;
+
+    // 마감시간(HH:mm) 노출 여부 체크
     const showDeadlineTime = product?.showDeadlineTime !== false;
-    const pickup = effectivePickupDate(product);
     const deadline = parseDate(product.deadline);
     const deadlineTime = formatDeadlineTime(product).trim();
+
     card.className = `popular-card${isSoldOut(product) ? " is-sold-out" : ""}`;
     card.dataset.productId = product.id;
-    card.dataset.productName = product.name;
+    card.dataset.productName = rawName;
+
     card.innerHTML = `
       <div class="popular-thumb">
-        <img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" />
+        <img src="${escapeHTML(product.image)}" alt="${escapeHTML(rawName)}" />
         <div class="popular-badges">
           ${productBadges.map((badge) => `<span class="popular-badge ${badge.tone}">${badge.label}</span>`).join("")}
         </div>
@@ -262,23 +275,20 @@
           ${favorite ? "♥" : "♡"}
         </button>
       </div>
-      <strong>${escapeHTML(product.name)}</strong>
+
+      <strong>${escapeHTML(displayTitle)}</strong>
+
       ${price.hidden ? "" : `<p>${formatPrice(price.current)}${price.showOriginal ? `<del>${formatPrice(price.original)}</del>` : ""}</p>`}
       <small>${escapeHTML(product.description || "")}</small>
       <div class="popular-card-meta">
         <span>${tagList.map((tag) => escapeHTML(tag)).join(" · ")}</span>
         <span>★ ${Number(product.rating || 0).toFixed(1)} (${Number(product.reviewsCount || 0)})</span>
       </div>
-      ${isBundle(product) && !isSoldOut(product)
-        ? `<div class="bundle-card-schedule" aria-label="수령 및 주문 마감 일정">
-            <div class="bundle-card-schedule-row pickup">
-              <span>수령일</span>
-              <b>${formatFriendlyDate(pickup)}</b>
-            </div>
-            <div class="bundle-card-schedule-row deadline">
-              <span>신청 마감</span>
-              <b>${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? `&nbsp;${deadlineTime}` : ""}</b>
-            </div>
+
+      <!-- 하단: 2줄 스케줄 박스 대신 깔끔한 1줄 신청마감 서브텍스트로 변경 -->
+      ${isBundle(product) && !isSoldOut(product) && deadline
+        ? `<div class="bundle-deadline-subtext">
+            <span>⏰ 신청마감: ${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? `&nbsp;${deadlineTime}` : ""}</span>
           </div>`
         : ""}
       `;
@@ -293,7 +303,8 @@
   global.ProductRules = {
     isBundle, isSoldOut, isToday, isTodayPickup, stockRatio, isClosingSoon,
     isBeforeDeadline, hasDeadlinePassed, canJoinWaitlist,
-    effectivePickupDate, adjustedPickupDateForSort, badges, recommendationScore, priceView, formatPrice
+    effectivePickupDate, adjustedPickupDateForSort, badges, recommendationScore, priceView, formatPrice,
+    formatPickupPrefix // Export 추가
   };
   global.ProductUI = { createProductCard };
 })(window);
