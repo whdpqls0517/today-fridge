@@ -70,22 +70,24 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* 2-1. 마감임박 (밝은 코랄 레드) */
+/* 2-1. 마감임박 (밝은 버터 옐로우 배경 + 다크 그린 글씨) */
 .master-badge.urgent,
 .popular-badge.urgent,
 .popular-badge.red,
 .popular-badges .popular-badge.red,
 .popular-badges .popular-badge.urgent {
-  background: #ff3b30 !important;
-  color: #ffffff !important;
+  background: #FFF3A8 !important; 
+  color: #1B432C !important;
+  font-weight: 800 !important;
 }
 
-/* 2-2. 오늘마감 (선명한 앰버 오렌지) */
+/* 2-2. 오늘마감 (상큼한 라이트 피치 + 다크 오렌지 글씨) */
 .master-badge.deadline,
 .popular-badge.deadline,
 .popular-badges .popular-badge.deadline {
-  background: #ff8800 !important;
-  color: #ffffff !important;
+  background: #FFE5D9 !important;
+  color: #9C3300 !important;
+  font-weight: 700 !important;
 }
 
 /* 2-3. 기타/기본/Muted 배지 (세련된 차콜 그레이) */
@@ -324,30 +326,34 @@
   white-space: nowrap;
 }
 
+/* 메타 정보 (평점 연하게 낮추고, 마감일만 선명하게 강조) */
 .product-master-meta,
 .popular-card-meta {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-top: 6px;
-  color: #555555; /* 기존 #888888 -> 선명한 미디엄 그레이로 변경 */
+  color: #999999; /* 기존 #555 -> 전체적으로 더 연하게 조절 */
   font-size: 11px;
   line-height: 1;
 }
 
+/* 평점 & 리뷰 수 (연하고 은은하게) */
 .popular-card-meta .meta-rating {
-  color: #444444; /* 별점 및 리뷰 수 선명도 강화 */
-  font-weight: 500;
+  color: #888888; /* 눈에 띄지 않게 톤다운 */
+  font-weight: 400;
 }
 
+/* 구분선 (극소량의 존재감) */
 .popular-card-meta .meta-divider {
-  color: #bbbbbb;
-  font-size: 10px;
+  color: #e0e0e0;
+  font-size: 9px;
 }
 
+/* 마감일 (확실한 포인트 강조) */
 .popular-card-meta .meta-deadline {
-  color: #333333; /* 기존 #666666 -> 또렷한 딥 그레이로 가독성 확보 */
-  font-weight: 600; /* 약간 더 두껍게 잡아 강조 */
+  color: #00875a !important; /* 수령일과 동일한 브랜드 포인트 그린 */
+  font-weight: 700 !important; /* 굵게 처리하여 가독성 1순위 확보 */
 }
 
 /* =============================================================
