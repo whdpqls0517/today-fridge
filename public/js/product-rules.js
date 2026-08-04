@@ -164,26 +164,32 @@
   }
 
   function badges(product, now = new Date()) {
-    if (isSoldOut(product)) {
-      return [{
-        key: "soldout",
-        label: isBundle(product) ? "마감" : "품절",
-        tone: "muted"
-      }];
-    }
-
-    const result = [];
-    if (isBundle(product) && isToday(product.deadline, now)) {
-      result.push({ key: "today", label: "오늘마감", tone: "deadline" });
-    }
-    if (isClosingSoon(product)) {
-      result.push({ key: "urgent", label: "마감임박", tone: "urgent" });
-    }
-    if (Number(product.salesCount) > 30) {
-      result.push({ key: "popular", label: "인기상품", tone: "popular" });
-    }
-    return result.slice(0, 2);
+  if (isSoldOut(product)) {
+    return [{
+      key: "soldout",
+      label: isBundle(product) ? "마감" : "품절",
+      tone: "muted"
+    }];
   }
+
+  const result = [];
+
+  // 1. 마감임박(재고 10개 이하 OR 2시간 이내)이 최우선
+  if (isClosingSoon(product, now)) {
+    result.push({ key: "urgent", label: "마감임박", tone: "urgent" });
+  } 
+  // 2. 마감임박 조건에 걸리지 않은 경우에만 오늘마감 검사
+  else if (isBundle(product) && isToday(product.deadline, now)) {
+    result.push({ key: "today", label: "오늘마감", tone: "deadline" });
+  }
+
+  // 3. 인기상품 배지는 뒤에 추가
+  if (Number(product.salesCount) > 3) {
+    result.push({ key: "popular", label: "인기상품", tone: "popular" });
+  }
+
+  return result.slice(0, 2);
+}
 
   function priceView(product) {
     if (isSoldOut(product)) {
