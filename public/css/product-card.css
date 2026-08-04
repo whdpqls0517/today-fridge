@@ -279,9 +279,9 @@
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  color: #2d3748;
+  color: #333333;
   font-size: 12px;
-  font-weight: 350;
+  font-weight: 250;
   line-height: 1.35;
   letter-spacing: -.02em;
   word-break: keep-all !important;
