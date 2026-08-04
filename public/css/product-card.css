@@ -23,6 +23,21 @@
   background: #edf1ef;
 }
 
+/* 1-1. 썸네일 상단 가독성 보호 오버레이 (사진 복잡도 대응)
+   - 사진 좌상단이 밝거나 붉어도 배지가 붕 뜨거나 묻히지 않도록 암전 그라데이션 추가 */
+.popular-thumb::before,
+.product-master-thumb::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 35%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .popular-thumb img,
 .product-master-thumb img {
   width: 100%;
@@ -31,7 +46,7 @@
 }
 
 /* =============================================================
-   2. Top Rectangular Badge Chips (마감임박 / 오늘마감 - 상단 슬림 칩)
+   2. Top Rectangular Badge Chips (컬리 스타일 슬림 칩)
    ============================================================= */
 .product-master-badges,
 .popular-badges {
@@ -54,60 +69,57 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 22px !important;         /* 슬림 칩 높이 (22px 확대 반영) */
-  padding: 0 7px !important;       /* 좌우 패딩 */
-  border-radius: 4px !important;   /* 둥근 직사각형 코너 */
+  
+  /* 컬리식 절제된 크기 & 절제된 패딩 */
+  height: 20px !important;            /* 22px -> 20px으로 정갈하게 슬림화 */
+  padding: 0 6px !important;          /* compact 패딩 적용 */
+  border-radius: 3px !important;      /* 스티커 느낌 없는 정갈한 3px 평면 라운딩 */
+  
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
-  font-size: 11px !important;      /* 폰트 크기 (11px 확대 반영) */
-  font-weight: 700 !important;      /* 굵은 글씨로 가독성 확보 */
+  font-size: 10.5px !important;       /* 너무 크지 않은 컬리 규격 (10.5px) */
+  font-weight: 700 !important;        /* 깔끔한 가독성 */
   letter-spacing: -0.02em !important;
   line-height: normal !important;
   box-sizing: border-box !important;
-  border: none !important;
-  color: #ffffff !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important; /* 살짝 들어간 음영 */
+  
+  /* 사진과 미세하게 스며드는 반투명 Border + 투명도 처리 */
+  border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) !important; /* 미세한 그림자로 레이어 분리 */
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 2-1. 마감임박 (밝은 버터 옐로우 배경 + 다크 그린 글씨) */
+/* 2-1. 마감임박 (오프화이트/아이보리 크림 + 다크 그린 글씨) */
 .master-badge.urgent,
 .popular-badge.urgent,
 .popular-badge.red,
 .popular-badges .popular-badge.red,
 .popular-badges .popular-badge.urgent {
-  background: #FFF3A8 !important; 
-  color: #1B432C !important;
+  background: #FDFBF7 !important;                     /* 밝은 아이보리 크림 */
+  color: #122620 !important;                           /* 딥 그린 글씨 */
+  border: 1px solid rgba(18, 38, 32, 0.2) !important;  /* 선명한 미세 테두리 */
   font-weight: 800 !important;
 }
 
-/* 2-2. 오늘마감 (상큼한 라이트 피치 + 다크 오렌지 글씨) */
+/* 2-2. 오늘마감 (쨍한 주황 대신: 톤다운 딥 오렌지-버건디 / 크림 텍스트) */
 .master-badge.deadline,
 .popular-badge.deadline,
 .popular-badges .popular-badge.deadline {
-  background: #FFE5D9 !important;
-  color: #9C3300 !important;
-  font-weight: 700 !important;
+  background: #0F766E !important;                     /* 선명하면서 고급스러운 딥 틸 */
+  color: #FFFFFF !important;                   /* Soft 크림 옐로우 글씨 */
 }
 
-/* 2-3. 기타/기본/Muted 배지 (세련된 차콜 그레이) */
+/* 2-3. 기타/기본/Muted 배지 (오늘의 냉장고 시그니처 딥 포레스트 그린) */
 .master-badge.muted,
 .popular-badge.muted,
 .popular-badges .popular-badge.muted {
-  background: #4a5568 !important;
-  color: #ffffff !important;
+  background: rgba(28, 33, 31, 0.88) !important;      /* 반투명 다크 차콜 */
+  color: #FFFFFF !important;
 }
 
-/* 2-4. 쿠폰/혜택 배지 (컬리 스카이블루 / 바이올렛) */
-.master-badge.coupon,
-.popular-badge.coupon {
-  background: #22b8cf !important;
-  color: #ffffff !important;
-}
 
 /* =============================================================
-   2-5. Popular Badge -> Bottom Circular Style (기존 클래스 자동 적용)
-   * 기존 .popular 또는 .green 클래스 사용 시 자동으로 하단 좌측 원형 배지화
+   2-5. Popular Badge -> Bottom Circular Style (하단 원형 배지 유지)
    ============================================================= */
 .master-badge.popular,
 .popular-badge.popular,
@@ -119,15 +131,16 @@
   bottom: 8px !important;
   top: auto !important;
   right: auto !important;
-  width: 38px !important;
-  height: 38px !important;
+  width: 36px !important;
+  height: 36px !important;
   border-radius: 50% !important;
-  background: #10B981 !important; /* 요청하신 에메랄드 그린 */
+  background: rgba(16, 185, 129, 0.92) !important; /* 에메랄드 그린 + 92% Alpha */
   color: #ffffff !important;
-  font-size: 11px !important;
+  font-size: 10.5px !important;
   font-weight: 800 !important;
   padding: 0 !important;
   margin: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
   z-index: 2 !important;
 }
@@ -148,6 +161,11 @@
   z-index: 1;
 }
 
+/* 품절 시 오버레이 위에서는 상단 그라데이션 안 보이게 처리 */
+.popular-card.is-sold-out .popular-thumb::before {
+  display: none !important;
+}
+
 /* 배지 컨테이너를 이미지 전체 크기로 확장해 정중앙 정렬 기준 확보 */
 .popular-card.is-sold-out .popular-badges {
   position: absolute !important;
@@ -165,7 +183,7 @@
   z-index: 2 !important;
 }
 
-/* 품절 시 '마감' 글자만 정중앙 표시 (상단 칩 및 원형 배지 스타일 완전히 해제) */
+/* 품절 시 '마감' 글자만 정중앙 표시 */
 .popular-card.is-sold-out .popular-badge {
   position: static !important;
   display: flex !important;
@@ -333,27 +351,27 @@
   align-items: center;
   gap: 4px;
   margin-top: 6px;
-  color: #999999; /* 기존 #555 -> 전체적으로 더 연하게 조절 */
+  color: #999999;
   font-size: 11px;
   line-height: 1;
 }
 
-/* 평점 & 리뷰 수 (연하고 은은하게) */
+/* 평점 & 리뷰 수 */
 .popular-card-meta .meta-rating {
-  color: #888888; /* 눈에 띄지 않게 톤다운 */
+  color: #888888;
   font-weight: 400;
 }
 
-/* 구분선 (극소량의 존재감) */
+/* 구분선 */
 .popular-card-meta .meta-divider {
   color: #e0e0e0;
   font-size: 9px;
 }
 
-/* 마감일 (확실한 포인트 강조) */
+/* 마감일 (포인트 강조) */
 .popular-card-meta .meta-deadline {
-  color: #00875a !important; /* 수령일과 동일한 브랜드 포인트 그린 */
-  font-weight: 700 !important; /* 굵게 처리하여 가독성 1순위 확보 */
+  color: #00875a !important;
+  font-weight: 700 !important;
 }
 
 /* =============================================================
