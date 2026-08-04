@@ -3,7 +3,7 @@
     return product?.category === "bundle" || product?.purchaseMode === "reservation";
   }
 
-  // 💡 [수정] 날짜 문자열 정밀 파싱
+  // 💡 날짜 문자열 정밀 파싱
   function parseDate(value) {
     if (!value || value === "상시 판매") return null;
     
@@ -25,7 +25,7 @@
       && date.getDate() === now.getDate());
   }
 
-  // 💡 [수정] 마감 시각 추출 도구 (HH:mm 형식 유연하게 지원)
+  // 💡 마감 시각 추출 도구 (HH:mm 형식 유연하게 지원)
   function getDeadlineDateTime(product) {
     if (!isBundle(product) || !product?.deadline || product.deadline === "상시 판매") return null;
 
@@ -249,16 +249,18 @@
     const price = priceView(product);
     const tagList = Array.isArray(product.tags) ? product.tags.slice(0, 2) : [];
     
-    // ✨ 수령일 프리픽스 및 제목 가공 (span 태그 분리)
+    // 수령일 프리픽스 및 제목 가공 (span 태그 분리)
     const pickupPrefix = formatPickupPrefix(product);
     const rawName = product.name || "";
     const displayTitleHtml = pickupPrefix 
       ? `<span class="product-pickup-prefix">${escapeHTML(pickupPrefix)}</span> ${escapeHTML(rawName)}` 
       : escapeHTML(rawName);
 
+    // 마감 시각 포맷팅
     const showDeadlineTime = product?.showDeadlineTime !== false;
     const deadline = parseDate(product.deadline);
     const deadlineTime = formatDeadlineTime(product).trim();
+    const formattedDeadlineText = `${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? ` ${deadlineTime}` : ""}`;
 
     card.className = `popular-card${isSoldOut(product) ? " is-sold-out" : ""}`;
     card.dataset.productId = product.id;
@@ -276,21 +278,23 @@
         </button>
       </div>
       <strong>${displayTitleHtml}</strong>
-      ${price.hidden ? "" : `<p>${formatPrice(price.current)}${price.showOriginal ? `<del>${formatPrice(price.original)}</del>` : ""}</p>`}
+      ${price.hidden ? "" : `
+        <div class="product-master-price">
+          <b>${formatPrice(price.current)}</b>
+          ${price.showOriginal ? `<del>${formatPrice(price.original)}</del>` : ""}
+          ${isBundle(product) && deadline ? `
+            <span class="product-master-deadline-chip">
+              마감 <strong>${escapeHTML(formattedDeadlineText)}</strong>
+            </span>
+          ` : ""}
+        </div>
+      `}
       <small>${escapeHTML(product.description || "")}</small>
       <div class="popular-card-meta">
         <span>${tagList.map((tag) => escapeHTML(tag)).join(" · ")}</span>
         <span>★ ${Number(product.rating || 0).toFixed(1)} (${Number(product.reviewsCount || 0)})</span>
       </div>
-      ${isBundle(product) && !isSoldOut(product)
-        ? `<div class="bundle-card-schedule" aria-label="주문 마감 일정">
-            <div class="bundle-card-schedule-row deadline">
-              <span>신청 마감</span>
-              <b>${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? `&nbsp;${deadlineTime}` : ""}</b>
-            </div>
-          </div>`
-        : ""}
-      `;
+    `;
 
     card.addEventListener("click", (event) => {
       if (event.target.closest("button")) return;

@@ -21,7 +21,7 @@
 }
 
 /* =============================================================
-   2. Zigzag Style Badges (지그재그 감성 - 폰트 및 비율 디테일 보정)
+   2. Thumbnail Badges (오늘마감 / 인기 / 키워드 배지 - 이미지 좌측 하단)
    ============================================================= */
 .product-master-badges,
 .popular-badges {
@@ -35,7 +35,6 @@
   gap: 2px;
 }
 
-/* [디테일 보정] 폰트 패밀리 지정 및 정교한 픽셀 피팅 */
 .master-badge,
 .popular-badge,
 .popular-badges .popular-badge,
@@ -49,7 +48,7 @@
   border-radius: 2px 2px 0 0;
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
   font-size: 9px !important;
-  font-weight: 400 !important; /* [수정] 500/600 -> 400(Regular)으로 얇고 세련되게 변경 */
+  font-weight: 400 !important;
   letter-spacing: -0.03em !important;
   line-height: 1 !important;
   border: none;
@@ -58,7 +57,8 @@
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
 }
-/* 2-1. [오늘 마감] & [기본/일반] 배지 -> 무조건 솔리드 블랙 (#111111) */
+
+/* 2-1. [오늘 마감] & [기본/일반] 배지 -> 솔리드 블랙 (#111111) */
 .master-badge,
 .master-badge.muted,
 .master-badge.deadline,
@@ -160,6 +160,17 @@
   padding: 10px 2px 0;
 }
 
+/* 수령일 태그 (제목 앞 인라인) */
+.product-pickup-prefix {
+  color: #00875a;
+  font-size: 1.05em;
+  font-weight: 700;
+  padding: 1px 4px !important;
+  margin-right: 4px !important;
+  margin-left: 2px !important;
+  vertical-align: middle;
+}
+
 .product-master-copy > strong {
   display: block;
   color: #202e28;
@@ -167,7 +178,7 @@
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: -.03em;
-  word-break: keep-all !important;   /* [핵심] 단어 중간에서 잘리지 않고 '완벽한'이 통째로 넘어감 */
+  word-break: keep-all !important;
   overflow-wrap: normal !important;
   white-space: normal;
 }
@@ -189,53 +200,58 @@
 }
 
 .popular-card > small {
-  display:block;
-  margin-top:4px;
-  color:#7f8a84;
-  font-size:10px;
-  line-height:1.5;
-  overflow-wrap:anywhere;
-  white-space:pre-line;
+  display: block;
+  margin-top: 4px;
+  color: #7f8a84;
+  font-size: 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 .popular-card > strong {
-  display:block;
-  line-height:1.35;
-  word-break: keep-all !important;   /* [핵심] 단어 중간에서 잘리지 않고 '완벽한'이 통째로 넘어감 */
+  display: block;
+  line-height: 1.35;
+  word-break: keep-all !important;
   overflow-wrap: normal !important;
-  white-space:normal;
+  white-space: normal;
 }
 
 .search-screen .popular-card > strong {
-  display:block;
-  overflow:visible;
-  text-overflow:clip;
-  overflow-wrap:anywhere;
-  white-space:normal;
+  display: block;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .search-screen .popular-card > small {
-  display:block;
-  height:auto;
-  overflow:visible;
-  margin-top:4px;
-  padding-left:0;
-  text-overflow:clip;
-  overflow-wrap:anywhere;
-  white-space:pre-line;
+  display: block;
+  height: auto;
+  overflow: visible;
+  margin-top: 4px;
+  padding-left: 0;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
-/* 가격 스타일 */
+/* =============================================================
+   3-1. 가격 + 마감 시간 인라인 칩 (핵심 레이아웃 수정)
+   ============================================================= */
 .product-master-price {
   display: flex;
-  align-items: baseline;
-  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .product-master-price b {
   color: #18251f;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .product-master-price del,
@@ -245,10 +261,24 @@
   font-weight: 400;
 }
 
-.popular-card p del {
-  color: #a3aaa7;
-  font-size: 11px;
+/* 가격 오른쪽 정확한 마감 시간 인라인 배지 */
+.product-master-deadline-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #f3f5f4;
+  color: #55625c;
+  font-size: 10px;
   font-weight: 500;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.product-master-deadline-chip strong {
+  color: #1e2823;
+  font-weight: 700;
 }
 
 .product-master-price.is-hidden b {
@@ -293,67 +323,6 @@
   color: #8c969e;
   font-size: 10px;
   line-height: 1.3;
-}
-
-.bundle-card-schedule {
-  display: grid;
-  gap: 7px;
-  margin-top: 11px;
-}
-
-.bundle-card-schedule-row {
-  display: grid;
-  grid-template-columns: 43px minmax(0, 1fr);
-  align-items: center;
-  min-height: 25px;
-  padding-left: 8px;
-  border-left: 2px solid #c7dbd1;
-}
-
-.bundle-card-schedule-row + .bundle-card-schedule-row {
-  border-top: 0;
-}
-
-.bundle-card-schedule-row > span {
-  color: #718078;
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: -.01em;
-  white-space: nowrap;
-}
-
-.bundle-card-schedule-row.pickup > span {
-  color: var(--brand);
-  font-weight: 700;
-}
-
-.bundle-card-schedule-row.deadline {
-  border-left-color: #d8ddd9;
-}
-
-.bundle-card-schedule-row.deadline > span {
-  color: #7f8883;
-}
-
-.bundle-card-schedule-row > b {
-  display: block;
-  overflow: hidden;
-  color: #27332d;
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: -.02em;
-  line-height: 1.3;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.product-master-deadline {
-  display: block;
-  margin-top: 6px;
-  color: #bd2832;
-  font-size: 9px;
-  font-weight: 700;
 }
 
 /* =============================================================
@@ -743,14 +712,4 @@
   color: #35483e;
   font-size: 13px;
   font-weight: 750;
-}
-
-.product-pickup-prefix {
-  color: #00875a;
-  font-size: 1.00em;
-  font-weight: 600;
-  padding: 1px 4px !important;       /*  내부 여백 축소 (위아래 1px, 좌우 4px) */
-  margin-right: 4px !important;      /*  제목 글자와의 간격을 4px로 좁힘 */
-  margin-left: 2px !important;        /*  왼쪽 여백을 2px로 좁힘 */
-  vertical-align: middle;
 }
