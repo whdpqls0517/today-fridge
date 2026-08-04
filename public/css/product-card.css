@@ -45,7 +45,7 @@
 }
 
 /* =============================================================
-   2. Top Rectangular Badge Chips (컬리 스타일 슬림 칩)
+   2. Top Rectangular Badge Chips (컬리 스타일 슬림 칩 - 테두리 제거)
    ============================================================= */
 .product-master-badges,
 .popular-badges {
@@ -80,7 +80,8 @@
   line-height: normal !important;
   box-sizing: border-box !important;
   
-  border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
+  /* 테두리 및 그림자 완전 제거 */
+  border: none !important;
   box-shadow: none !important; 
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
@@ -94,7 +95,7 @@
 .popular-badges .popular-badge.urgent {
   background: #FDFBF7 !important;
   color: #122620 !important;
-  border: 1px solid rgba(18, 38, 32, 0.2) !important;
+  border: none !important;
   font-weight: 800 !important;
 }
 
@@ -104,6 +105,7 @@
 .popular-badges .popular-badge.deadline {
   background: #0F766E !important;
   color: #FFFFFF !important;
+  border: none !important;
 }
 
 /* 2-3. 기타/기본/Muted 배지 */
@@ -112,10 +114,11 @@
 .popular-badges .popular-badge.muted {
   background: rgba(28, 33, 31, 0.88) !important;
   color: #FFFFFF !important;
+  border: none !important;
 }
 
 /* =============================================================
-   2-5. Popular Badge -> Bottom Circular Style (딥 차콜)
+   2-5. Popular Badge -> Bottom Circular Style (딥 차콜 - 테두리 제거)
    ============================================================= */
 .master-badge.popular,
 .popular-badge.popular,
@@ -139,7 +142,7 @@
   padding: 0 !important;
   margin: 0 !important;
   
-  border: 0.5px solid rgba(255, 255, 255, 0.25) !important;
+  border: none !important;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22) !important;
   z-index: 2 !important;
 }
@@ -234,7 +237,7 @@
 .popular-card-body {
   display: flex;
   flex-direction: column;
-  padding: 2px 2px 0 !important; /* 이미지와 수령일 밀착 (4px -> 2px) */
+  padding: 2px 2px 0 !important; /* 이미지와 수령일 밀착 */
 }
 
 /* 1순위: 수령일 */
@@ -248,7 +251,7 @@
   line-height: 1.2;
 }
 
-/* 2순위: 한 줄 소개 (서브타이틀 복구 및 2번 위치 고정) */
+/* 2순위: 한 줄 소개 */
 .product-master-copy > p,
 .popular-card-body > p,
 .popular-card p,
@@ -260,7 +263,7 @@
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  margin: 0 0 3px 0 !important;      /* 수령일과 상품명 사이 여백 */
+  margin: 0 0 3px 0 !important;
   color: #777777 !important;
   font-size: 11px !important;
   font-weight: 400 !important;
@@ -269,10 +272,13 @@
   word-break: break-all !important;
 }
 
-/* 3순위: 상품 제목 (슬림 & 미니멀 렌더링 고정) */
+/* 3순위: 상품 제목 (슬림 & 브라우저 기본 strong 두께 강제 제거) */
 .product-master-copy > strong,
 .popular-card-body > strong,
-.popular-card > strong {
+.popular-card > strong,
+.popular-card strong,
+.search-screen .popular-card > strong,
+.search-screen .popular-card strong {
   order: 3 !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
@@ -280,37 +286,26 @@
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   
-  /* [핵심 1] 브라우저 기본 strong 두께 강제 제거 및 300(Light) 고정 */
+  /* 강제 300(Light/Slim) 두께 설정 */
   font-weight: 300 !important;
-  
-  /* [핵심 2] 폰트 색상을 #111 -> #2c323b 로 살짝 풀어주어 두께감 완화 */
-  color: #2c323b !important;
-  font-size: 13px !important;
+  color: #222222 !important;
+  font-size: 12.5px !important;
   line-height: 1.35 !important;
   letter-spacing: -0.025em !important;
   word-break: keep-all !important;
   white-space: normal !important;
 
-  /* [핵심 3] 안티앨리어싱으로 폰트 외곽선 날카롭게(슬림하게) 다듬기 */
+  /* 글꼴 가독성 보정 트릭 */
   -webkit-font-smoothing: antialiased !important;
   -moz-osx-font-smoothing: grayscale !important;
-  transform: rotate(-0.00001deg); /* 렌더링 엔진 얇게 강제 트릭 */
 }
 
-.search-screen .popular-card > strong {
-  order: 3 !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-}
-
-/* 4순위: 가격 영역 (기존 여백 유지) */
+/* 4순위: 가격 영역 */
 .product-master-price {
   order: 4 !important;
   display: flex;
   flex-direction: column;
-  margin-top: 4px !important; /* 기존 여백 감성 그대로 유지 */
+  margin-top: 4px !important;
 }
 
 .product-master-price del,
