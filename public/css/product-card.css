@@ -329,32 +329,25 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 5px;
-  color: #888888;
-  font-size: 10px;
+  margin-top: 6px;
+  color: #555555; /* 기존 #888888 -> 선명한 미디엄 그레이로 변경 */
+  font-size: 11px;
   line-height: 1;
 }
 
 .popular-card-meta .meta-rating {
-  color: #888888;
+  color: #444444; /* 별점 및 리뷰 수 선명도 강화 */
+  font-weight: 500;
 }
 
 .popular-card-meta .meta-divider {
-  color: #cccccc;
+  color: #bbbbbb;
   font-size: 10px;
 }
 
 .popular-card-meta .meta-deadline {
-  color: #666666;
-  font-weight: 500;
-}
-
-.product-master-deadline {
-  display: block;
-  margin-top: 5px;
-  color: #bd2832;
-  font-size: 9px;
-  font-weight: 700;
+  color: #333333; /* 기존 #666666 -> 또렷한 딥 그레이로 가독성 확보 */
+  font-weight: 600; /* 약간 더 두껍게 잡아 강조 */
 }
 
 /* =============================================================
