@@ -23,8 +23,7 @@
   background: #edf1ef;
 }
 
-/* 1-1. 썸네일 상단 가독성 보호 오버레이 (사진 복잡도 대응)
-   - 사진 좌상단이 밝거나 붉어도 배지가 붕 뜨거나 묻히지 않도록 암전 그라데이션 추가 */
+/* 1-1. 썸네일 상단 가독성 보호 오버레이 */
 .popular-thumb::before,
 .product-master-thumb::before {
   content: '';
@@ -51,13 +50,13 @@
 .product-master-badges,
 .popular-badges {
   position: absolute;
-  top: 8px !important;    /* 썸네일 상단 여백 */
-  left: 8px !important;   /* 썸네일 좌측 여백 */
+  top: 8px !important;
+  left: 8px !important;
   bottom: auto !important;
   z-index: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;               /* 배지 간 격차 */
+  gap: 4px;
   max-width: calc(100% - 16px);
 }
 
@@ -70,19 +69,17 @@
   align-items: center !important;
   justify-content: center !important;
   
-  /* 컬리식 절제된 크기 & 절제된 패딩 */
-  height: 20px !important;            /* 22px -> 20px으로 정갈하게 슬림화 */
-  padding: 0 6px !important;          /* compact 패딩 적용 */
-  border-radius: 4px !important;      /* 스티커 느낌 없는 정갈한 3px 평면 라운딩 */
+  height: 20px !important;
+  padding: 0 6px !important;
+  border-radius: 4px !important;
   
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
-  font-size: 11px !important;       /* 너무 크지 않은 컬리 규격 (10.5px) */
-  font-weight: 500 !important;        /* 깔끔한 가독성 */
+  font-size: 11px !important;
+  font-weight: 500 !important;
   letter-spacing: -0.02em !important;
   line-height: normal !important;
   box-sizing: border-box !important;
   
-  /* 사진과 미세하게 스며드는 반투명 Border + 투명도 처리 */
   border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
   box-shadow: none !important; 
   white-space: nowrap;
@@ -95,28 +92,27 @@
 .popular-badge.red,
 .popular-badges .popular-badge.red,
 .popular-badges .popular-badge.urgent {
-  background: #FDFBF7 !important;                     /* 밝은 아이보리 크림 */
-  color: #122620 !important;                           /* 딥 그린 글씨 */
-  border: 1px solid rgba(18, 38, 32, 0.2) !important;  /* 선명한 미세 테두리 */
+  background: #FDFBF7 !important;
+  color: #122620 !important;
+  border: 1px solid rgba(18, 38, 32, 0.2) !important;
   font-weight: 800 !important;
 }
 
-/* 2-2. 오늘마감 (쨍한 주황 대신: 톤다운 딥 오렌지-버건디 / 크림 텍스트) */
+/* 2-2. 오늘마감 (딥 틸 / 크림 텍스트) */
 .master-badge.deadline,
 .popular-badge.deadline,
 .popular-badges .popular-badge.deadline {
-  background: #0F766E !important;                     /* 선명하면서 고급스러운 딥 틸 */
-  color: #FFFFFF !important;                   /* Soft 크림 옐로우 글씨 */
-}
-
-/* 2-3. 기타/기본/Muted 배지 (오늘의 냉장고 시그니처 딥 포레스트 그린) */
-.master-badge.muted,
-.popular-badge.muted,
-.popular-badges .popular-badge.muted {
-  background: rgba(28, 33, 31, 0.88) !important;      /* 반투명 다크 차콜 */
+  background: #0F766E !important;
   color: #FFFFFF !important;
 }
 
+/* 2-3. 기타/기본/Muted 배지 */
+.master-badge.muted,
+.popular-badge.muted,
+.popular-badges .popular-badge.muted {
+  background: rgba(28, 33, 31, 0.88) !important;
+  color: #FFFFFF !important;
+}
 
 /* =============================================================
    2-5. Popular Badge -> Bottom Circular Style (딥 차콜)
@@ -135,7 +131,6 @@
   height: 36px !important;
   border-radius: 50% !important;
   
-  /* 묵직하고 고급스러운 반투명 딥 차콜 */
   background: rgba(28, 33, 31, 0.92) !important;
   color: #FFFFFF !important;
   
@@ -144,14 +139,13 @@
   padding: 0 !important;
   margin: 0 !important;
   
-  /* 미세 테두리와 음영으로 붉은 음식 이미지 위에서 시각적 분리 */
   border: 0.5px solid rgba(255, 255, 255, 0.25) !important;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22) !important;
   z-index: 2 !important;
 }
 
 /* =============================================================
-   2-6. Sold-out Overlay & Centered Text (품절 시 마감 오버레이 정중앙)
+   2-6. Sold-out Overlay & Centered Text
    ============================================================= */
 .popular-card.is-sold-out .popular-thumb img {
   filter: saturate(.58) brightness(.64);
@@ -166,12 +160,10 @@
   z-index: 1;
 }
 
-/* 품절 시 오버레이 위에서는 상단 그라데이션 안 보이게 처리 */
 .popular-card.is-sold-out .popular-thumb::before {
   display: none !important;
 }
 
-/* 배지 컨테이너를 이미지 전체 크기로 확장해 정중앙 정렬 기준 확보 */
 .popular-card.is-sold-out .popular-badges {
   position: absolute !important;
   inset: 0 !important;
@@ -181,14 +173,13 @@
   height: 100% !important;
   max-width: none !important;
   display: flex !important;
-  align-items: center !important;     /* 수직 정중앙 */
-  justify-content: center !important;  /* 수평 정중앙 */
+  align-items: center !important;
+  justify-content: center !important;
   padding: 0 !important;
   margin: 0 !important;
   z-index: 2 !important;
 }
 
-/* 품절 시 '마감' 글자만 정중앙 표시 */
 .popular-card.is-sold-out .popular-badge {
   position: static !important;
   display: flex !important;
@@ -203,7 +194,7 @@
   border-radius: 0 !important;
   background: transparent !important;
   color: #ffffff !important;
-  font-size: 14px !important;           /* 정중앙 마감 폰트 */
+  font-size: 14px !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   box-shadow: none !important;
@@ -212,7 +203,7 @@
 }
 
 /* =============================================================
-   3. Card Details & Elements
+   3. Card Details & Elements (순서 및 여백 재설정)
    ============================================================= */
 .product-master-favorite,
 .popular-thumb button[data-favorite-button] {
@@ -238,16 +229,17 @@
   color: #bd2832; 
 }
 
-/* 카드 이미지와 수령일 간격 밀착 (padding-top 4px로 축소) */
+/* 카드 바디: flex-direction 및 order를 통해 정확한 요소 순서 제어 */
 .product-master-copy,
 .popular-card-body {
   display: flex;
   flex-direction: column;
-  padding: 4px 2px 0 !important;
+  padding: 2px 2px 0 !important; /* 이미지와 수령일 밀착 (4px -> 2px) */
 }
 
-/* 상단 수령일 */
+/* 1순위: 수령일 */
 .product-pickup-line {
+  order: 1 !important;
   color: #00875a !important;
   font-size: 11px !important;
   font-weight: 600 !important;
@@ -256,10 +248,32 @@
   line-height: 1.2;
 }
 
-/* 제목 2줄 제한 고정 */
+/* 2순위: 한 줄 소개 (서브타이틀 복구 및 2번 위치 고정) */
+.product-master-copy > p,
+.popular-card-body > p,
+.popular-card p,
+.popular-card > small,
+.search-screen .popular-card > small {
+  order: 2 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin: 0 0 3px 0 !important;      /* 수령일과 상품명 사이 여백 */
+  color: #777777 !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.02em !important;
+  word-break: break-all !important;
+}
+
+/* 3순위: 상품 제목 (2줄 제한) */
 .product-master-copy > strong,
 .popular-card-body > strong,
 .popular-card > strong {
+  order: 3 !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
@@ -275,25 +289,19 @@
 }
 
 .search-screen .popular-card > strong {
+  order: 3 !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
 }
 
-/* 한 줄 소개 비표시 유지 */
-.product-master-copy > p,
-.popular-card p,
-.popular-card > small,
-.search-screen .popular-card > small {
-  display: none !important;
-}
-
-/* 가격 스타일 */
+/* 4순위: 가격 영역 (기존 여백 유지) */
 .product-master-price {
+  order: 4 !important;
   display: flex;
   flex-direction: column;
-  margin-top: 4px;
+  margin-top: 4px !important; /* 기존 여백 감성 그대로 유지 */
 }
 
 .product-master-price del,
@@ -329,8 +337,9 @@
   font-size: 12px;
 }
 
-/* 메타 정보 (별점 + 마감일) */
+/* 5순위: 메타 정보 (별점 + 마감일) */
 .product-master-tags {
+  order: 5 !important;
   display: flex;
   gap: 4px;
   margin-top: 5px;
@@ -349,9 +358,9 @@
   white-space: nowrap;
 }
 
-/* 메타 정보 (평점 연하게 낮추고, 마감일만 선명하게 강조) */
 .product-master-meta,
 .popular-card-meta {
+  order: 5 !important;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -361,19 +370,16 @@
   line-height: 1;
 }
 
-/* 평점 & 리뷰 수 */
 .popular-card-meta .meta-rating {
   color: #888888;
   font-weight: 400;
 }
 
-/* 구분선 */
 .popular-card-meta .meta-divider {
   color: #e0e0e0;
   font-size: 9px;
 }
 
-/* 마감일 (포인트 강조) */
 .popular-card-meta .meta-deadline {
   color: #00875a !important;
   font-weight: 700 !important;
