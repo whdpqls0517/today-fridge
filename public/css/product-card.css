@@ -163,8 +163,8 @@
 .product-master-copy > strong {
   display: block;
   color: #202e28;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.4;
   letter-spacing: -.03em;
   overflow-wrap: anywhere;
@@ -232,8 +232,8 @@
 
 .product-master-price b {
   color: #18251f;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .product-master-price del,
@@ -745,7 +745,7 @@
 
 .product-pickup-prefix {
   color: #00875a; /* 밝고 쨍한 초록 */
-  font-weight: 800;
+  font-weight: 700;
   padding: 1px 5px;
   border-radius: 4px;
 }
