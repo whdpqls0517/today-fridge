@@ -75,7 +75,7 @@
   
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
   font-size: 11px !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   letter-spacing: -0.02em !important;
   line-height: normal !important;
   box-sizing: border-box !important;
@@ -96,7 +96,7 @@
   background: #FDFBF7 !important;
   color: #122620 !important;
   border: none !important;
-  font-weight: 400 !important;
+  font-weight: 600 !important;
 }
 
 /* 2-2. 오늘마감 (딥 틸 / 크림 텍스트) */
@@ -285,9 +285,8 @@
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  
-  /* 강제 300(Light/Slim) 두께 설정 */
-  font-weight: 600 !important;
+
+  font-weight: 500 !important;
   color: #222222 !important;
   font-size: 12.5px !important;
   line-height: 1.35 !important;
