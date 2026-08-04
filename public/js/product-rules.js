@@ -164,32 +164,33 @@
   }
 
   function badges(product, now = new Date()) {
-  if (isSoldOut(product)) {
-    return [{
-      key: "soldout",
-      label: isBundle(product) ? "마감" : "품절",
-      tone: "muted"
-    }];
+    if (isSoldOut(product)) {
+      return [{
+        key: "soldout",
+        label: isBundle(product) ? "마감" : "품절",
+        tone: "muted"
+      }];
+    }
+
+    const result = [];
+
+    // 1. 마감임박(재고 10개 이하 OR 2시간 이내) 최우선
+    if (isClosingSoon(product, now)) {
+      result.push({ key: "urgent", label: "마감임박", tone: "urgent" });
+    } 
+    // 2. 오늘마감 검사
+    else if (isBundle(product) && isToday(product?.deadline, now)) {
+      result.push({ key: "today", label: "오늘마감", tone: "deadline" });
+    }
+
+    // 3. 인기상품 배지 (판매량 필드 3개 모두 지원 + 3개 이상부터 표시)
+    const sales = Number(product?.salesCount ?? product?.recentOrderCount ?? product?.orderCount ?? 0);
+    if (sales >= 3) {
+      result.push({ key: "popular", label: "인기상품", tone: "popular" });
+    }
+
+    return result.slice(0, 2);
   }
-
-  const result = [];
-
-  // 1. 마감임박(재고 10개 이하 OR 2시간 이내)이 최우선
-  if (isClosingSoon(product, now)) {
-    result.push({ key: "urgent", label: "마감임박", tone: "urgent" });
-  } 
-  // 2. 마감임박 조건에 걸리지 않은 경우에만 오늘마감 검사
-  else if (isBundle(product) && isToday(product.deadline, now)) {
-    result.push({ key: "today", label: "오늘마감", tone: "deadline" });
-  }
-
-  // 3. 인기상품 배지는 뒤에 추가
-  if (Number(product.salesCount) > 3) {
-    result.push({ key: "popular", label: "인기상품", tone: "popular" });
-  }
-
-  return result.slice(0, 2);
-}
 
   function priceView(product) {
     if (isSoldOut(product)) {
@@ -197,9 +198,9 @@
     }
     return {
       hidden: false,
-      current: Number(product.price) || 0,
-      original: Number(product.originalPrice) || null,
-      showOriginal: Boolean(product.showOriginalPrice && Number(product.originalPrice) > Number(product.price))
+      current: Number(product?.price) || 0,
+      original: Number(product?.originalPrice) || null,
+      showOriginal: Boolean(product?.showOriginalPrice && Number(product?.originalPrice) > Number(product?.price))
     };
   }
 
@@ -207,7 +208,7 @@
     if (isSoldOut(product)) return -1000;
 
     let score = product?.isRecommended ? 200 : 0;
-    if (isBundle(product) && isToday(product.deadline, now)) score += 50;
+    if (isBundle(product) && isToday(product?.deadline, now)) score += 50;
 
     const pickupDate = effectivePickupDate(product);
     if (isBundle(product) && pickupDate) {
@@ -223,7 +224,8 @@
       if (ageInDays >= 0 && ageInDays <= 7) score += 20;
     }
 
-    score += Math.min(20, Math.max(0, Number(product?.recentOrderCount) || 0));
+    const sales = Number(product?.salesCount ?? product?.recentOrderCount ?? product?.orderCount ?? 0);
+    score += Math.min(20, Math.max(0, sales));
     return score;
   }
 
@@ -238,21 +240,22 @@
   }
 
   function createProductCard(product) {
+    if (!product) return document.createElement("div");
+
     const card = document.createElement("article");
-    const favorite = window.Favorites?.has(product.id) === true;
+    const favorite = window.Favorites?.has?.(product.id) === true;
     const productBadges = badges(product).slice(0, 2);
     const price = priceView(product);
 
-    // 수령일 텍스트 가공
+    // 수령일 및 필수 정보 안전 추출 (undefined 처리)
     const pickupPrefix = formatPickupPrefix(product);
-    const rawName = product.name || "";
-
-    // 한 줄 소개 데이터 추출
+    const rawName = product.name || "상품명 없음";
     const subText = product.summary || product.subtitle || product.description || "";
+    const imageUrl = product.image || (Array.isArray(product.images) && product.images[0]) || "";
 
     // 마감 일시 계산
     const showDeadlineTime = product?.showDeadlineTime !== false;
-    const deadline = parseDate(product.deadline);
+    const deadline = parseDate(product?.deadline);
     const deadlineTime = formatDeadlineTime(product).trim();
     const formattedDeadlineText = deadline 
       ? `${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? ` ${deadlineTime}` : ""}`
@@ -265,12 +268,12 @@
       : 0;
 
     card.className = `popular-card${isSoldOut(product) ? " is-sold-out" : ""}`;
-    card.dataset.productId = product.id;
+    card.dataset.productId = product.id || "";
     card.dataset.productName = rawName;
 
     card.innerHTML = `
       <div class="popular-thumb">
-        <img src="${escapeHTML(product.image)}" alt="${escapeHTML(rawName)}" loading="lazy" />
+        <img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(rawName)}" loading="lazy" onerror="this.src='./images/placeholder.png'" />
         <div class="popular-badges">
           ${productBadges.map((badge) => `<span class="popular-badge ${badge.tone}">${badge.label}</span>`).join("")}
         </div>
