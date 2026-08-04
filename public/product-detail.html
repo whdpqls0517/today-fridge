@@ -430,6 +430,7 @@
   <script src="./js/auth-session.js"></script>
   <script src="./js/db.js"></script>
   <script src="./js/product-rules.js"></script>
+  <script src="./js/favorites.js?v=20260805-1"></script>
   <script src="./js/back-navigation.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -539,60 +540,27 @@
 
     window.updateDetailImage = updateDetailImage;
 
-    // 찜 버튼 클릭 시 Supabase 연동 처리
-    window.toggleDetailFavorite = async function () {
-      if (!currentProduct) return;
-
+    function syncDetailFavoriteButton() {
       const btn = document.getElementById("btn-detail-favorite");
-      const token = accessToken();
-      let isFav = false;
+      if (!btn || !currentProduct || !window.Favorites) return;
+      const isFavorite = window.Favorites.has(currentProduct.id);
+      btn.setAttribute("aria-pressed", isFavorite ? "true" : "false");
+      btn.setAttribute("aria-label", isFavorite ? "찜 해제하기" : "찜하기");
+      btn.textContent = isFavorite ? "♥" : "♡";
+    }
 
-      if (window.Favorites) {
-        isFav = window.Favorites.has(currentProduct.id);
-      } else {
-        const raw = localStorage.getItem("fridge_favorites");
-        const favs = raw ? JSON.parse(raw) : [];
-        isFav = favs.includes(currentProduct.id);
-      }
-
-      const nextState = !isFav;
-
-      // 1. UI 선제 업데이트
-      if (btn) {
-        btn.setAttribute("aria-pressed", nextState ? "true" : "false");
-        btn.innerHTML = nextState ? "♥" : "♡";
-      }
-
-      // 2. 로그인된 사용자이고 Supabase UUID 상품인 경우 서버 연동
-      if (token && isUUID(currentProduct.id)) {
-        try {
-          const endpoint = `/api/favorites`;
-          const method = nextState ? "POST" : "DELETE";
-          await fetch(endpoint, {
-            method,
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ productId: currentProduct.id })
-          });
-        } catch (err) {
-          console.error("Supabase 연동 에러:", err);
-        }
-      }
-
-      // 3. 로컬 싱크 업데이트
-      if (window.Favorites) {
-        window.Favorites.toggle(currentProduct.id);
-      } else {
-        const raw = localStorage.getItem("fridge_favorites");
-        let favs = raw ? JSON.parse(raw) : [];
-        if (nextState) {
-          if (!favs.includes(currentProduct.id)) favs.push(currentProduct.id);
-        } else {
-          favs = favs.filter(id => id !== currentProduct.id);
-        }
-        localStorage.setItem("fridge_favorites", JSON.stringify(favs));
+    // 상세·목록·찜 페이지가 같은 Supabase 찜 데이터를 사용한다.
+    window.toggleDetailFavorite = async function () {
+      if (!currentProduct || !window.Favorites) return;
+      const btn = document.getElementById("btn-detail-favorite");
+      if (btn) btn.disabled = true;
+      try {
+        await window.Favorites.toggle(currentProduct.id);
+        syncDetailFavoriteButton();
+      } catch (error) {
+        alert(error?.message || "찜 상태를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      } finally {
+        if (btn) btn.disabled = false;
       }
     };
 
@@ -721,7 +689,7 @@
 
       // 하단 액션 바
       const actionBar = document.getElementById("product-action-bar");
-      const isFav = window.Favorites ? window.Favorites.has(currentProduct.id) : (JSON.parse(localStorage.getItem("fridge_favorites") || "[]").includes(currentProduct.id));
+      const isFav = window.Favorites?.has?.(currentProduct.id) === true;
       
       const favBtnHTML = `
         <button class="action-favorite-btn" id="btn-detail-favorite" type="button" 
@@ -893,6 +861,7 @@
     };
 
     window.addEventListener("todayFridgeCatalogUpdated", initProductDetail);
+    window.addEventListener("favoriteschange", syncDetailFavoriteButton);
     initProductDetail();
   </script>
   <script src="./js/receipt-launcher.js"></script>

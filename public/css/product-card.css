@@ -53,11 +53,17 @@
   top: 8px !important;
   left: 8px !important;
   bottom: auto !important;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  box-sizing: border-box;
   z-index: 2;
   display: flex;
+  align-content: flex-start;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 4px;
-  max-width: calc(100% - 16px);
+  max-width: none;
+  pointer-events: none;
 }
 
 .master-badge,

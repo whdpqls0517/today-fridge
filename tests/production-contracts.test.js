@@ -153,3 +153,25 @@ test("보따리는 선택한 과일 종류의 후기와 연결되고 오늘의 �
   assert.match(form, /enteredPrice\s*\|\|\s*Number\(configuredFruitPrices\[0\]/);
   assert.match(detail, /if \(currentProduct\?\.fruitTypeId\)/);
 });
+
+test("찜은 상세·목록·찜 페이지에서 동일한 서버 저장소를 사용한다", () => {
+  const server = read("server.js");
+  const detail = read("public/product-detail.html");
+  const favorites = read("public/js/favorites.js");
+  assert.match(server, /app\.put\('\/api\/favorites\/:productId'/);
+  assert.match(server, /app\.delete\('\/api\/favorites\/:productId'/);
+  assert.match(detail, /js\/favorites\.js/);
+  assert.match(detail, /await window\.Favorites\.toggle\(currentProduct\.id\)/);
+  assert.doesNotMatch(detail, /localStorage\.getItem\("fridge_favorites"\)/);
+  assert.match(favorites, /\/api\/favorites\/\$\{encodeURIComponent\(productId\)\}/);
+});
+
+test("인기상품은 실제 차감된 보따리 수량까지 반영하고 목록에서 원형 배지로 표시한다", () => {
+  const server = read("server.js");
+  const rules = read("public/js/product-rules.js");
+  const cardCss = read("public/css/product-card.css");
+  assert.match(server, /reservedQuantity\s*=\s*bundleItem\s*\?\s*Math\.max\(0, initialStock - currentStock\)/);
+  assert.match(server, /salesCount\s*=\s*Math\.max\(Number\(product\.sales_count \|\| 0\), reservedQuantity\)/);
+  assert.match(rules, /if \(sales >= 3\)/);
+  assert.match(cardCss, /\.popular-badge\.popular[\s\S]*?width:\s*36px\s*!important[\s\S]*?border-radius:\s*50%\s*!important/);
+});

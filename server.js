@@ -1088,6 +1088,13 @@ function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitRev
     }
   }
 
+  const currentStock = Number(bundleItem?.stock_quantity ?? product.stock_quantity ?? 0);
+  const initialStock = Number(bundleItem?.initial_stock_quantity ?? product.initial_stock_quantity ?? currentStock);
+  // 보따리 주문은 재고를 즉시 차감하므로 별도 집계값이 갱신되지 않았더라도
+  // 최초 수량과 현재 수량의 차이로 실제 신청 수량을 반영한다.
+  const reservedQuantity = bundleItem ? Math.max(0, initialStock - currentStock) : 0;
+  const salesCount = Math.max(Number(product.sales_count || 0), reservedQuantity);
+
   return {
     id: product.id,
     productId: product.id,
@@ -1110,9 +1117,9 @@ function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitRev
     image: images[0] || '',
     images,
     tags: productTags.filter((tag) => !String(tag).startsWith('__')),
-    stock: bundleItem?.stock_quantity ?? product.stock_quantity ?? 0,
-    totalStock: bundleItem?.initial_stock_quantity ?? product.initial_stock_quantity ?? 1,
-    salesCount: product.sales_count || 0,
+    stock: currentStock,
+    totalStock: initialStock || 1,
+    salesCount,
     rating: fruitReviewStats ? fruitReviewStats.rating : Number(product.rating || 0),
     reviewsCount: fruitReviewStats ? fruitReviewStats.count : (product.reviews_count || 0),
     fruitTypeId: product.fruit_type_id || null,
