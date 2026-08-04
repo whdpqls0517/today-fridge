@@ -112,21 +112,22 @@
   color: #ffffff !important;
 }
 
-/* 품절 시 카드 스타일 유지 */
+/* 품절 시 카드 이미지 흐리게 처리 */
 .popular-card.is-sold-out .popular-thumb img {
   filter: saturate(.58) brightness(.64);
 }
 
+/* 이미지 위에 투명한 검정색 오버레이 레이어 추가 */
 .popular-card.is-sold-out .popular-thumb::after {
   content: '';
   position: absolute;
   inset: 0;
   height: 100%;
   background: rgba(0, 0, 0, .25);
-  z-index: 1;
+  z-index: 1; /* 이미지 바로 위 레이어 */
 }
 
-* 1. 배지 컨테이너를 이미지 전체 영역에 꽉 차게 피팅 */
+/* 🔥 [핵심 수정] 품절일 때는 상단 배지 위치 속성을 모두 무시하고 중앙으로 강제 이동 */
 .popular-card.is-sold-out .popular-badges {
   position: absolute !important;
   inset: 0 !important;
@@ -136,28 +137,33 @@
   height: 100% !important;
   max-width: none !important;
   display: flex !important;
-  align-items: center !important;     /* 수직 정중앙 */
-  justify-content: center !important;  /* 수평 정중앙 */
-  z-index: 2 !important;              /* 오버레이 위로 올려주기 */
+  align-items: center !important;     /* 수직 중앙 */
+  justify-content: center !important;  /* 수평 중앙 */
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 2 !important;              /* 오버레이 배경 위로 올리기 */
 }
 
-/* 2. 품절 '마감' 글자 텍스트 초기화 및 중앙 정렬 */
+/* 🔥 [핵심 수정] 품절 '마감' 텍스트 스타일 초기화 및 스타일링 */
 .popular-card.is-sold-out .popular-badge {
-  position: relative !important;
+  position: static !important;        /* 상단 고정 위치 해제 */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   width: auto !important;
   height: auto !important;
+  min-height: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
-  background: transparent !important;
-  color: #ffffff !important;
-  font-size: 14px !important;           /* 텍스트 크기 살짝 키움 */
-  font-weight: 700 !important;
+  border: none !important;
+  background: transparent !important; /* 배경색 없앰 */
+  color: #ffffff !important;           /* 흰색 글씨 */
+  font-size: 14px !important;         /* 텍스트 크기 살짝 키움 */
+  font-weight: 700 !important;        /* 굵게 */
   line-height: 1 !important;
-  box-shadow: none !important;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+  box-shadow: none !important;        /* 음영 제거 */
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .5); /* 글씨 가독성을 위한 그림자 */
+  -webkit-font-smoothing: antialiased;
 }
 
 /* =============================================================
