@@ -151,7 +151,7 @@
     return `${date.getMonth() + 1}.${date.getDate()}(${weekdays[date.getDay()]})`;
   }
 
-  // ✨ [추가] 수령일 프리픽스 전용 포맷터 (예: 🧺 3일(월))
+  // ✨ 수령일 프리픽스 전용 포맷터 (예: 🧺 3일(월))
   function formatPickupPrefix(product) {
     const date = effectivePickupDate(product);
     if (!date) return "";
@@ -242,7 +242,6 @@
     }[char]));
   }
 
-  // 💡 [수정/교체] createProductCard - 수령일 프리픽스 포함 및 하단 신청마감 1줄화
   function createProductCard(product) {
     const card = document.createElement("article");
     const favorite = window.Favorites?.has(product.id) === true;
@@ -250,12 +249,13 @@
     const price = priceView(product);
     const tagList = Array.isArray(product.tags) ? product.tags.slice(0, 2) : [];
     
-    // ✨ 수령일 프리픽스 및 제목 가공
+    // ✨ 수령일 프리픽스 및 제목 가공 (span 태그 분리)
     const pickupPrefix = formatPickupPrefix(product);
     const rawName = product.name || "";
-    const displayTitle = pickupPrefix ? `${pickupPrefix} ${rawName}` : rawName;
+    const displayTitleHtml = pickupPrefix 
+      ? `<span class="product-pickup-prefix">${escapeHTML(pickupPrefix)}</span> ${escapeHTML(rawName)}` 
+      : escapeHTML(rawName);
 
-    // 마감시간(HH:mm) 노출 여부 체크
     const showDeadlineTime = product?.showDeadlineTime !== false;
     const deadline = parseDate(product.deadline);
     const deadlineTime = formatDeadlineTime(product).trim();
@@ -275,20 +275,19 @@
           ${favorite ? "♥" : "♡"}
         </button>
       </div>
-
-      <strong>${escapeHTML(displayTitle)}</strong>
-
+      <strong>${displayTitleHtml}</strong>
       ${price.hidden ? "" : `<p>${formatPrice(price.current)}${price.showOriginal ? `<del>${formatPrice(price.original)}</del>` : ""}</p>`}
       <small>${escapeHTML(product.description || "")}</small>
       <div class="popular-card-meta">
         <span>${tagList.map((tag) => escapeHTML(tag)).join(" · ")}</span>
         <span>★ ${Number(product.rating || 0).toFixed(1)} (${Number(product.reviewsCount || 0)})</span>
       </div>
-
-      <!-- 하단: 2줄 스케줄 박스 대신 깔끔한 1줄 신청마감 서브텍스트로 변경 -->
-      ${isBundle(product) && !isSoldOut(product) && deadline
-        ? `<div class="bundle-deadline-subtext">
-            <span>⏰ 신청마감: ${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? `&nbsp;${deadlineTime}` : ""}</span>
+      ${isBundle(product) && !isSoldOut(product)
+        ? `<div class="bundle-card-schedule" aria-label="주문 마감 일정">
+            <div class="bundle-card-schedule-row deadline">
+              <span>신청 마감</span>
+              <b>${formatFriendlyDate(deadline)}${showDeadlineTime && deadlineTime ? `&nbsp;${deadlineTime}` : ""}</b>
+            </div>
           </div>`
         : ""}
       `;
@@ -304,7 +303,7 @@
     isBundle, isSoldOut, isToday, isTodayPickup, stockRatio, isClosingSoon,
     isBeforeDeadline, hasDeadlinePassed, canJoinWaitlist,
     effectivePickupDate, adjustedPickupDateForSort, badges, recommendationScore, priceView, formatPrice,
-    formatPickupPrefix // Export 추가
+    formatPickupPrefix
   };
   global.ProductUI = { createProductCard };
 })(window);

@@ -743,13 +743,7 @@
   font-weight: 750;
 }
 
-/* 하단 1줄 마감일 안내 스타일 */
-.product-master-deadline-line {
-  margin-top: 6px;
-  padding-top: 5px;
-  border-top: 1px solid #edf0ee;
-  font-size: 10px;
-  font-weight: 600;
-  color: #bd2832; /* 마감 포인트 컬러 (톤다운 레드) */
-  line-height: 1.2;
+.product-pickup-prefix {
+  color: #0f4c3a; /* 신선한 그린 포인트 컬러 (원하시는 컬러 코드로 수정 가능) */
+  font-weight: 800; /* 폰트 두께 강조 */
 }
