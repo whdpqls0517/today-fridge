@@ -96,7 +96,7 @@
   background: #FDFBF7 !important;
   color: #122620 !important;
   border: none !important;
-  font-weight: 500 !important;
+  font-weight: 400 !important;
 }
 
 /* 2-2. 오늘마감 (딥 틸 / 크림 텍스트) */
@@ -287,7 +287,7 @@
   text-overflow: ellipsis !important;
   
   /* 강제 300(Light/Slim) 두께 설정 */
-  font-weight: 400 !important;
+  font-weight: 600 !important;
   color: #222222 !important;
   font-size: 12.5px !important;
   line-height: 1.35 !important;
