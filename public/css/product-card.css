@@ -31,7 +31,7 @@
 }
 
 /* =============================================================
-   2. Zigzag Style Badges (지그재그 감성 - 폰트 및 비율 디테일 보정)
+   2. Zigzag Style Badges
    ============================================================= */
 .product-master-badges,
 .popular-badges {
@@ -45,7 +45,6 @@
   gap: 2px;
 }
 
-/* 폰트 패밀리 지정 및 정교한 픽셀 피팅 */
 .master-badge,
 .popular-badge,
 .popular-badges .popular-badge,
@@ -69,7 +68,6 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* 2-1. [오늘 마감] & [기본/일반] 배지 -> 무조건 솔리드 블랙 (#111111) */
 .master-badge,
 .master-badge.muted,
 .master-badge.deadline,
@@ -83,7 +81,6 @@
   color: #ffffff !important;
 }
 
-/* 2-2. [인기] 배지 -> 포레스트 딥 그린 (#0f4c3a) */
 .master-badge.popular,
 .popular-badge.popular,
 .popular-badge.green,
@@ -93,7 +90,6 @@
   color: #ffffff !important;
 }
 
-/* 2-3. [마감 임박] 배지 -> 톤다운 크림슨 레드 (#bd2832) */
 .master-badge.urgent,
 .popular-badge.urgent,
 .popular-badge.red,
@@ -103,14 +99,12 @@
   color: #ffffff !important;
 }
 
-/* 충돌 방지 덮어쓰기 */
 .popular-badge.deadline,
 .popular-badges .popular-badge.deadline {
   background: #111111 !important;
   color: #ffffff !important;
 }
 
-/* 2-4. 품절 (Sold Out) 오버레이 */
 .popular-card.is-sold-out .popular-thumb img {
   filter: saturate(.58) brightness(.64);
 }
@@ -145,7 +139,7 @@
 }
 
 /* =============================================================
-   3. Card Details & Elements (마켓컬리 UI 업데이트 영역)
+   3. Card Details & Elements (수정 반영)
    ============================================================= */
 .product-master-favorite,
 .popular-thumb button[data-favorite-button] {
@@ -171,59 +165,62 @@
   color: #bd2832; 
 }
 
+/* 카드 이미지와 수령일 간격 밀착 (padding-top 4px로 축소) */
 .product-master-copy,
 .popular-card-body {
   display: flex;
   flex-direction: column;
-  padding: 8px 2px 0;
+  padding: 4px 2px 0 !important;
 }
 
-/* 상단 수령일 (컬리의 '샛별배송' 위치 - 기존 초록색 유지) */
+/* 상단 수령일 (색상 #00875a, 크기 12.5px로 확장, 아래여백 밀착) */
 .product-pickup-line {
-  color: #0f4c3a;
-  font-size: 11px;
-  font-weight: 600;
+  color: #00875a !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
   letter-spacing: -0.02em;
-  margin-bottom: 3px;
+  margin-bottom: 2px !important;
+  line-height: 1.2;
 }
 
-/* 상품명 (2줄 제한) */
+/* 🔥 핵심: 제목 2줄 제한 고정 (!important로 스타일 충돌 방지) */
 .product-master-copy > strong,
 .popular-card-body > strong,
 .popular-card > strong {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   color: #202e28;
   font-size: 13.5px;
   font-weight: 500;
   line-height: 1.35;
   letter-spacing: -.02em;
   word-break: keep-all !important;
-  overflow-wrap: normal !important;
-  white-space: normal;
+  white-space: normal !important;
 }
 
 .search-screen .popular-card > strong {
-  display: -webkit-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
 }
 
-/* 레거시 한 줄 소개 스타일 (필요시 참조) */
+/* 한 줄 소개 비표시 유지 */
 .product-master-copy > p,
 .popular-card p,
 .popular-card > small,
 .search-screen .popular-card > small {
-  display: none; /* 컬리 스타일 변경으로 기본 비표시 처리 */
+  display: none !important;
 }
 
-/* 가격 스타일 (컬리 2번 이미지 대응 - 할인 유무 처리) */
+/* 가격 스타일 */
 .product-master-price {
   display: flex;
   flex-direction: column;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .product-master-price del,
@@ -259,11 +256,11 @@
   font-size: 12px;
 }
 
-/* 텍스트 태그 및 메타 정보 (별점 + 마감일 나란히 배치) */
+/* 메타 정보 (별점 + 마감일) */
 .product-master-tags {
   display: flex;
   gap: 4px;
-  margin-top: 6px;
+  margin-top: 5px;
   overflow: hidden;
 }
 
@@ -284,7 +281,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 6px;
+  margin-top: 5px;
   color: #888888;
   font-size: 11px;
   line-height: 1;
@@ -306,14 +303,14 @@
 
 .product-master-deadline {
   display: block;
-  margin-top: 6px;
+  margin-top: 5px;
   color: #bd2832;
   font-size: 9px;
   font-weight: 700;
 }
 
 /* =============================================================
-   4. List Layout & Filter Tools (보존 영역)
+   4. List Layout & Filter Tools
    ============================================================= */
 .bundle-date-filter {
   display: flex;
