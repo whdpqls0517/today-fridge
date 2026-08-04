@@ -31,7 +31,7 @@
 }
 
 /* =============================================================
-   2. Top Rectangular Badge Chips (컬리 스타일 밝은 상단 칩)
+   2. Top Rectangular Badge Chips (마감임박 / 오늘마감 - 상단 슬림 칩)
    ============================================================= */
 .product-master-badges,
 .popular-badges {
@@ -42,7 +42,7 @@
   z-index: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;               /* 배지 간 격차 */
+  gap: 4px;               /* 배지 간 격차 */
   max-width: calc(100% - 16px);
 }
 
@@ -51,25 +51,26 @@
 .popular-badges .popular-badge,
 .search-popular-card .popular-badge {
   position: static;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 20px !important;         /* 컬리/지그재그와 동일한 슬림 칩 높이 */
-  padding: 0 6px !important;       /* 좌우 패딩 */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 22px !important;         /* 슬림 칩 높이 (22px 확대 반영) */
+  padding: 0 7px !important;       /* 좌우 패딩 */
   border-radius: 4px !important;   /* 둥근 직사각형 코너 */
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
-  font-size: 10px !important;      /* 깔끔하고 가독성 좋은 폰트 크기 */
+  font-size: 11px !important;      /* 폰트 크기 (11px 확대 반영) */
   font-weight: 700 !important;      /* 굵은 글씨로 가독성 확보 */
   letter-spacing: -0.02em !important;
-  line-height: 1 !important;
+  line-height: normal !important;
+  box-sizing: border-box !important;
   border: none !important;
   color: #ffffff !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important; /* 살짝 들어간 음영으로 가독성 UP */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important; /* 살짝 들어간 음영 */
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 1. 마감임박 (밝은 코랄 레드) */
+/* 2-1. 마감임박 (밝은 코랄 레드) */
 .master-badge.urgent,
 .popular-badge.urgent,
 .popular-badge.red,
@@ -79,7 +80,7 @@
   color: #ffffff !important;
 }
 
-/* 2. 오늘마감 (선명한 앰버 오렌지) */
+/* 2-2. 오늘마감 (선명한 앰버 오렌지) */
 .master-badge.deadline,
 .popular-badge.deadline,
 .popular-badges .popular-badge.deadline {
@@ -87,17 +88,7 @@
   color: #ffffff !important;
 }
 
-/* 3. 인기상품 (청량한 에메랄드 그린) */
-.master-badge.popular,
-.popular-badge.popular,
-.popular-badge.green,
-.popular-badges .popular-badge.popular,
-.popular-badges .popular-badge.green {
-  background: #10B981 !important;
-  color: #ffffff !important;
-}
-
-/* 4. 기타/기본/Muted 배지 (세련된 차콜 그레이) */
+/* 2-3. 기타/기본/Muted 배지 (세련된 차콜 그레이) */
 .master-badge.muted,
 .popular-badge.muted,
 .popular-badges .popular-badge.muted {
@@ -105,29 +96,57 @@
   color: #ffffff !important;
 }
 
-/* 5. 쿠폰/혜택 배지 (컬리 스카이블루 / 바이올렛) */
+/* 2-4. 쿠폰/혜택 배지 (컬리 스카이블루 / 바이올렛) */
 .master-badge.coupon,
 .popular-badge.coupon {
   background: #22b8cf !important;
   color: #ffffff !important;
 }
 
-/* 품절 시 카드 이미지 흐리게 처리 */
+/* =============================================================
+   2-5. Popular Badge -> Bottom Circular Style (기존 클래스 자동 적용)
+   * 기존 .popular 또는 .green 클래스 사용 시 자동으로 하단 좌측 원형 배지화
+   ============================================================= */
+.master-badge.popular,
+.popular-badge.popular,
+.popular-badge.green,
+.popular-badges .popular-badge.popular,
+.popular-badges .popular-badge.green {
+  position: absolute !important;
+  left: 8px !important;
+  bottom: 8px !important;
+  top: auto !important;
+  right: auto !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  background: #10B981 !important; /* 요청하신 에메랄드 그린 */
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+  z-index: 2 !important;
+}
+
+/* =============================================================
+   2-6. Sold-out Overlay & Centered Text (품절 시 마감 오버레이 정중앙)
+   ============================================================= */
 .popular-card.is-sold-out .popular-thumb img {
   filter: saturate(.58) brightness(.64);
 }
 
-/* 이미지 위에 투명한 검정색 오버레이 레이어 추가 */
 .popular-card.is-sold-out .popular-thumb::after {
   content: '';
   position: absolute;
   inset: 0;
   height: 100%;
   background: rgba(0, 0, 0, .25);
-  z-index: 1; /* 이미지 바로 위 레이어 */
+  z-index: 1;
 }
 
-/* 🔥 [핵심 수정] 품절일 때는 상단 배지 위치 속성을 모두 무시하고 중앙으로 강제 이동 */
+/* 배지 컨테이너를 이미지 전체 크기로 확장해 정중앙 정렬 기준 확보 */
 .popular-card.is-sold-out .popular-badges {
   position: absolute !important;
   inset: 0 !important;
@@ -137,16 +156,16 @@
   height: 100% !important;
   max-width: none !important;
   display: flex !important;
-  align-items: center !important;     /* 수직 중앙 */
-  justify-content: center !important;  /* 수평 중앙 */
+  align-items: center !important;     /* 수직 정중앙 */
+  justify-content: center !important;  /* 수평 정중앙 */
   padding: 0 !important;
   margin: 0 !important;
-  z-index: 2 !important;              /* 오버레이 배경 위로 올리기 */
+  z-index: 2 !important;
 }
 
-/* 🔥 [핵심 수정] 품절 '마감' 텍스트 스타일 초기화 및 스타일링 */
+/* 품절 시 '마감' 글자만 정중앙 표시 (상단 칩 및 원형 배지 스타일 완전히 해제) */
 .popular-card.is-sold-out .popular-badge {
-  position: static !important;        /* 상단 고정 위치 해제 */
+  position: static !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -156,18 +175,19 @@
   padding: 0 !important;
   margin: 0 !important;
   border: none !important;
-  background: transparent !important; /* 배경색 없앰 */
-  color: #ffffff !important;           /* 흰색 글씨 */
-  font-size: 14px !important;         /* 텍스트 크기 살짝 키움 */
-  font-weight: 700 !important;        /* 굵게 */
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font-size: 14px !important;           /* 정중앙 마감 폰트 */
+  font-weight: 700 !important;
   line-height: 1 !important;
-  box-shadow: none !important;        /* 음영 제거 */
-  text-shadow: 0 1px 6px rgba(0, 0, 0, .5); /* 글씨 가독성을 위한 그림자 */
+  box-shadow: none !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
   -webkit-font-smoothing: antialiased;
 }
 
 /* =============================================================
-   3. Card Details & Elements (수정 반영)
+   3. Card Details & Elements
    ============================================================= */
 .product-master-favorite,
 .popular-thumb button[data-favorite-button] {
@@ -201,7 +221,7 @@
   padding: 4px 2px 0 !important;
 }
 
-/* 상단 수령일 (색상 #00875a, 크기 12.5px로 확장, 아래여백 밀착) */
+/* 상단 수령일 */
 .product-pickup-line {
   color: #00875a !important;
   font-size: 11px !important;
@@ -211,7 +231,7 @@
   line-height: 1.2;
 }
 
-/* 🔥 핵심: 제목 2줄 제한 고정 (!important로 스타일 충돌 방지) */
+/* 제목 2줄 제한 고정 */
 .product-master-copy > strong,
 .popular-card-body > strong,
 .popular-card > strong {
