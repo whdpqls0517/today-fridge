@@ -31,18 +31,19 @@
 }
 
 /* =============================================================
-   2. Zigzag Style Badges
+   2. Top Rectangular Badge Chips (컬리 스타일 밝은 상단 칩)
    ============================================================= */
 .product-master-badges,
 .popular-badges {
   position: absolute;
-  left: 0;
-  bottom: 0;
+  top: 8px !important;    /* 썸네일 상단 여백 */
+  left: 8px !important;   /* 썸네일 좌측 여백 */
+  bottom: auto !important;
   z-index: 2;
   display: flex;
-  max-width: calc(100% - 36px);
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 3px;               /* 배지 간 격차 */
+  max-width: calc(100% - 16px);
 }
 
 .master-badge,
@@ -53,58 +54,65 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 2px 2px 0 0;
+  height: 20px !important;         /* 컬리/지그재그와 동일한 슬림 칩 높이 */
+  padding: 0 6px !important;       /* 좌우 패딩 */
+  border-radius: 4px !important;   /* 둥근 직사각형 코너 */
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif !important;
-  font-size: 9px !important;
-  font-weight: 400 !important;
-  letter-spacing: -0.03em !important;
+  font-size: 10px !important;      /* 깔끔하고 가독성 좋은 폰트 크기 */
+  font-weight: 700 !important;      /* 굵은 글씨로 가독성 확보 */
+  letter-spacing: -0.02em !important;
   line-height: 1 !important;
-  border: none;
+  border: none !important;
   color: #ffffff !important;
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important; /* 살짝 들어간 음영으로 가독성 UP */
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
 }
 
-.master-badge,
-.master-badge.muted,
-.master-badge.deadline,
-.popular-badge,
-.popular-badge.muted,
-.popular-badge.deadline,
-.popular-badges .popular-badge,
-.popular-badges .popular-badge.muted,
-.popular-badges .popular-badge.deadline {
-  background: #111111 !important;
-  color: #ffffff !important;
-}
-
-.master-badge.popular,
-.popular-badge.popular,
-.popular-badge.green,
-.popular-badges .popular-badge.popular,
-.popular-badges .popular-badge.green {
-  background: #0f4c3a !important;
-  color: #ffffff !important;
-}
-
+/* 1. 마감임박 (밝은 코랄 레드) */
 .master-badge.urgent,
 .popular-badge.urgent,
 .popular-badge.red,
 .popular-badges .popular-badge.red,
 .popular-badges .popular-badge.urgent {
-  background: #bd2832 !important;
+  background: #ff3b30 !important;
   color: #ffffff !important;
 }
 
+/* 2. 오늘마감 (선명한 앰버 오렌지) */
+.master-badge.deadline,
 .popular-badge.deadline,
 .popular-badges .popular-badge.deadline {
-  background: #111111 !important;
+  background: #ff8800 !important;
   color: #ffffff !important;
 }
 
+/* 3. 인기상품 (청량한 에메랄드 그린) */
+.master-badge.popular,
+.popular-badge.popular,
+.popular-badge.green,
+.popular-badges .popular-badge.popular,
+.popular-badges .popular-badge.green {
+  background: #00a86b !important;
+  color: #ffffff !important;
+}
+
+/* 4. 기타/기본/Muted 배지 (세련된 차콜 그레이) */
+.master-badge.muted,
+.popular-badge.muted,
+.popular-badges .popular-badge.muted {
+  background: #4a5568 !important;
+  color: #ffffff !important;
+}
+
+/* 5. 쿠폰/혜택 배지 (컬리 스카이블루 / 바이올렛) */
+.master-badge.coupon,
+.popular-badge.coupon {
+  background: #22b8cf !important;
+  color: #ffffff !important;
+}
+
+/* 품절 시 카드 스타일 유지 */
 .popular-card.is-sold-out .popular-thumb img {
   filter: saturate(.58) brightness(.64);
 }
@@ -114,7 +122,7 @@
   position: absolute;
   inset: 0;
   height: 100%;
-  background: rgba(31, 34, 32, .2);
+  background: rgba(0, 0, 0, .25);
 }
 
 .popular-card.is-sold-out .popular-badges {
@@ -125,17 +133,18 @@
   justify-content: center;
   max-width: none;
   left: 0;
-  bottom: 0;
+  top: 0;
 }
 
 .popular-card.is-sold-out .popular-badge {
-  height: auto;
-  padding: 0;
+  height: auto !important;
+  padding: 0 !important;
   background: transparent !important;
   color: #ffffff !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, .3);
+  box-shadow: none !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
 }
 
 /* =============================================================
