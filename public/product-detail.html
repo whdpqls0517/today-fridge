@@ -291,6 +291,8 @@
       font-size: 13px;
       text-align: center;
     }
+
+    /* 하단 액션 바 레이아웃 수정 */
     .action-bar {
       position: fixed;
       left: 50%;
@@ -302,8 +304,34 @@
       box-shadow: 0 -10px 24px rgba(36, 41, 50, 0.08);
       z-index: 20;
     }
+    .action-bar-inner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .action-favorite-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+      border: 1px solid #e0e6e2;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #cccccc;
+      font-size: 22px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .action-favorite-btn[aria-pressed="true"] {
+      border-color: #ff4d4f;
+      color: #ff4d4f;
+      background: #fff5f5;
+    }
+
     .action-btn {
-      width: 100%;
+      flex: 1;
       height: 52px;
       border-radius: 12px;
       background: #1f5f43;
@@ -315,6 +343,7 @@
       box-shadow: 0 8px 16px rgba(31, 95, 67, 0.18);
       border: 0;
       cursor: pointer;
+      text-decoration: none;
     }
     .action-btn.disabled {
       background: #ef4b43;
@@ -325,7 +354,7 @@
       color: #666d69;
       box-shadow: none;
     }
-    .action-btn:active {
+    .action-btn:active, .action-favorite-btn:active {
       transform: scale(0.98);
     }
     .review-item-detail {
@@ -542,6 +571,32 @@
 
     window.updateDetailImage = updateDetailImage;
 
+    // 찜 토글 처리 함수
+    window.toggleDetailFavorite = function () {
+      if (!currentProduct) return;
+      if (window.Favorites) {
+        window.Favorites.toggle(currentProduct.id);
+      } else {
+        const key = "fridge_favorites";
+        const raw = localStorage.getItem(key);
+        const favs = raw ? JSON.parse(raw) : [];
+        const idx = favs.indexOf(currentProduct.id);
+        if (idx > -1) {
+          favs.splice(idx, 1);
+        } else {
+          favs.push(currentProduct.id);
+        }
+        localStorage.setItem(key, JSON.stringify(favs));
+      }
+      
+      const isFav = window.Favorites ? window.Favorites.has(currentProduct.id) : (JSON.parse(localStorage.getItem("fridge_favorites") || "[]").includes(currentProduct.id));
+      const btn = document.getElementById("btn-detail-favorite");
+      if (btn) {
+        btn.setAttribute("aria-pressed", isFav ? "true" : "false");
+        btn.innerHTML = isFav ? "♥" : "♡";
+      }
+    };
+
     function initProductDetail() {
       const products = window.FridgeDB.getProducts();
       currentProduct = products.find(p => p.id === productId);
@@ -639,7 +694,6 @@
       `;
 
       // 4. 탭 정보 채우기
-      // 상세설명 탭
       if (isFruitProduct) {
         const specs = (currentProduct.detailSpecs || []).filter((spec) => spec?.type !== "price");
         document.getElementById("tab-desc").innerHTML = `
@@ -675,40 +729,49 @@
         ? `<p class="detail-copy">${escapeDetailText(registeredDetailText)}</p>`
         : `<div class="detail-copy-empty">등록된 상세설명이 없습니다.</div>`;
 
-      // 후기 탭 동적 로드
       renderProductReviews();
-
-      // 문의 내역 로드
       renderInquiryList();
 
-      // 5. 하단 고정 액션바 버튼 렌더링
+      // 5. 하단 고정 액션바 버튼 렌더링 (찜 버튼 + 메인 액션 버튼)
       const actionBar = document.getElementById("product-action-bar");
+      const isFav = window.Favorites ? window.Favorites.has(currentProduct.id) : (JSON.parse(localStorage.getItem("fridge_favorites") || "[]").includes(currentProduct.id));
+      
+      const favBtnHTML = `
+        <button class="action-favorite-btn" id="btn-detail-favorite" type="button" 
+          aria-pressed="${isFav ? 'true' : 'false'}" onclick="toggleDetailFavorite()" aria-label="찜하기">
+          ${isFav ? '♥' : '♡'}
+        </button>
+      `;
+
       if (!isReservationProduct) {
         actionBar.style.display = "none";
       } else if (isSoldOut) {
         actionBar.style.display = "block";
+        let ctaHTML = "";
         if (canJoinWaitlist) {
           const isWaiting = waitlistRequested;
-          actionBar.innerHTML = `
+          ctaHTML = `
             <a class="action-btn" id="btn-action-cta" href="./bundle-apply.html?id=${encodeURIComponent(currentProduct.id)}&mode=waitlist">
               ${isWaiting ? '대기 신청 정보 확인' : '보따리 대기 신청하기'}
             </a>
           `;
         } else {
           const isRequested = restockRequested;
-          actionBar.innerHTML = `
+          ctaHTML = `
             <button class="action-btn restock" id="btn-action-cta" onclick="requestRestock()">
               ${isRequested ? '재입고 알림 신청 취소' : '재입고 알림 신청하기'}
             </button>
           `;
         }
+        actionBar.innerHTML = `<div class="action-bar-inner">${favBtnHTML}${ctaHTML}</div>`;
       } else {
         actionBar.style.display = "block";
-        actionBar.innerHTML = `
+        const ctaHTML = `
           <a class="action-btn" id="btn-action-cta" href="./bundle-apply.html?id=${encodeURIComponent(currentProduct.id)}">
             🛒 보따리 예약 신청하기 (${currentProduct.price.toLocaleString()}원)
           </a>
         `;
+        actionBar.innerHTML = `<div class="action-bar-inner">${favBtnHTML}${ctaHTML}</div>`;
       }
     }
 
@@ -835,7 +898,6 @@
       restockRequested = true;
       alert("🔔 재입고 알림 신청이 완료되었습니다! 사장님께 희망 수요가 전송됩니다.");
       
-      // UI 즉시 업데이트
       initProductDetail();
     };
 
@@ -883,14 +945,11 @@
       window.location.href = `./bundle-apply.html?id=${encodeURIComponent(currentProduct.id)}`;
       return;
       
-      // 노쇼 차단 계정 확인
       const user = window.FridgeDB.getUserAccount();
       const isOnsiteBlocked = user.noShowStack >= 3;
 
-      // 주문 생성
       const orderId = "order-" + Date.now();
       
-      // 현장결제 또는 계좌이체 선택 분기 창 띄우기
       let payType = "transfer";
       if (isOnsiteBlocked) {
         alert("노쇼 3회 누적으로 현장결제 신청은 제한됩니다. 이번 주문은 계좌이체 방식으로 진행됩니다.");
@@ -904,7 +963,7 @@
         productName: currentProduct.name,
         paymentType: payType,
         status: "pending",
-        pickupDate: "07.14 화 18:00", // 기본 수령일 예약
+        pickupDate: "07.14 화 18:00",
         pickupHour: 18,
         price: currentProduct.price,
         userNoShowStacked: false
