@@ -6,14 +6,24 @@
   cursor: pointer;
 }
 
+.popular-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  background: #ffffff;
+}
+
+.popular-thumb,
 .product-master-thumb {
   position: relative;
-  height: 146px;
+  width: 100%;
+  aspect-ratio: 1 / 1.25;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 8px;
   background: #edf1ef;
 }
 
+.popular-thumb img,
 .product-master-thumb img {
   width: 100%;
   height: 100%;
@@ -21,7 +31,7 @@
 }
 
 /* =============================================================
-   2. Thumbnail Badges (오늘마감 / 인기 / 키워드 배지 - 이미지 좌측 하단)
+   2. Zigzag Style Badges (지그재그 감성 - 폰트 및 비율 디테일 보정)
    ============================================================= */
 .product-master-badges,
 .popular-badges {
@@ -35,6 +45,7 @@
   gap: 2px;
 }
 
+/* 폰트 패밀리 지정 및 정교한 픽셀 피팅 */
 .master-badge,
 .popular-badge,
 .popular-badges .popular-badge,
@@ -58,7 +69,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* 2-1. [오늘 마감] & [기본/일반] 배지 -> 솔리드 블랙 (#111111) */
+/* 2-1. [오늘 마감] & [기본/일반] 배지 -> 무조건 솔리드 블랙 (#111111) */
 .master-badge,
 .master-badge.muted,
 .master-badge.deadline,
@@ -134,9 +145,10 @@
 }
 
 /* =============================================================
-   3. Card Details & Elements
+   3. Card Details & Elements (마켓컬리 UI 업데이트 영역)
    ============================================================= */
-.product-master-favorite {
+.product-master-favorite,
+.popular-thumb button[data-favorite-button] {
   position: absolute;
   right: 8px;
   bottom: 8px;
@@ -144,141 +156,102 @@
   place-items: center;
   width: 32px;
   height: 32px;
+  border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, .9);
   color: #0f4c3a;
   font-size: 18px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
   z-index: 3;
+  cursor: pointer;
 }
 
-.product-master-favorite[aria-pressed="true"] { 
+.product-master-favorite[aria-pressed="true"],
+.popular-thumb button[data-favorite-button][aria-pressed="true"] { 
   color: #bd2832; 
 }
 
-.product-master-copy {
-  padding: 10px 2px 0;
+.product-master-copy,
+.popular-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 2px 0;
 }
 
-/* 수령일 태그 (제목 앞 인라인) */
-.product-pickup-prefix {
-  color: #00875a;
-  font-size: 1.05em;
-  font-weight: 700;
-  padding: 1px 4px !important;
-  margin-right: 4px !important;
-  margin-left: 2px !important;
-  vertical-align: middle;
-}
-
-.product-master-copy > strong {
-  display: block;
-  color: #202e28;
-  font-size: 12px;
+/* 상단 수령일 (컬리의 '샛별배송' 위치 - 기존 초록색 유지) */
+.product-pickup-line {
+  color: #0f4c3a;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: -.03em;
-  word-break: keep-all !important;
-  overflow-wrap: normal !important;
-  white-space: normal;
+  letter-spacing: -0.02em;
+  margin-bottom: 3px;
 }
 
-.product-master-copy > p {
-  display: block;
-  margin: 4px 0 5px;
-  color: #818c86;
-  font-size: 10px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-  white-space: pre-line;
-}
-
-.popular-card p {
-  display: flex !important;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.popular-card > small {
-  display: block;
-  margin-top: 4px;
-  color: #7f8a84;
-  font-size: 10px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-  white-space: pre-line;
-}
-
+/* 상품명 (2줄 제한) */
+.product-master-copy > strong,
+.popular-card-body > strong,
 .popular-card > strong {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #202e28;
+  font-size: 13.5px;
+  font-weight: 500;
   line-height: 1.35;
+  letter-spacing: -.02em;
   word-break: keep-all !important;
   overflow-wrap: normal !important;
   white-space: normal;
 }
 
 .search-screen .popular-card > strong {
-  display: block;
-  overflow: visible;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* 레거시 한 줄 소개 스타일 (필요시 참조) */
+.product-master-copy > p,
+.popular-card p,
+.popular-card > small,
 .search-screen .popular-card > small {
-  display: block;
-  height: auto;
-  overflow: visible;
-  margin-top: 4px;
-  padding-left: 0;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
-  white-space: pre-line;
+  display: none; /* 컬리 스타일 변경으로 기본 비표시 처리 */
 }
 
-/* =============================================================
-   3-1. 가격 + 마감 시간 인라인 칩 (핵심 레이아웃 수정)
-   ============================================================= */
+/* 가격 스타일 (컬리 2번 이미지 대응 - 할인 유무 처리) */
 .product-master-price {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.product-master-price b {
-  color: #18251f;
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  flex-direction: column;
+  margin-top: 6px;
 }
 
 .product-master-price del,
 .popular-card p del {
-  color: #a8b0ac;
-  font-size: 10px;
+  color: #b5b5b5;
+  font-size: 11px;
   font-weight: 400;
+  text-decoration: line-through;
+  line-height: 1.1;
 }
 
-/* 가격 오른쪽 정확한 마감 시간 인라인 배지 */
-.product-master-deadline-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background-color: #f3f5f4;
-  color: #55625c;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
+.product-master-price .price-main {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
-.product-master-deadline-chip strong {
-  color: #1e2823;
+.product-master-price .discount-rate {
+  color: #fa622f;
+  font-size: 15px;
   font-weight: 700;
+}
+
+.product-master-price b {
+  color: #18251f;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .product-master-price.is-hidden b {
@@ -286,7 +259,7 @@
   font-size: 12px;
 }
 
-/* 텍스트 태그 및 메타 정보 */
+/* 텍스트 태그 및 메타 정보 (별점 + 마감일 나란히 배치) */
 .product-master-tags {
   display: flex;
   gap: 4px;
@@ -306,27 +279,41 @@
   white-space: nowrap;
 }
 
-.product-master-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 5px;
-  margin-top: 6px;
-  color: #7c8982;
-  font-size: 9px;
-  font-weight: 650;
-}
-
+.product-master-meta,
 .popular-card-meta {
-  display: grid;
+  display: flex;
+  align-items: center;
   gap: 4px;
   margin-top: 6px;
-  color: #8c969e;
+  color: #888888;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.popular-card-meta .meta-rating {
+  color: #888888;
+}
+
+.popular-card-meta .meta-divider {
+  color: #cccccc;
   font-size: 10px;
-  line-height: 1.3;
+}
+
+.popular-card-meta .meta-deadline {
+  color: #666666;
+  font-weight: 500;
+}
+
+.product-master-deadline {
+  display: block;
+  margin-top: 6px;
+  color: #bd2832;
+  font-size: 9px;
+  font-weight: 700;
 }
 
 /* =============================================================
-   4. List Layout & Filter Tools
+   4. List Layout & Filter Tools (보존 영역)
    ============================================================= */
 .bundle-date-filter {
   display: flex;
