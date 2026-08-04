@@ -744,6 +744,9 @@
 }
 
 .product-pickup-prefix {
-  color: #0f4c3a; /* 신선한 그린 포인트 컬러 (원하시는 컬러 코드로 수정 가능) */
-  font-weight: 800; /* 폰트 두께 강조 */
+  color: #00875a; /* 밝고 쨍한 초록 */
+  background-color: #e6f7f0; /* 연한 연두/초록 배경 */
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
 }
