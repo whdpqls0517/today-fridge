@@ -186,7 +186,7 @@
     // 3. 인기상품 배지 (판매량 필드 3개 모두 지원 + 3개 이상부터 표시)
     const sales = Number(product?.salesCount ?? product?.recentOrderCount ?? product?.orderCount ?? 0);
     if (sales >= 3) {
-      result.push({ key: "popular", label: "인기", tone: "popular" });
+      result.push({ key: "popular", label: "인기\n상품", tone: "popular" }); // 두 줄 레이아웃
     }
 
     return result.slice(0, 2);
