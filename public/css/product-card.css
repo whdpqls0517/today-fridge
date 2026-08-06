@@ -123,8 +123,8 @@
   border: none !important;
 }
 
-/* =============================================================
-   2-5. Popular Badge -> Bottom Circular Style (딥 차콜 - 테두리 제거)
+//* =============================================================
+   2-5. Popular Badge -> Bottom Circular Style (밝은 포인트 배지)
    ============================================================= */
 .master-badge.popular,
 .popular-badge.popular,
@@ -136,20 +136,29 @@
   bottom: 8px !important;
   top: auto !important;
   right: auto !important;
+  
+  /* 동그라미 크기 및 완벽한 중앙 정렬 */
   width: 36px !important;
   height: 36px !important;
   border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   
-  background: rgba(28, 33, 31, 0.92) !important;
+  /* [추천 1] 시원하고 선명한 밝은 연두/라임 그린 + 다크 그린 글씨 */
+  background: #22C55E !important; 
   color: #FFFFFF !important;
   
-  font-size: 10.5px !important;
+  /* 2글자 전용 타이포그래피 */
+  font-size: 12px !important;
   font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
   padding: 0 !important;
   margin: 0 !important;
   
   border: none !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22) !important;
+  /* 카드 이미지 위에서 선명하게 뜨도록 약간의 부드러운 그림자 추가 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
   z-index: 2 !important;
 }
 
