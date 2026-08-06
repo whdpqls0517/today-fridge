@@ -154,8 +154,8 @@
   white-space: pre-line !important;
 
   /* 1번 컬리 딥 퍼플 적용 (원하시는 컬러 코드로 교체 가능) */
-  background: #222222 !important; 
-  color: #FFFFFF !important;
+  background: #1C1C1E !important;
+  color: #FFD600 !important;
   
   /* 두 줄 레이아웃 전용 폰트 세팅 */
   font-size: 10px !important;
