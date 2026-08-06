@@ -124,7 +124,7 @@
 }
 
 /* =============================================================
-   2-5. Popular Badge -> Bottom Circular Style (딥 차콜 - 테두리 제거)
+   2-5. Popular Badge -> 컬리 스타일 두 줄 원형 배지
    ============================================================= */
 .master-badge.popular,
 .popular-badge.popular,
@@ -132,24 +132,38 @@
 .popular-badges .popular-badge.popular,
 .popular-badges .popular-badge.green {
   position: absolute !important;
-  left: 8px !important;
-  bottom: 8px !important;
+  left: 4px !important;  /* 모서리에 안정적으로 밀착 */
+  bottom: 6px !important;
   top: auto !important;
   right: auto !important;
+  
+  /* 직경 36px 원형 고정 */
   width: 36px !important;
   height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
   border-radius: 50% !important;
   
-  background: #FF5A79 !important;
+  /* 텍스트 완벽 수직/수평 정중앙 정렬 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  
+  /* 1번 컬리 딥 퍼플 적용 (원하시는 컬러 코드로 교체 가능) */
+  background: #5F0080 !important; 
   color: #FFFFFF !important;
   
-  font-size: 10.5px !important;
+  /* 두 줄 레이아웃 전용 폰트 세팅 */
+  font-size: 10px !important;
   font-weight: 800 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.03em !important;
   padding: 0 !important;
   margin: 0 !important;
   
   border: none !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22) !important;
   z-index: 2 !important;
 }
 
