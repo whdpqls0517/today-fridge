@@ -172,7 +172,7 @@
 /* [예외 상태] 상단에 '마감임박(아이보리)' 배지가 함께 있을 때 -> 딥 차콜로 자동 전환 */
 :has(.imminent, .urgent, .badge-imminent, .badge-urgent, [data-badge*="imminent"], [data-badge*="urgent"]) .popular-badge.popular,
 :has(.imminent, .urgent, .badge-imminent, .badge-urgent, [data-badge*="imminent"], [data-badge*="urgent"]) .master-badge.popular {
-  background: #222222 !important;
+  background: #A81B26 !important;
   color: #FFFFFF !important;
 }
 
