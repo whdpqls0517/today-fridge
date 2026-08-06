@@ -124,41 +124,39 @@
 }
 
 /* =============================================================
-   2-5. Popular Badge -> 컬리 스타일 두 줄 원형 배지
+   2-5. Popular Badge -> 동적 스타일 (상단 배지에 따라 색상 자동 변경)
    ============================================================= */
+
+/* [기본 상태] 상단에 '오늘마감(초록)'이거나 아무것도 없을 때 -> 아이보리 크림 배경 */
 .master-badge.popular,
 .popular-badge.popular,
 .popular-badge.green,
 .popular-badges .popular-badge.popular,
 .popular-badges .popular-badge.green {
   position: absolute !important;
-  left: 4px !important;  /* 모서리에 안정적으로 밀착 */
+  left: 4px !important;
   bottom: 6px !important;
   top: auto !important;
   right: auto !important;
   
-  /* 직경 36px 원형 고정 */
   width: 36px !important;
   height: 36px !important;
   min-width: 36px !important;
   min-height: 36px !important;
   border-radius: 50% !important;
   
-  /* 텍스트 완벽 수직/수평 정중앙 정렬 */
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
   
-  /* 핵심: \n 줄바꿈을 CSS에서 인식하도록 설정 */
-  white-space: pre-line !important;
-
-  /* 1번 컬리 딥 퍼플 적용 (원하시는 컬러 코드로 교체 가능) */
-  background: #FDFBF7 !important;
+  white-space: pre-wrap !important;
+  
+  /* 기본: 아이보리 크림 바탕 + 다크 그린 글자 */
+  background: #FDFBF7 !important; 
   color: #122620 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
-
-  /* 두 줄 레이아웃 전용 폰트 세팅 */
+  
   font-size: 10px !important;
   font-weight: 800 !important;
   line-height: 1.15 !important;
@@ -167,7 +165,15 @@
   margin: 0 !important;
   
   border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
   z-index: 2 !important;
+}
+
+/* [예외 상태] 상단에 '마감임박(아이보리)' 배지가 함께 있을 때 -> 딥 차콜로 자동 전환 */
+:has(.imminent, .urgent, .badge-imminent, .badge-urgent, [data-badge*="imminent"], [data-badge*="urgent"]) .popular-badge.popular,
+:has(.imminent, .urgent, .badge-imminent, .badge-urgent, [data-badge*="imminent"], [data-badge*="urgent"]) .master-badge.popular {
+  background: #222222 !important;
+  color: #FFFFFF !important;
 }
 
 /* =============================================================
