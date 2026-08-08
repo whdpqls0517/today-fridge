@@ -2865,6 +2865,10 @@ app.patch('/api/admin/products/:id', ...adminOnly, async (req, res) => {
     await refreshProductReviewStats(product.id);
     const catalog = await readCatalog(true);
     const savedProduct = catalog.find((item) => item.id === product.id);
+    const removedImageUrls = (beforeProduct?.images || []).filter((url) => !(savedProduct?.images || []).includes(url));
+    const imageCleanupWarnings = await removeUnreferencedStorageImages('product-images', removedImageUrls, {
+      excludedProductId: product.id
+    });
     let restockNotificationCount = 0;
     if (beforeProduct && Number(beforeProduct.stock || 0) <= 0 && Number(savedProduct?.stock || 0) > 0) {
       restockNotificationCount = await notifyRestockSubscribers(product.id, product.name);
@@ -2897,7 +2901,7 @@ app.patch('/api/admin/products/:id', ...adminOnly, async (req, res) => {
       data: savedProduct,
       restockNotificationCount,
       publishNotificationCount,
-      warning: notificationWarning
+      warning: [notificationWarning, ...imageCleanupWarnings].filter(Boolean).join(' · ') || null
     });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
@@ -2992,8 +2996,7 @@ app.delete('/api/admin/products/:id', ...adminOnly, async (req, res) => {
       return res.status(404).json({ success: false, error: '상품을 찾지 못했습니다.' });
     }
     const tags = [...new Set([...(currentProduct.tags || []), '__deleted__'])];
-    const productUpdates = { is_active: false, tags };
-    if (currentProduct.category === 'fruit') productUpdates.images = [];
+    const productUpdates = { is_active: false, tags, images: [] };
     const { data: product, error } = await supabaseAdmin
       .from('products')
       .update(productUpdates)
@@ -3008,22 +3011,9 @@ app.delete('/api/admin/products/:id', ...adminOnly, async (req, res) => {
       .eq('product_id', req.params.id)
       .select('bundle_id');
     const cleanupWarnings = [];
-    if (currentProduct.category === 'fruit') {
-      const objectPaths = (currentProduct.images || []).map((url) => {
-        try {
-          const pathname = new URL(url).pathname;
-          const marker = '/storage/v1/object/public/product-images/';
-          const markerIndex = pathname.indexOf(marker);
-          return markerIndex >= 0 ? decodeURIComponent(pathname.slice(markerIndex + marker.length)) : null;
-        } catch (_) {
-          return null;
-        }
-      }).filter(Boolean);
-      if (objectPaths.length) {
-        const { error: imageCleanupError } = await supabaseAdmin.storage.from('product-images').remove(objectPaths);
-        if (imageCleanupError) cleanupWarnings.push(`상품 사진 정리 실패: ${imageCleanupError.message}`);
-      }
-    }
+    cleanupWarnings.push(...await removeUnreferencedStorageImages('product-images', currentProduct.images || [], {
+      excludedProductId: currentProduct.id
+    }));
     if (itemError) cleanupWarnings.push(`보따리 입고 상태 정리 실패: ${itemError.message}`);
     const bundleIds = [...new Set((bundleItems || []).map((item) => item.bundle_id).filter(Boolean))];
     if (bundleIds.length) {
@@ -3354,6 +3344,146 @@ async function uploadImageDataUrl(bucket, ownerId, dataUrl) {
   return data.publicUrl;
 }
 
+function storageObjectPath(publicUrl, bucket) {
+  try {
+    const pathname = new URL(String(publicUrl || '')).pathname;
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const index = pathname.indexOf(marker);
+    return index >= 0 ? decodeURIComponent(pathname.slice(index + marker.length)) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function storageImageIsReferenced(url, options = {}) {
+  const productQuery = supabaseAdmin.from('products').select('id').contains('images', [url]).limit(1);
+  if (options.excludedProductId) productQuery.neq('id', options.excludedProductId);
+  const reviewQuery = supabaseAdmin.from('reviews').select('id').contains('photo_urls', [url]).limit(1);
+  const guideQuery = supabaseAdmin.from('pickup_guides').select('id').contains('image_urls', [url]).limit(1);
+  if (options.excludedGuideId) guideQuery.neq('id', options.excludedGuideId);
+
+  const results = await Promise.all([productQuery, reviewQuery, guideQuery]);
+  return results.some(({ data, error }) => {
+    if (error && !['42P01', 'PGRST205'].includes(error.code)) throw error;
+    return Array.isArray(data) && data.length > 0;
+  });
+}
+
+async function removeUnreferencedStorageImages(bucket, urls, options = {}) {
+  const warnings = [];
+  const paths = [];
+  for (const url of [...new Set((urls || []).filter(Boolean))]) {
+    const path = storageObjectPath(url, bucket);
+    if (!path) continue;
+    try {
+      if (!(await storageImageIsReferenced(url, options))) paths.push(path);
+    } catch (error) {
+      warnings.push(`사진 사용 여부 확인 실패: ${error.message}`);
+    }
+  }
+  if (paths.length) {
+    const { error } = await supabaseAdmin.storage.from(bucket).remove(paths);
+    if (error) warnings.push(`사진 저장공간 정리 실패: ${error.message}`);
+  }
+  return warnings;
+}
+
+function isIsoDate(value) {
+  return /^20\d{2}-\d{2}-\d{2}$/.test(String(value || ''));
+}
+
+app.get('/api/pickup-guides', requireAuth, async (req, res) => {
+  const from = String(req.query.from || seoulDateISO(new Date(Date.now() - 24 * 60 * 60 * 1000)));
+  const { data, error } = await supabaseAdmin
+    .from('pickup_guides')
+    .select('id, pickup_date, title, content, image_urls, updated_at')
+    .eq('is_active', true)
+    .gte('pickup_date', isIsoDate(from) ? from : seoulDateISO())
+    .order('pickup_date', { ascending: true })
+    .limit(31);
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.json({ success: true, data: data || [] });
+});
+
+app.get('/api/admin/pickup-guides/:date', ...adminOnly, async (req, res) => {
+  if (!isIsoDate(req.params.date)) return res.status(400).json({ success: false, error: '수령일을 확인해 주세요.' });
+  const { data, error } = await supabaseAdmin
+    .from('pickup_guides')
+    .select('*')
+    .eq('pickup_date', req.params.date)
+    .maybeSingle();
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.json({ success: true, data: data || null });
+});
+
+app.put('/api/admin/pickup-guides/:date', ...adminOnly, async (req, res) => {
+  try {
+    if (!isIsoDate(req.params.date)) throw new Error('수령일을 확인해 주세요.');
+    const title = String(req.body?.title || '').trim();
+    const content = String(req.body?.content || '').trim();
+    const imageUrls = [...new Set(Array.isArray(req.body?.imageUrls) ? req.body.imageUrls.filter(Boolean) : [])];
+    if (title.length < 2 || title.length > 80) throw new Error('제목은 2~80자로 입력해 주세요.');
+    if (content.length < 2 || content.length > 5000) throw new Error('안내 내용은 2~5000자로 입력해 주세요.');
+    if (imageUrls.length > 10) throw new Error('사진은 최대 10장까지 등록할 수 있습니다.');
+
+    const { data: before, error: beforeError } = await supabaseAdmin
+      .from('pickup_guides').select('*').eq('pickup_date', req.params.date).maybeSingle();
+    if (beforeError) throw beforeError;
+    const { data, error } = await supabaseAdmin
+      .from('pickup_guides')
+      .upsert({
+        pickup_date: req.params.date,
+        title,
+        content,
+        image_urls: imageUrls,
+        is_active: true,
+        created_by: req.user.id
+      }, { onConflict: 'pickup_date' })
+      .select('*')
+      .single();
+    if (error) throw error;
+    const removed = (before?.image_urls || []).filter((url) => !imageUrls.includes(url));
+    const warnings = await removeUnreferencedStorageImages('pickup-guide-images', removed, { excludedGuideId: data.id });
+    await recordAdminAudit({
+      adminId: req.user.id,
+      action: 'pickup_guide_saved',
+      targetType: 'pickup_guide',
+      targetId: data.id,
+      before,
+      after: data,
+      metadata: { pickupDate: req.params.date }
+    });
+    res.json({ success: true, data, warning: warnings.join(' · ') || null });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+app.delete('/api/admin/pickup-guides/:date', ...adminOnly, async (req, res) => {
+  try {
+    if (!isIsoDate(req.params.date)) throw new Error('수령일을 확인해 주세요.');
+    const { data: guide, error: findError } = await supabaseAdmin
+      .from('pickup_guides').select('*').eq('pickup_date', req.params.date).maybeSingle();
+    if (findError) throw findError;
+    if (!guide) return res.status(404).json({ success: false, error: '저장된 안내가 없습니다.' });
+    const { error } = await supabaseAdmin.from('pickup_guides').delete().eq('id', guide.id);
+    if (error) throw error;
+    const warnings = await removeUnreferencedStorageImages('pickup-guide-images', guide.image_urls || [], { excludedGuideId: guide.id });
+    await recordAdminAudit({
+      adminId: req.user.id,
+      action: 'pickup_guide_deleted',
+      targetType: 'pickup_guide',
+      targetId: guide.id,
+      before: guide,
+      after: null,
+      metadata: { pickupDate: req.params.date }
+    });
+    res.json({ success: true, warning: warnings.join(' · ') || null });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/uploads/review-image', requireAuth, async (req, res) => {
   try {
     const url = await uploadImageDataUrl('review-images', req.user.id, req.body?.dataUrl);
@@ -3366,6 +3496,15 @@ app.post('/api/uploads/review-image', requireAuth, async (req, res) => {
 app.post('/api/admin/uploads/product-image', ...adminOnly, async (req, res) => {
   try {
     const url = await uploadImageDataUrl('product-images', req.user.id, req.body?.dataUrl);
+    res.status(201).json({ success: true, url });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/admin/uploads/pickup-guide-image', ...adminOnly, async (req, res) => {
+  try {
+    const url = await uploadImageDataUrl('pickup-guide-images', req.user.id, req.body?.dataUrl);
     res.status(201).json({ success: true, url });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

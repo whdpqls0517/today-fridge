@@ -554,6 +554,8 @@
       renderInquiriesPanel();
     } else if (currentAdminTab === "members") {
       renderMemberManagement();
+    } else if (currentAdminTab === "pickup-guides") {
+      window.loadPickupGuideAdmin?.();
     } else if (currentAdminTab === "notifications") {
       prepareNotificationComposer();
     }

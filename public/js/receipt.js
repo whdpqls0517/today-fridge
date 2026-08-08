@@ -4,6 +4,7 @@
   // 1. DOM Elements
   const receiptLayer = document.querySelector(".receipt-layer");
   const receiptListContainer = document.getElementById("receipt-list");
+  const pickupGuideContainer = document.getElementById("receipt-pickup-guides");
   const receiptTabDescription = document.getElementById("receipt-tab-description");
 
   const toast = document.querySelector(".undo-toast");
@@ -81,13 +82,55 @@
   });
 
   // 3. Dynamic Rendering of Receipts
-  let currentReceiptTab = "available"; // 'available' or 'pending'
+  let currentReceiptTab = "available"; // 'available', 'pending', or 'guide'
+  let pickupGuidesLoaded = false;
 
   function updateReceiptTabDescription() {
     if (!receiptTabDescription) return;
     receiptTabDescription.textContent = currentReceiptTab === "available"
       ? "입고가 완료된 주문을 확인하세요"
-      : "입고 예정인 주문을 미리 확인하세요";
+      : currentReceiptTab === "pending"
+        ? "입고 예정인 주문을 미리 확인하세요"
+        : "보관 위치와 결제 방법을 확인하세요";
+  }
+
+  function guideDateLabel(value) {
+    const date = new Date(`${value}T00:00:00+09:00`);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short', timeZone: 'Asia/Seoul' }).format(date);
+  }
+
+  function escapeReceiptHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  async function renderPickupGuides(force = false) {
+    if (!pickupGuideContainer || (pickupGuidesLoaded && !force)) return;
+    pickupGuideContainer.innerHTML = '<div class="receipt-guide-empty">수령 방법을 불러오고 있어요.</div>';
+    try {
+      const token = receiptAccessToken();
+      if (!token) throw new Error('로그인 후 수령 방법을 확인할 수 있습니다.');
+      const response = await fetch(`${location.origin}/api/pickup-guides`, {
+        headers: { Authorization: `Bearer ${token}` }, cache: 'no-store'
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || '수령 방법을 불러오지 못했습니다.');
+      const guides = Array.isArray(result.data) ? result.data : [];
+      pickupGuideContainer.innerHTML = guides.length ? guides.map((guide) => `
+        <article class="receipt-guide-card">
+          <header><span>${guideDateLabel(guide.pickup_date)} 수령</span><h3>${escapeReceiptHtml(guide.title)}</h3></header>
+          <p class="receipt-guide-content">${escapeReceiptHtml(guide.content)}</p>
+          ${(guide.image_urls || []).length ? `<div class="receipt-guide-gallery">${guide.image_urls.map((url, index) => `<a href="${escapeReceiptHtml(url)}" target="_blank" rel="noopener"><img src="${escapeReceiptHtml(url)}" alt="수령 위치 안내 사진 ${index + 1}" loading="lazy"></a>`).join('')}</div>` : ''}
+        </article>`).join('') : '<div class="receipt-guide-empty"><strong>등록된 수령 안내가 없습니다.</strong><span>안내가 필요한 경우 매장 1:1 문의를 이용해 주세요.</span></div>';
+      pickupGuidesLoaded = true;
+    } catch (error) {
+      pickupGuideContainer.innerHTML = `<div class="receipt-guide-empty"><strong>수령 방법을 불러오지 못했습니다.</strong><span>${escapeReceiptHtml(error.message)}</span></div>`;
+    }
   }
 
   function startOfDay(date) {
@@ -242,6 +285,14 @@
 
   function renderReceipts() {
     if (!receiptListContainer) return;
+
+    const isGuideTab = currentReceiptTab === "guide";
+    receiptListContainer.hidden = isGuideTab;
+    if (pickupGuideContainer) pickupGuideContainer.hidden = !isGuideTab;
+    if (isGuideTab) {
+      renderPickupGuides();
+      return;
+    }
 
     const today = startOfDay(new Date());
     let orders = window.FridgeDB.getOrders();

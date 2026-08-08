@@ -6,6 +6,7 @@
   <title>사장님 관리 센터 | 오늘의 냉장고</title>
   <link rel="stylesheet" href="./css/today-fridge.css" />
   <link rel="stylesheet" href="./css/admin.css" />
+  <link rel="stylesheet" href="./css/admin-pickup-guide.css" />
   <link rel="shortcut icon" href="#">
 </head>
 <body class="admin-body is-auth-checking">
@@ -58,7 +59,7 @@
 
       <!-- 관리 탭 메뉴 -->
       <nav class="admin-tabs">
-        <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>8개 업무</span></div>
+        <div class="admin-tabs-head"><strong>운영 메뉴</strong><span>9개 업무</span></div>
         <button class="admin-tab-btn active" onclick="switchAdminTab('display')">화면 노출 설정</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('products')">상품 관리</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('arrivals')">입고 상태</button>
@@ -66,6 +67,7 @@
         <button class="admin-tab-btn" onclick="switchAdminTab('noshow')">노쇼·미수령</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('reviews')">후기·문의</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('members')">회원 관리</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('pickup-guides')">수령 방법</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('notifications')">알림 발송</button>
       </nav>
 
@@ -367,6 +369,49 @@
         </div>
       </div>
 
+      <div id="tab-pickup-guides" class="admin-tab-content" style="display:none;">
+        <div class="panel-card pickup-guide-admin">
+          <div class="admin-section-heading">
+            <div>
+              <h2>수령 방법 안내</h2>
+              <p class="panel-desc">수령일별 보관 위치와 결제 방법을 작성하면 고객 수령 확인증의 ‘수령 방법’ 탭에 표시됩니다.</p>
+            </div>
+          </div>
+          <form id="pickup-guide-form" class="pickup-guide-form">
+            <label class="pickup-guide-field pickup-guide-field--date">
+              <span>안내할 수령일</span>
+              <input id="pickup-guide-date" type="date" required />
+            </label>
+            <label class="pickup-guide-field">
+              <span>제목</span>
+              <input id="pickup-guide-title" type="text" maxlength="80" value="보따리 7시 이후 수령 안내" required />
+            </label>
+            <label class="pickup-guide-field">
+              <span>수령 안내 내용</span>
+              <textarea id="pickup-guide-content" maxlength="5000" rows="14" placeholder="상품별 보관 위치와 결제 방법을 입력해 주세요. 줄바꿈과 기호가 그대로 표시됩니다." required></textarea>
+              <small>상품마다 🧺, 위치, 결제, 확인 사항을 줄바꿈해 작성할 수 있습니다.</small>
+            </label>
+            <div class="pickup-guide-images">
+              <div>
+                <strong>안내 사진</strong>
+                <span id="pickup-guide-image-count">0 / 10</span>
+              </div>
+              <label class="pickup-guide-upload">
+                <input id="pickup-guide-image-input" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+                <span>사진 선택</span>
+                <small>최대 10장 · 장당 5MB 이하</small>
+              </label>
+              <div id="pickup-guide-image-list" class="pickup-guide-image-list"></div>
+            </div>
+            <div class="pickup-guide-actions">
+              <p id="pickup-guide-status" role="status" aria-live="polite"></p>
+              <button id="pickup-guide-delete" class="pickup-guide-delete" type="button" hidden>안내 삭제</button>
+              <button class="pickup-guide-save" type="submit">수령 안내 저장</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <div id="tab-notifications" class="admin-tab-content" style="display:none;">
         <div class="panel-card admin-notification-panel">
           <div class="admin-section-heading">
@@ -462,6 +507,7 @@
   <script src="./js/auth-session.js"></script>
   <script src="./js/db.js"></script>
   <script src="./js/product-rules.js"></script>
+  <script src="./js/admin-pickup-guide.js"></script>
   <script src="./js/admin.js"></script>
 </body>
 </html>
