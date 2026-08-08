@@ -1072,7 +1072,7 @@ async function bundleReviewProductIds(productId) {
   return ids.length ? ids : [productId];
 }
 
-function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitReviewStats = null) {
+function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitReviewStats = null, optionRows = []) {
   const bundle = bundleItem?.bundles || null;
   const images = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
   const productTags = Array.isArray(product.tags) ? product.tags : [];
@@ -1088,8 +1088,23 @@ function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitRev
     }
   }
 
-  const currentStock = Number(bundleItem?.stock_quantity ?? product.stock_quantity ?? 0);
-  const initialStock = Number(bundleItem?.initial_stock_quantity ?? product.initial_stock_quantity ?? currentStock);
+  const options = (optionRows || []).filter((option) => option.is_active !== false).map((option) => ({
+    id: option.id,
+    name: option.name,
+    price: Number(option.sale_price || 0),
+    stock: Number(option.stock_quantity || 0),
+    totalStock: Number(option.initial_stock_quantity || option.stock_quantity || 0),
+    maxQuantity: Number(option.max_quantity_per_user || 10),
+    barcodeValue: option.barcode_value || null,
+    displayOrder: Number(option.display_order || 0)
+  })).sort((a, b) => a.displayOrder - b.displayOrder);
+  const hasOptions = options.length > 0;
+  const currentStock = hasOptions
+    ? options.reduce((sum, option) => sum + option.stock, 0)
+    : Number(bundleItem?.stock_quantity ?? product.stock_quantity ?? 0);
+  const initialStock = hasOptions
+    ? options.reduce((sum, option) => sum + option.totalStock, 0)
+    : Number(bundleItem?.initial_stock_quantity ?? product.initial_stock_quantity ?? currentStock);
   // 보따리 주문은 재고를 즉시 차감하므로 별도 집계값이 갱신되지 않았더라도
   // 최초 수량과 현재 수량의 차이로 실제 신청 수량을 반영한다.
   const reservedQuantity = bundleItem ? Math.max(0, initialStock - currentStock) : 0;
@@ -1111,7 +1126,9 @@ function mapCatalogItem(product, bundleItem = null, requestCounts = {}, fruitRev
     detailDescription: product.detail_description || product.description || '',
     detailSpecs: product.detail_specs || [],
     marketGuide: product.market_guide || '',
-    price: bundleItem?.sale_price ?? product.price,
+    price: hasOptions ? Math.min(...options.map((option) => option.price)) : (bundleItem?.sale_price ?? product.price),
+    hasOptions,
+    options,
     originalPrice: product.original_price || 0,
     showOriginalPrice: product.show_original_price === true,
     image: images[0] || '',
@@ -1164,11 +1181,24 @@ async function readCatalog(includeInactive = false) {
   if (itemsError) throw itemsError;
   if (subscriptionsError) throw subscriptionsError;
   if (fruitReviewsError) throw fruitReviewsError;
+  let optionRows = [];
+  const { data: loadedOptions, error: optionsError } = await supabaseAdmin
+    .from('bundle_item_options')
+    .select('*')
+    .order('display_order', { ascending: true });
+  if (!optionsError) optionRows = loadedOptions || [];
+  else if (!['42P01', 'PGRST205'].includes(String(optionsError.code || ''))) throw optionsError;
   const itemByProduct = new Map();
+  const optionsByItem = new Map();
   const requestCountsByProduct = new Map();
   const fruitReviewStatsByType = new Map();
   (items || []).forEach((item) => {
     if (!itemByProduct.has(item.product_id)) itemByProduct.set(item.product_id, item);
+  });
+  optionRows.forEach((option) => {
+    const rows = optionsByItem.get(option.bundle_item_id) || [];
+    rows.push(option);
+    optionsByItem.set(option.bundle_item_id, rows);
   });
   (subscriptions || []).forEach((item) => {
     const counts = requestCountsByProduct.get(item.product_id) || { restock: 0, waitlist: 0 };
@@ -1184,12 +1214,16 @@ async function readCatalog(includeInactive = false) {
   });
   return (products || [])
     .filter((product) => !(product.tags || []).includes('__deleted__'))
-    .map((product) => mapCatalogItem(
+    .map((product) => {
+      const bundleItem = itemByProduct.get(product.id);
+      return mapCatalogItem(
       product,
-      itemByProduct.get(product.id),
+      bundleItem,
       requestCountsByProduct.get(product.id),
-      product.fruit_type_id ? fruitReviewStatsByType.get(product.fruit_type_id) : null
-    ));
+      product.fruit_type_id ? fruitReviewStatsByType.get(product.fruit_type_id) : null,
+      bundleItem ? optionsByItem.get(bundleItem.id) : []
+    );
+    });
 }
 
 let publicCatalogCache = { data: null, expiresAt: 0 };
@@ -1392,6 +1426,26 @@ app.patch('/api/admin/fruit-types/:id', ...adminOnly, async (req, res) => {
   res.json({ success: true, data });
 });
 
+function normalizedBundleOptions(body) {
+  if (!Array.isArray(body?.options)) return [];
+  const seen = new Set();
+  return body.options.map((option, index) => ({
+    id: option?.id || null,
+    name: String(option?.name || '').trim().slice(0, 60),
+    price: Math.max(0, Number(option?.price) || 0),
+    stock: Math.max(0, Number(option?.stock) || 0),
+    totalStock: Math.max(1, Number(option?.totalStock) || Number(option?.stock) || 1),
+    maxQuantity: Math.max(1, Number(option?.maxQuantity) || 10),
+    barcodeValue: String(option?.barcodeValue || '').trim() || null,
+    displayOrder: index
+  })).filter((option) => {
+    const key = option.name.toLocaleLowerCase('ko-KR');
+    if (!option.name || option.price <= 0 || option.stock > option.totalStock || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function productPayload(body) {
   const publicTags = Array.isArray(body.tags)
     ? body.tags.filter((tag) => !String(tag).startsWith('__'))
@@ -1403,6 +1457,10 @@ function productPayload(body) {
     internalTags.push(`${REVIEW_GROUP_TAG_PREFIX}${encodeURIComponent(reviewGroupName)}`);
   }
 
+  const bundleOptions = body.category === 'bundle' ? normalizedBundleOptions(body) : [];
+  const derivedPrice = bundleOptions.length ? Math.min(...bundleOptions.map((option) => option.price)) : Math.max(0, Number(body.price) || 0);
+  const derivedStock = bundleOptions.length ? bundleOptions.reduce((sum, option) => sum + option.stock, 0) : Math.max(0, Number(body.stock) || 0);
+  const derivedTotalStock = bundleOptions.length ? bundleOptions.reduce((sum, option) => sum + option.totalStock, 0) : Math.max(1, Number(body.totalStock) || 1);
   return {
     external_key: body.externalKey || null,
     name: String(body.name || '').trim(),
@@ -1413,13 +1471,13 @@ function productPayload(body) {
     detail_description: body.detailDescription || null,
     detail_specs: Array.isArray(body.detailSpecs) ? body.detailSpecs : [],
     market_guide: body.marketGuide || null,
-    price: Math.max(0, Number(body.price) || 0),
+    price: derivedPrice,
     original_price: Number(body.originalPrice) > 0 ? Number(body.originalPrice) : null,
     show_original_price: body.showOriginalPrice === true,
     images: Array.isArray(body.images) ? body.images.filter(Boolean).slice(0, 30) : [],
     tags: [...publicTags, ...internalTags],
-    stock_quantity: Math.max(0, Number(body.stock) || 0),
-    initial_stock_quantity: Math.max(1, Number(body.totalStock) || 1),
+    stock_quantity: derivedStock,
+    initial_stock_quantity: derivedTotalStock,
     is_recommended: body.isRecommended === true,
     prepayment_only: body.prepaymentOnly === true,
     fruit_type_id: ['fruit', 'bundle'].includes(body.category) && body.fruitTypeId ? body.fruitTypeId : null,
@@ -1472,20 +1530,47 @@ async function upsertBundleForProduct(product, body, userId) {
     existingItem = data;
   }
 
-  const { error: itemError } = await supabaseAdmin.from('bundle_items').upsert({
+  const options = normalizedBundleOptions(body);
+  const salePrice = options.length ? Math.min(...options.map((option) => option.price)) : Math.max(0, Number(body.price) || 0);
+  const stockQuantity = options.length ? options.reduce((sum, option) => sum + option.stock, 0) : Math.max(0, Number(body.stock) || 0);
+  const initialStockQuantity = options.length ? options.reduce((sum, option) => sum + option.totalStock, 0) : Math.max(1, Number(body.totalStock) || 1);
+  const maxQuantity = options.length ? Math.max(...options.map((option) => option.maxQuantity)) : Math.max(1, Number(body.maxQuantity) || 10);
+  const { data: savedItem, error: itemError } = await supabaseAdmin.from('bundle_items').upsert({
     bundle_id: bundleId,
     product_id: product.id,
-    sale_price: Math.max(0, Number(body.price) || 0),
-    stock_quantity: Math.max(0, Number(body.stock) || 0),
-    initial_stock_quantity: Math.max(1, Number(body.totalStock) || 1),
-    max_quantity_per_user: Math.max(1, Number(body.maxQuantity) || 10),
+    sale_price: salePrice,
+    stock_quantity: stockQuantity,
+    initial_stock_quantity: initialStockQuantity,
+    max_quantity_per_user: maxQuantity,
     barcode_value: body.barcodeValue || null,
     arrival_status: existingItem?.arrival_status || 'scheduled',
     arrival_expected_text: existingItem?.arrival_expected_text || null,
     arrived_at: existingItem?.arrived_at || null
-  }, { onConflict: 'bundle_id,product_id' });
+  }, { onConflict: 'bundle_id,product_id' }).select('id').single();
 
   if (itemError) throw itemError;
+  if (Array.isArray(body.options)) {
+    const { error: deactivateError } = await supabaseAdmin
+      .from('bundle_item_options').update({ is_active: false }).eq('bundle_item_id', savedItem.id);
+    if (deactivateError) throw deactivateError;
+    if (options.length) {
+      const { error: optionError } = await supabaseAdmin.from('bundle_item_options').upsert(
+        options.map((option) => ({
+          bundle_item_id: savedItem.id,
+          name: option.name,
+          sale_price: option.price,
+          stock_quantity: option.stock,
+          initial_stock_quantity: option.totalStock,
+          max_quantity_per_user: option.maxQuantity,
+          barcode_value: option.barcodeValue,
+          display_order: option.displayOrder,
+          is_active: true
+        })),
+        { onConflict: 'bundle_item_id,name' }
+      );
+      if (optionError) throw optionError;
+    }
+  }
   return bundleId;
 }
 
@@ -2040,6 +2125,7 @@ app.post('/api/orders', requireAuth, async (req, res) => {
   const {
     bundleItemId,
     quantity,
+    items,
     paymentType,
     pickupDate,
     pickupTimeLabel,
@@ -2071,26 +2157,35 @@ app.post('/api/orders', requireAuth, async (req, res) => {
   if (!String(requestKey || '').trim()) {
     return res.status(400).json({ success: false, error: '주문 요청 식별값이 없습니다. 페이지를 새로고침해 주세요.' });
   }
-  const { data, error } = await supabaseAdmin.rpc('create_customer_order_v3', {
+  const selectedItems = Array.isArray(items)
+    ? items.map((item) => ({
+        optionId: String(item?.optionId || '').trim(),
+        quantity: Math.max(1, Number(item?.quantity) || 1)
+      })).filter((item) => /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(item.optionId))
+    : [];
+  const rpcName = selectedItems.length ? 'create_customer_bundle_order_v4' : 'create_customer_order_v3';
+  const rpcPayload = {
     p_user_id: req.user.id,
     p_bundle_item_id: bundleItemId,
-    p_quantity: Math.max(1, Number(quantity) || 1),
     p_payment_type: paymentType === 'transfer' ? 'transfer' : 'onsite',
     p_pickup_date: pickupDate,
     p_pickup_time_label: pickupTimeLabel === '오후 7시 이전' ? '오후 7시 이전' : '오후 7시 이후',
     p_depositor_name: depositorName || null,
     p_request_key: String(requestKey).trim().slice(0, 120)
-  });
+  };
+  if (selectedItems.length) rpcPayload.p_items = selectedItems;
+  else rpcPayload.p_quantity = Math.max(1, Number(quantity) || 1);
+  const { data, error } = await supabaseAdmin.rpc(rpcName, rpcPayload);
   if (error) return res.status(400).json({ success: false, error: error.message });
-  const createdOrderId = Array.isArray(data) ? data[0]?.id : data?.id;
-  if (createdOrderId) {
+  const createdOrderIds = (Array.isArray(data) ? data : [data]).map((order) => order?.id).filter(Boolean);
+  if (createdOrderIds.length) {
     const { error: consentError } = await supabaseAdmin
       .from('orders')
       .update({
         procurement_policy_consent_at: new Date().toISOString(),
         procurement_policy_version: String(procurementPolicyVersion || '').slice(0, 30)
       })
-      .eq('id', createdOrderId)
+      .in('id', createdOrderIds)
       .eq('user_id', req.user.id);
     if (consentError) {
       return res.status(500).json({

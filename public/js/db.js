@@ -195,6 +195,7 @@
       productId: product.id,
       bundleItemId: order.bundle_item_id,
       productName: product.name || "",
+      optionName: order.option_name || "",
       quantity: order.quantity,
       price: order.total_amount,
       paymentType: order.payment_type,

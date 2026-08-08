@@ -301,3 +301,4 @@ body {
   font-size: 10px;
   text-align: center;
 }
+.apply-selected-list{display:grid;gap:9px;margin-top:16px}.apply-selected-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 14px;border:1px solid #e0e8e4;border-radius:13px;background:#f9fbfa}.apply-selected-item div{display:grid;gap:3px}.apply-selected-item strong{font-size:14px}.apply-selected-item small{font-size:12px;color:#78837d}.apply-selected-item>strong{white-space:nowrap;color:#1f5f43}.apply-option-change{width:100%;margin-top:10px;border:1px solid #cbd9d2;background:#fff;color:#315f4d;border-radius:11px;padding:11px;font-weight:800}

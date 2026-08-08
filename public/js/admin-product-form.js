@@ -12,6 +12,8 @@
   const MAX_IMAGES = 30;
   const MAX_SOURCE_IMAGE_BYTES = 15 * 1024 * 1024;
   const fruitPriceRows = document.getElementById("fruit-price-rows");
+  const bundleOptionRows = document.getElementById("bundle-option-rows");
+  const bundleOptionsEditor = document.getElementById("bundle-options-editor");
   let editingProduct = null;
   let imageItems = [];
   let mainImageSrc = "";
@@ -115,6 +117,52 @@
     (options.length ? options : [{}]).forEach(addFruitPriceRow);
   }
 
+  function addBundleOptionRow(option = {}) {
+    if (!bundleOptionRows) return;
+    const row = document.createElement("div");
+    row.className = "bundle-option-row";
+    row.dataset.optionId = option.id || "";
+    row.innerHTML = `
+      <label><span>옵션명</span><input name="bundleOptionName" maxlength="60" placeholder="예: 자운순두부" value="${escapeHtml(option.name || "")}" /></label>
+      <label><span>가격</span><input name="bundleOptionPrice" type="number" min="1" placeholder="원" value="${Number(option.price) > 0 ? Number(option.price) : ""}" /></label>
+      <label><span>전체 수량</span><input name="bundleOptionTotalStock" type="number" min="1" value="${Math.max(1, Number(option.totalStock) || 1)}" /></label>
+      <label><span>판매 가능</span><input name="bundleOptionStock" type="number" min="0" value="${Math.max(0, Number(option.stock) || 0)}" /></label>
+      <label><span>1인 최대</span><input name="bundleOptionMax" type="number" min="1" value="${Math.max(1, Number(option.maxQuantity) || 10)}" /></label>
+      <button class="bundle-option-remove" type="button" aria-label="옵션 삭제">×</button>`;
+    bundleOptionRows.appendChild(row);
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
+  }
+
+  function readBundleOptions() {
+    if (!form.elements.hasOptions?.checked) return [];
+    return Array.from(bundleOptionRows?.querySelectorAll(".bundle-option-row") || []).map((row) => ({
+      id: row.dataset.optionId || null,
+      name: String(row.querySelector('[name="bundleOptionName"]')?.value || "").trim(),
+      price: Number(row.querySelector('[name="bundleOptionPrice"]')?.value) || 0,
+      totalStock: Number(row.querySelector('[name="bundleOptionTotalStock"]')?.value) || 0,
+      stock: Number(row.querySelector('[name="bundleOptionStock"]')?.value) || 0,
+      maxQuantity: Number(row.querySelector('[name="bundleOptionMax"]')?.value) || 1
+    }));
+  }
+
+  function updateBundleOptionMode() {
+    const active = selectedCategory() === "bundle" && form.elements.hasOptions?.checked;
+    if (bundleOptionsEditor) bundleOptionsEditor.hidden = !active;
+    if (active && bundleOptionRows && !bundleOptionRows.children.length) addBundleOptionRow();
+    document.querySelectorAll("[data-standard-price-field], [data-stock-field]").forEach((field) => {
+      if (selectedCategory() !== "bundle") return;
+      const input = field.querySelector("input");
+      field.hidden = active;
+      if (input) {
+        input.disabled = active;
+        input.required = !active && ["price", "totalStock", "stock"].includes(input.name);
+      }
+    });
+  }
+
   function updateCategoryPanels() {
     const category = selectedCategory();
     const reviewGroupField = document.querySelector("[data-review-group-field]");
@@ -153,6 +201,7 @@
         input.disabled = !usesStock;
       }
     });
+    updateBundleOptionMode();
   }
 
   function renderImageGallery() {
@@ -369,6 +418,11 @@
     setValue("pickupDate", editingProduct.pickupDate || editingProduct.default_pickup_date);
     setValue("showDeadlineTime", editingProduct.showDeadlineTime !== false);
     setValue("maxQuantity", editingProduct.maxQuantity || 10);
+    setValue("hasOptions", Array.isArray(editingProduct.options) && editingProduct.options.length > 0);
+    if (bundleOptionRows) {
+      bundleOptionRows.innerHTML = "";
+      (editingProduct.options || []).forEach(addBundleOptionRow);
+    }
     setValue("prepaymentOnly", editingProduct.prepaymentOnly === true);
     setValue("barcodeValue", editingProduct.barcodeValue);
     setValue("marketGuide", editingProduct.marketGuide);
@@ -391,8 +445,9 @@
   function buildProduct(isDraft) {
     const data = new FormData(form);
     const category = data.get("category");
-    const stock = Number(data.get("stock")) || 0;
-    const totalStock = Math.max(Number(data.get("totalStock")) || 0, stock);
+    const options = category === "bundle" ? readBundleOptions() : [];
+    const stock = options.length ? options.reduce((sum, option) => sum + option.stock, 0) : (Number(data.get("stock")) || 0);
+    const totalStock = options.length ? options.reduce((sum, option) => sum + option.totalStock, 0) : Math.max(Number(data.get("totalStock")) || 0, stock);
     const mainImage = mainImageSrc;
     const extraImages = imageItems.map((item) => item.src).filter((src) => src !== mainImage);
     
@@ -401,7 +456,9 @@
     const deadlineTime = category === "bundle" ? (rawDeadlineTime || "23:59") : null;
     const configuredFruitPrices = category === "fruit" ? fruitPriceOptions() : [];
     const enteredPrice = Number(data.get("price")) || 0;
-    const primaryPrice = category === "fruit" ? (enteredPrice || Number(configuredFruitPrices[0]?.price || 0)) : enteredPrice;
+    const primaryPrice = options.length
+      ? Math.min(...options.map((option) => option.price))
+      : category === "fruit" ? (enteredPrice || Number(configuredFruitPrices[0]?.price || 0)) : enteredPrice;
 
     let orderDeadlineIso = null;
     if (category === "bundle" && deadlineDate) {
@@ -425,6 +482,7 @@
       fruitTypeId: ["fruit", "bundle"].includes(category) ? String(data.get("fruitTypeId") || "") || null : null,
       detailDescription: String(data.get("detailDescription") || "").trim(),
       price: primaryPrice,
+      options,
       originalPrice: Number(data.get("originalPrice")) || 0,
       showOriginalPrice: data.get("showOriginalPrice") === "on",
       image: mainImage,
@@ -494,6 +552,18 @@
         return;
       }
       if (data.get("category") === "bundle") {
+        const options = readBundleOptions();
+        if (data.get("hasOptions") === "on") {
+          const names = options.map((option) => option.name.toLocaleLowerCase("ko-KR"));
+          if (!options.length || options.some((option) => !option.name || option.price <= 0 || option.totalStock < 1 || option.stock > option.totalStock || option.maxQuantity < 1)) {
+            showToast("모든 옵션의 이름·가격·재고·1인 최대 수량을 확인해 주세요.");
+            return;
+          }
+          if (new Set(names).size !== names.length) {
+            showToast("같은 옵션명을 두 번 사용할 수 없습니다.");
+            return;
+          }
+        }
         const deadlineDate = data.get("deadline");
         const deadlineTime = data.get("deadlineTime") || "23:59";
         const pickupDate = data.get("pickupDate");
@@ -575,6 +645,14 @@
 
   document.querySelectorAll('input[name="category"]').forEach((input) => {
     input.addEventListener("change", updateCategoryPanels);
+  });
+  form.elements.hasOptions?.addEventListener("change", updateBundleOptionMode);
+  document.getElementById("add-bundle-option-button")?.addEventListener("click", () => addBundleOptionRow());
+  bundleOptionRows?.addEventListener("click", (event) => {
+    const remove = event.target.closest(".bundle-option-remove");
+    if (!remove) return;
+    remove.closest(".bundle-option-row")?.remove();
+    if (!bundleOptionRows.children.length) addBundleOptionRow();
   });
   document.getElementById("add-fruit-type-button")?.addEventListener("click", async () => {
     const name = prompt("추가할 과일 종류 이름을 입력해 주세요.\n예: 샤인머스캣");

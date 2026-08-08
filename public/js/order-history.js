@@ -115,7 +115,7 @@
         <div class="order-state ${order.viewStatus.tone}">${order.viewStatus.label}</div>
         <div class="order-product">
           <img src="${escapeHTML(image)}" alt="" />
-          <div><strong>${escapeHTML(order.productName)}</strong><span>${paymentLabel(order)} · ${Number(order.quantity) || 1}개</span><b>${Number(order.price || 0).toLocaleString("ko-KR")}원</b></div>
+          <div><strong>${escapeHTML(order.productName)}</strong>${order.optionName ? `<small>${escapeHTML(order.optionName)}</small>` : ""}<span>${paymentLabel(order)} · ${Number(order.quantity) || 1}개</span><b>${Number(order.price || 0).toLocaleString("ko-KR")}원</b></div>
         </div>
         <div class="order-actions ${actions.length === 3 ? "has-three-actions" : ""}">${actions.join("")}</div>
       </div>
@@ -143,7 +143,7 @@
         ? `<div><dt>입금 계좌</dt><dd>계좌 정보를 확인할 수 없습니다</dd></div>`
       : "";
     detailContent.innerHTML = `<div class="detail-order-number"><span>${dateLabel(orderedAt(order))} 신청</span><small>주문번호 ${escapeHTML(order.id)}</small></div>
-      <section class="detail-product"><div class="order-state ${order.viewStatus.tone}">${order.viewStatus.label}</div><div><img src="${escapeHTML(image)}" alt=""><div><strong>${escapeHTML(order.productName)}</strong><span>${Number(order.quantity) || 1}개</span><b>${Number(order.price || 0).toLocaleString("ko-KR")}원</b></div></div></section>
+      <section class="detail-product"><div class="order-state ${order.viewStatus.tone}">${order.viewStatus.label}</div><div><img src="${escapeHTML(image)}" alt=""><div><strong>${escapeHTML(order.productName)}</strong>${order.optionName ? `<small>${escapeHTML(order.optionName)}</small>` : ""}<span>${Number(order.quantity) || 1}개</span><b>${Number(order.price || 0).toLocaleString("ko-KR")}원</b></div></div></section>
       <section class="detail-section"><h3>주문 정보</h3><dl><div><dt>주문일</dt><dd>${dateLabel(orderedAt(order))}</dd></div><div><dt>지정 수령일</dt><dd>${dateLabel(selectedPickupDate(order))}${order.pickupTime ? ` · ${escapeHTML(order.pickupTime)}` : ""}</dd></div><div><dt>결제 방식</dt><dd>${paymentLabel(order)}</dd></div>${transferAccountRows}<div><dt>수령 상태</dt><dd>${order.viewStatus.label}</dd></div><div><dt>결제 금액</dt><dd><strong>${Number(order.price || 0).toLocaleString("ko-KR")}원</strong></dd></div></dl></section>
       ${canCustomerCancel(order) ? `<div class="detail-cancel-guide"><span>신청 마감 전까지 취소할 수 있어요.</span><button type="button" data-cancel-order="${escapeHTML(order.id)}">신청 취소</button></div>` : ""}
       ${order.viewStatus.group === "progress" ? `<a class="detail-primary" href="./index.html#receipt">수령 확인증 보기</a>` : ""}`;

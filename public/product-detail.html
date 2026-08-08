@@ -389,6 +389,7 @@
       font-size: 13px;
       font-weight: 850;
     }
+    .option-sheet[hidden]{display:none}.option-sheet{position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,28,24,.48);padding:18px}.option-sheet-panel{width:min(100%,560px);max-height:min(78vh,720px);overflow:auto;background:#fff;border-radius:22px 22px 16px 16px;padding:20px;box-shadow:0 22px 60px rgba(11,31,22,.22)}.option-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.option-sheet-head h2{font-size:19px;margin:0 0 5px}.option-sheet-head p{font-size:12px;color:#758078;margin:0}.option-sheet-close{border:0;background:#f2f5f3;border-radius:50%;width:36px;height:36px;font-size:21px}.option-choice-list{display:grid;gap:9px}.option-choice{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;border:1px solid #dde6e1;border-radius:14px;padding:14px;background:#fff}.option-choice.is-selected{border-color:#4f8f70;background:#f6faf8}.option-choice-info{display:grid;gap:4px}.option-choice-info strong{font-size:15px}.option-choice-info span{font-size:13px;color:#526159}.option-choice-info small{font-size:11px;color:#8a958f}.option-choice-qty{display:flex;align-items:center;gap:7px}.option-choice-qty button{border:1px solid #d5dfda;background:#fff;border-radius:9px;width:32px;height:32px;font-size:18px}.option-choice-qty b{min-width:22px;text-align:center}.option-sheet-summary{display:flex;justify-content:space-between;align-items:center;margin:18px 0 12px;padding-top:16px;border-top:1px solid #e5ebe8}.option-sheet-summary strong{font-size:19px}.option-sheet-continue{width:100%;border:0;border-radius:13px;background:#1d624a;color:#fff;padding:15px;font-size:15px;font-weight:800}.option-sheet-continue:disabled{background:#cdd5d1}
   </style>
 </head>
 <body class="search-screen">
@@ -425,6 +426,14 @@
 
     <!-- 고정 하단 액션 바 -->
     <div class="action-bar" id="product-action-bar"></div>
+    <div class="option-sheet" id="bundle-option-sheet" hidden aria-modal="true" role="dialog" aria-labelledby="bundle-option-title">
+      <div class="option-sheet-panel">
+        <div class="option-sheet-head"><div><h2 id="bundle-option-title">옵션을 선택해 주세요</h2><p>여러 옵션을 함께 신청할 수 있어요.</p></div><button type="button" class="option-sheet-close" onclick="closeBundleOptions()" aria-label="닫기">×</button></div>
+        <div class="option-choice-list" id="bundle-option-choice-list"></div>
+        <div class="option-sheet-summary"><span>총 신청 금액</span><strong id="bundle-option-total">0원</strong></div>
+        <button class="option-sheet-continue" id="bundle-option-continue" type="button" onclick="continueBundleOptions()" disabled>선택한 옵션으로 신청하기</button>
+      </div>
+    </div>
   </main>
 
   <script src="./js/auth-session.js"></script>
@@ -606,7 +615,7 @@
       } else {
         priceSection = `
           <h2>
-            ${(priceView.current || currentProduct.price).toLocaleString()}원
+            ${(priceView.current || currentProduct.price).toLocaleString()}원${currentProduct.options?.length ? '부터' : ''}
             ${priceView.showOriginal ? `<span class="price-strike">${currentProduct.originalPrice.toLocaleString()}원</span>` : ""}
           </h2>
         `;
@@ -719,9 +728,12 @@
         actionBar.innerHTML = `<div class="action-bar-inner">${favBtnHTML}${ctaHTML}</div>`;
       } else {
         actionBar.style.display = "block";
+        const optionLabel = currentProduct.options?.length
+          ? "옵션 선택하기"
+          : `보따리 예약 신청하기 (${currentProduct.price.toLocaleString()}원)`;
         const ctaHTML = `
           <button class="action-btn" id="btn-action-cta" onclick="orderProduct()">
-            🛒 보따리 예약 신청하기 (${currentProduct.price.toLocaleString()}원)
+            ${optionLabel}
           </button>
         `;
         actionBar.innerHTML = `<div class="action-bar-inner">${favBtnHTML}${ctaHTML}</div>`;
@@ -816,7 +828,55 @@
         return;
       }
 
+      if (mode !== 'waitlist' && Array.isArray(currentProduct.options) && currentProduct.options.length) {
+        openBundleOptions();
+        return;
+      }
+
       window.location.href = targetUrl;
+    };
+
+    let optionSelection = {};
+    function renderBundleOptionSheet() {
+      const list = document.getElementById('bundle-option-choice-list');
+      if (!list || !currentProduct) return;
+      list.innerHTML = currentProduct.options.map((option) => {
+        const quantity = Number(optionSelection[option.id] || 0);
+        const soldOut = Number(option.stock || 0) <= 0;
+        const maximum = Math.min(Number(option.stock || 0), Number(option.maxQuantity || option.stock || 0));
+        return `<div class="option-choice${quantity ? ' is-selected' : ''}">
+          <div class="option-choice-info"><strong>${escapeDetailText(option.name)}</strong><span>${Number(option.price).toLocaleString('ko-KR')}원</span><small>${soldOut ? '마감' : `최대 ${maximum}개 신청 가능`}</small></div>
+          <div class="option-choice-qty"><button type="button" onclick="changeBundleOption('${option.id}',-1)" ${quantity <= 0 ? 'disabled' : ''}>−</button><b>${quantity}</b><button type="button" onclick="changeBundleOption('${option.id}',1)" ${soldOut || quantity >= maximum ? 'disabled' : ''}>＋</button></div>
+        </div>`;
+      }).join('');
+      const selected = currentProduct.options.filter((option) => Number(optionSelection[option.id]) > 0);
+      const total = selected.reduce((sum, option) => sum + Number(option.price) * Number(optionSelection[option.id]), 0);
+      document.getElementById('bundle-option-total').textContent = `${total.toLocaleString('ko-KR')}원`;
+      document.getElementById('bundle-option-continue').disabled = selected.length === 0;
+    }
+
+    window.openBundleOptions = function () {
+      optionSelection = {};
+      renderBundleOptionSheet();
+      document.getElementById('bundle-option-sheet').hidden = false;
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeBundleOptions = function () {
+      document.getElementById('bundle-option-sheet').hidden = true;
+      document.body.style.overflow = '';
+    };
+    window.changeBundleOption = function (optionId, change) {
+      const option = currentProduct.options.find((item) => item.id === optionId);
+      if (!option) return;
+      const maximum = Math.min(Number(option.stock), Number(option.maxQuantity || option.stock));
+      optionSelection[optionId] = Math.max(0, Math.min(maximum, Number(optionSelection[optionId] || 0) + change));
+      renderBundleOptionSheet();
+    };
+    window.continueBundleOptions = function () {
+      const items = currentProduct.options.map((option) => ({ optionId: option.id, name: option.name, price: option.price, quantity: Number(optionSelection[option.id] || 0) })).filter((item) => item.quantity > 0);
+      if (!items.length) return;
+      sessionStorage.setItem(`todayFridgeBundleSelection:${currentProduct.id}`, JSON.stringify(items));
+      window.location.href = `./bundle-apply.html?id=${encodeURIComponent(currentProduct.id)}`;
     };
 
     let productInquiries = [];

@@ -175,3 +175,19 @@ test("인기상품은 실제 차감된 보따리 수량까지 반영하고 목�
   assert.match(rules, /if \(sales >= 3\)/);
   assert.match(cardCss, /\.popular-badge\.popular[\s\S]*?width:\s*36px\s*!important[\s\S]*?border-radius:\s*50%\s*!important/);
 });
+
+test("옵션형 보따리는 옵션별 가격·재고를 잠그고 선택 목록으로 주문한다", () => {
+  const migration = read("supabase/migrations/026_bundle_item_options.sql");
+  const server = read("server.js");
+  const adminForm = read("public/js/admin-product-form.js");
+  const detail = read("public/product-detail.html");
+  const apply = read("public/js/bundle-apply.js");
+  assert.match(migration, /create table if not exists public\.bundle_item_options/);
+  assert.match(migration, /from public\.bundle_item_options[\s\S]*?for update/);
+  assert.match(migration, /restore_cancelled_bundle_option_stock/);
+  assert.match(server, /create_customer_bundle_order_v4/);
+  assert.match(server, /Math\.min\(\.\.\.options\.map\(\(option\) => option\.price\)\)/);
+  assert.match(adminForm, /여러 옵션으로 판매|bundleOptionName/);
+  assert.match(detail, /bundle-option-sheet/);
+  assert.match(apply, /items: selectedItems\.map/);
+});

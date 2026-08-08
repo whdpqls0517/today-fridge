@@ -204,6 +204,7 @@
           productId: product.id,
           bundleItemId: order.bundle_item_id,
           productName: product.name || "",
+          optionName: order.option_name || "",
           quantity: order.quantity,
           price: order.total_amount,
           paymentType: order.payment_type,
@@ -303,6 +304,10 @@
         existing.quantity = (Number(existing.quantity) || 1) + (Number(currentOrder.quantity) || 1);
         existing.price = (Number(existing.price) || 0) + (Number(currentOrder.price) || 0);
         existing.groupedOrderIds.push(currentOrder.id);
+        if (currentOrder.optionName) {
+          existing.selectedOptions = existing.selectedOptions || {};
+          existing.selectedOptions[currentOrder.optionName] = (existing.selectedOptions[currentOrder.optionName] || 0) + (Number(currentOrder.quantity) || 1);
+        }
         if (currentOrder.paymentType === "onsite") {
           existing.paymentType = "onsite";
           existing.barcodeValue = currentOrder.barcodeValue || existing.barcodeValue;
@@ -317,7 +322,8 @@
           groupKey,
           quantity: Number(currentOrder.quantity) || 1,
           price: Number(currentOrder.price) || 0,
-          groupedOrderIds: [currentOrder.id]
+          groupedOrderIds: [currentOrder.id],
+          selectedOptions: currentOrder.optionName ? { [currentOrder.optionName]: Number(currentOrder.quantity) || 1 } : {}
         });
       }
       return acc;
@@ -438,6 +444,7 @@
           <strong>${isComplete ? "수령 완료" : (isExpired ? "수령 기간 종료" : (isAwaitingPayment ? "입금 확인 전" : (order.paymentType === 'onsite' ? "현장 결제" : "결제 확인")))}</strong>
         </header>
         <h3>${escapeHTML(order.productName)}${qtyBadge}</h3>
+        ${Object.keys(order.selectedOptions || {}).length ? `<p class="receipt-option-summary">${Object.entries(order.selectedOptions).map(([name, count]) => `${escapeHTML(name)} ${count}개`).join(' · ')}</p>` : ''}
         <div class="pickup-meta ${isExpired ? 'expired' : ''}">
           <div class="pickup-schedule">
             <span class="bundle-date-label">보따리 입고 ${bundleDateText}</span>

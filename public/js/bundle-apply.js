@@ -11,6 +11,19 @@
   const product = window.FridgeDB?.getProducts().find((p) => p.id === id);
   const form = document.getElementById("bundle-apply-form");
   let quantity = 1;
+  let selectedItems = [];
+  if (!isWaitlist && Array.isArray(product?.options) && product.options.length) {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(`todayFridgeBundleSelection:${id}`) || "[]");
+      selectedItems = stored.map((item) => {
+        const option = product.options.find((candidate) => candidate.id === item.optionId);
+        if (!option) return null;
+        const maximum = Math.min(Number(option.stock || 0), Number(option.maxQuantity || option.stock || 0));
+        const selectedQuantity = Math.max(0, Math.min(maximum, Number(item.quantity) || 0));
+        return selectedQuantity ? { optionId: option.id, name: option.name, price: Number(option.price), quantity: selectedQuantity } : null;
+      }).filter(Boolean);
+    } catch (_) { selectedItems = []; }
+  }
 
   // 인증 토큰 추출 도구
   const getToken = () => {
@@ -36,6 +49,11 @@
 
   // 2. 수량 및 결제금액 렌더링 함수
   function renderAmount() {
+    if (selectedItems.length) {
+      const total = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      document.getElementById("apply-amount").textContent = `${total.toLocaleString("ko-KR")}원`;
+      return;
+    }
     const stock = Math.max(0, Number(product?.stock) || 0);
     const maxPerUser = Math.max(1, Number(product?.maxQuantity) || 10);
     const maxAllowed = isWaitlist ? maxPerUser : Math.max(1, Math.min(maxPerUser, stock || 1));
@@ -64,11 +82,27 @@
     <img src="${product.image}" alt="">
     <div>
       <strong>${product.name}</strong>
-      <span>${isWaitlist
+      <span>${selectedItems.length
+        ? `${selectedItems.length}종 · 총 ${selectedItems.reduce((sum, item) => sum + item.quantity, 0)}개`
+        : isWaitlist
         ? `1개 ${Number(product.price).toLocaleString("ko-KR")}원 · 취소 수량 발생 시 선착순 자동 신청`
         : `1개 ${Number(product.price).toLocaleString("ko-KR")}원 · 남은 수량 ${product.stock}개`}</span>
     </div>
   `;
+
+  if (Array.isArray(product.options) && product.options.length && !isWaitlist) {
+    if (!selectedItems.length) {
+      document.getElementById("apply-message").textContent = "상품 상세에서 신청할 옵션을 먼저 선택해 주세요.";
+      setTimeout(() => history.back(), 700);
+      return;
+    }
+    document.getElementById("apply-quantity-section").hidden = true;
+    document.getElementById("apply-selected-section").hidden = false;
+    document.getElementById("apply-selected-list").innerHTML = selectedItems.map((item) => `
+      <div class="apply-selected-item"><div><strong>${String(item.name).replace(/[&<>"']/g, "")}</strong><small>${item.quantity}개 × ${item.price.toLocaleString("ko-KR")}원</small></div><strong>${(item.price * item.quantity).toLocaleString("ko-KR")}원</strong></div>
+    `).join("");
+    document.getElementById("apply-option-change").onclick = () => history.back();
+  }
 
   if (isWaitlist) {
     document.querySelector(".apply-page header h1").textContent = "보따리 대기 신청";
@@ -181,7 +215,7 @@
 
     const payload = {
       bundleItemId: product.bundleItemId,
-      quantity,
+      ...(selectedItems.length ? { items: selectedItems.map(({ optionId, quantity }) => ({ optionId, quantity })) } : { quantity }),
       paymentType,
       pickupDate,
       pickupTimeLabel,
@@ -267,7 +301,10 @@
         JSON.stringify({
           ...order,
           productName: product.name,
-          totalAmount: product.price * quantity,
+          totalAmount: selectedItems.length
+            ? selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+            : product.price * quantity,
+          selectedItems,
           isWaitlist,
           paymentType,
           pickupDate: payload.pickupDate,
@@ -276,6 +313,7 @@
         })
       );
       sessionStorage.removeItem(orderRequestStorageKey);
+      sessionStorage.removeItem(`todayFridgeBundleSelection:${id}`);
 
       location.href = "./bundle-apply-complete.html";
     } catch (err) {

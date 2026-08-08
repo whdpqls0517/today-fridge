@@ -110,6 +110,19 @@
     </label>
     <label><span>수령 가능일 *</span><input name="pickupDate" type="date" data-required-for="bundle" /></label>
     <label><span>1인 최대 신청 수량</span><div class="input-suffix"><input name="maxQuantity" type="number" min="1" value="10" /><i>개</i></div></label>
+    <div class="wide bundle-options-field" data-bundle-options-field>
+      <label class="switch-field bundle-options-switch">
+        <span><strong>여러 옵션으로 판매</strong><small>두부·순두부처럼 한 보따리 안에서 품목과 가격이 다른 경우 사용합니다.</small></span>
+        <input name="hasOptions" type="checkbox" />
+      </label>
+      <div class="bundle-options-editor" id="bundle-options-editor" hidden>
+        <div class="bundle-options-heading">
+          <div><strong>판매 옵션</strong><small>옵션별 가격과 재고를 입력하세요. 목록에는 가장 낮은 가격이 ‘원부터’로 표시됩니다.</small></div>
+          <button type="button" id="add-bundle-option-button">+ 옵션 추가</button>
+        </div>
+        <div id="bundle-option-rows" class="bundle-option-rows"></div>
+      </div>
+    </div>
           <label class="wide switch-field"><span>선결제 전용 상품<small>체크하면 계좌이체만 선택할 수 있고 현장결제는 차단됩니다.</small></span><input name="prepaymentOnly" type="checkbox" /></label>
           <label class="wide"><span>키오스크 바코드 번호 *</span><input name="barcodeValue" inputmode="numeric" pattern="[0-9]{6,24}" data-required-for="bundle" placeholder="숫자 6~24자리" /><small>번호만 입력하면 수령증에서 스캔 가능한 바코드 이미지가 자동으로 생성됩니다. 바코드 사진은 첨부하지 않아도 됩니다.</small></label>
           <label class="wide switch-field" data-publish-notification-field>

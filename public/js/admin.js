@@ -274,6 +274,7 @@
           productId: product.id,
           bundleItemId: order.bundle_item_id,
           productName: product.name || "",
+          optionName: order.option_name || "",
           quantity: order.quantity,
           price: order.total_amount,
           paymentType: order.payment_type,
@@ -1415,7 +1416,7 @@
       tr.innerHTML = `
         <td><code>${o.id}</code></td>
         <td><strong>${o.customerName || o.userName || account?.name || "고객"}</strong></td>
-        <td><strong>${o.productName}</strong></td>
+        <td><strong>${o.productName}</strong>${o.optionName ? `<small class="packing-option-name">${adminEscape(o.optionName)}</small>` : ""}</td>
         <td><strong>${Number(o.quantity) || 1}개</strong></td>
         <td>${shortPickupText(o)}</td>
         <td>${payTypeKo}</td>
