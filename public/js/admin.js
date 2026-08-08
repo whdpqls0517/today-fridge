@@ -526,7 +526,9 @@
       content.style.display = "none";
     });
     const isHomeTab = tab === "display";
-    document.querySelector(".admin-main")?.classList.toggle("is-home-tab", isHomeTab);
+    const adminMain = document.querySelector(".admin-main");
+    adminMain?.classList.toggle("is-home-tab", isHomeTab);
+    adminMain?.classList.toggle("is-pickup-guide-tab", tab === "pickup-guides");
     const homeStats = document.getElementById("admin-home-stats");
     if (homeStats) homeStats.hidden = !isHomeTab;
 

@@ -1,4 +1,9 @@
-.pickup-guide-admin { max-width: 980px; }
+.pickup-guide-admin {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 980px;
+  margin-bottom: 32px;
+}
 .pickup-guide-form { display: grid; gap: 20px; margin-top: 24px; }
 .pickup-guide-field { display: grid; gap: 8px; }
 .pickup-guide-field > span,
@@ -11,11 +16,31 @@
 .pickup-guide-field small,
 .pickup-guide-upload small { color: #77847e; font-size: 12px; }
 .pickup-guide-field--date { max-width: 260px; }
+.pickup-guide-history { display: grid; gap: 11px; padding: 15px 16px; border: 1px solid #e0e7e3; border-radius: 14px; background: #f8faf9; }
+.pickup-guide-history__head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+.pickup-guide-history__head strong { color: #26352e; font-size: 13px; }
+.pickup-guide-history__head span { color: #86918b; font-size: 11px; }
+.pickup-guide-history__list { display: flex; gap: 8px; padding-bottom: 2px; overflow-x: auto; scrollbar-width: thin; }
+.pickup-guide-history__list p { margin: 0; color: #7a8680; font-size: 12px; }
+.pickup-guide-history__list button { flex: 0 0 auto; min-height: 36px; padding: 0 13px; border: 1px solid #d5dfda; border-radius: 10px; background: #fff; color: #52615a; font: inherit; font-size: 12px; font-weight: 680; cursor: pointer; }
+.pickup-guide-history__list button:hover { border-color: #9bb9aa; background: #f1f7f4; color: #205d46; }
+.pickup-guide-history__list button.is-active { border-color: #2d7259; background: #eaf3ef; color: #185a42; }
 .pickup-guide-images { display: grid; gap: 12px; padding: 18px; border: 1px solid #e0e7e3; border-radius: 16px; background: #f8faf9; }
 .pickup-guide-images > div:first-child { display: flex; justify-content: space-between; align-items: center; }
 .pickup-guide-images > div:first-child span { color: #66756e; font-size: 13px; }
-.pickup-guide-upload { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.pickup-guide-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pickup-guide-upload { position: relative; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.pickup-guide-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  opacity: 0;
+}
 .pickup-guide-upload > span { display: inline-flex; min-height: 40px; padding: 0 16px; align-items: center; border: 1px solid #bdd0c7; border-radius: 11px; background: #fff; color: #175d47; font-size: 13px; font-weight: 700; }
 .pickup-guide-image-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .pickup-guide-image-item { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 12px; background: #e7ece9; }
@@ -28,7 +53,13 @@
 .pickup-guide-actions button { min-height: 44px; padding: 0 18px; border-radius: 12px; font: inherit; font-weight: 700; cursor: pointer; }
 .pickup-guide-save { border: 0; background: #185f49; color: #fff; }
 .pickup-guide-delete { border: 1px solid #e2c9c5; background: #fff; color: #a6433d; }
+@media (min-width: 1025px) {
+  .admin-main.is-pickup-guide-tab {
+    padding-bottom: 72px;
+  }
+}
 @media (max-width: 720px) {
+  .pickup-guide-history__head { align-items: flex-start; flex-direction: column; gap: 3px; }
   .pickup-guide-image-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pickup-guide-actions { flex-wrap: wrap; }
   .pickup-guide-actions p { flex-basis: 100%; }

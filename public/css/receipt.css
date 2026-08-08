@@ -1022,6 +1022,32 @@
   padding: 16px 16px 34px;
 }
 .receipt-pickup-guides[hidden] { display: none; }
+.receipt-guide-dates {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.receipt-guide-dates::-webkit-scrollbar { display: none; }
+.receipt-guide-dates button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid #dbe4df;
+  border-radius: 999px;
+  background: #fff;
+  color: #67746e;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 680;
+  cursor: pointer;
+}
+.receipt-guide-dates button.is-active {
+  border-color: #245f49;
+  background: #245f49;
+  color: #fff;
+}
 .receipt-guide-card {
   overflow: hidden;
   border: 1px solid #dde6e1;

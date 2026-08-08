@@ -84,6 +84,8 @@
   // 3. Dynamic Rendering of Receipts
   let currentReceiptTab = "available"; // 'available', 'pending', or 'guide'
   let pickupGuidesLoaded = false;
+  let pickupGuides = [];
+  let selectedPickupGuideDate = "";
 
   function updateReceiptTabDescription() {
     if (!receiptTabDescription) return;
@@ -109,6 +111,36 @@
       .replaceAll("'", '&#39;');
   }
 
+  function seoulTodayISO() {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function renderSelectedPickupGuide() {
+    if (!pickupGuideContainer) return;
+    if (!pickupGuides.length) {
+      pickupGuideContainer.innerHTML = '<div class="receipt-guide-empty"><strong>등록된 수령 안내가 없습니다.</strong><span>안내가 필요한 경우 매장 1:1 문의를 이용해 주세요.</span></div>';
+      return;
+    }
+
+    const guide = pickupGuides.find((item) => item.pickup_date === selectedPickupGuideDate) || pickupGuides[0];
+    selectedPickupGuideDate = guide.pickup_date;
+    const dateButtons = pickupGuides.length > 1 ? `
+      <nav class="receipt-guide-dates" aria-label="수령 안내 날짜 선택">
+        ${pickupGuides.map((item) => `<button type="button" data-pickup-guide-date="${item.pickup_date}" class="${item.pickup_date === selectedPickupGuideDate ? 'is-active' : ''}">${item.pickup_date === seoulTodayISO() ? '오늘' : guideDateLabel(item.pickup_date)}</button>`).join('')}
+      </nav>` : '';
+
+    pickupGuideContainer.innerHTML = `${dateButtons}
+      <article class="receipt-guide-card">
+        <header><span>${guideDateLabel(guide.pickup_date)} 수령</span><h3>${escapeReceiptHtml(guide.title)}</h3></header>
+        <p class="receipt-guide-content">${escapeReceiptHtml(guide.content)}</p>
+        ${(guide.image_urls || []).length ? `<div class="receipt-guide-gallery">${guide.image_urls.map((url, index) => `<a href="${escapeReceiptHtml(url)}" target="_blank" rel="noopener"><img src="${escapeReceiptHtml(url)}" alt="수령 위치 안내 사진 ${index + 1}" loading="lazy"></a>`).join('')}</div>` : ''}
+      </article>`;
+  }
+
   async function renderPickupGuides(force = false) {
     if (!pickupGuideContainer || (pickupGuidesLoaded && !force)) return;
     pickupGuideContainer.innerHTML = '<div class="receipt-guide-empty">수령 방법을 불러오고 있어요.</div>';
@@ -120,18 +152,24 @@
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || '수령 방법을 불러오지 못했습니다.');
-      const guides = Array.isArray(result.data) ? result.data : [];
-      pickupGuideContainer.innerHTML = guides.length ? guides.map((guide) => `
-        <article class="receipt-guide-card">
-          <header><span>${guideDateLabel(guide.pickup_date)} 수령</span><h3>${escapeReceiptHtml(guide.title)}</h3></header>
-          <p class="receipt-guide-content">${escapeReceiptHtml(guide.content)}</p>
-          ${(guide.image_urls || []).length ? `<div class="receipt-guide-gallery">${guide.image_urls.map((url, index) => `<a href="${escapeReceiptHtml(url)}" target="_blank" rel="noopener"><img src="${escapeReceiptHtml(url)}" alt="수령 위치 안내 사진 ${index + 1}" loading="lazy"></a>`).join('')}</div>` : ''}
-        </article>`).join('') : '<div class="receipt-guide-empty"><strong>등록된 수령 안내가 없습니다.</strong><span>안내가 필요한 경우 매장 1:1 문의를 이용해 주세요.</span></div>';
+      pickupGuides = Array.isArray(result.data) ? result.data : [];
+      const today = seoulTodayISO();
+      selectedPickupGuideDate = pickupGuides.some((guide) => guide.pickup_date === today)
+        ? today
+        : (pickupGuides.find((guide) => guide.pickup_date > today)?.pickup_date || pickupGuides.at(-1)?.pickup_date || '');
+      renderSelectedPickupGuide();
       pickupGuidesLoaded = true;
     } catch (error) {
       pickupGuideContainer.innerHTML = `<div class="receipt-guide-empty"><strong>수령 방법을 불러오지 못했습니다.</strong><span>${escapeReceiptHtml(error.message)}</span></div>`;
     }
   }
+
+  pickupGuideContainer?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-pickup-guide-date]');
+    if (!button) return;
+    selectedPickupGuideDate = button.dataset.pickupGuideDate;
+    renderSelectedPickupGuide();
+  });
 
   function startOfDay(date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());

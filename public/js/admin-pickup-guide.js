@@ -10,6 +10,7 @@
   const imageCount = document.getElementById('pickup-guide-image-count');
   const status = document.getElementById('pickup-guide-status');
   const deleteButton = document.getElementById('pickup-guide-delete');
+  const historyList = document.getElementById('pickup-guide-history-list');
   let images = [];
   let savedGuide = null;
   let loadedDate = '';
@@ -31,6 +32,17 @@
     status.dataset.tone = tone;
   }
 
+  function scrollGuidePanelToTop() {
+    const adminMain = document.querySelector('.admin-main');
+    const panel = document.querySelector('.pickup-guide-admin');
+    if (!adminMain || !panel) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        adminMain.scrollTo({ top: Math.max(0, panel.offsetTop - 12), behavior: 'auto' });
+      });
+    });
+  }
+
   function renderImages() {
     imageCount.textContent = `${images.length} / 10`;
     imageList.innerHTML = images.map((item, index) => `
@@ -38,6 +50,31 @@
         <img src="${item.preview || item.url}" alt="수령 안내 사진 ${index + 1}" />
         <button type="button" data-remove-guide-image="${index}" aria-label="사진 삭제">×</button>
       </figure>`).join('');
+  }
+
+  function formatDateLabel(value) {
+    const date = new Date(`${value}T00:00:00+09:00`);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', weekday: 'short'
+    }).format(date);
+  }
+
+  async function loadGuideHistory() {
+    if (!historyList) return;
+    try {
+      const response = await fetch('/api/admin/pickup-guides', {
+        headers: { Authorization: `Bearer ${token()}` }, cache: 'no-store'
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || '저장된 안내를 불러오지 못했습니다.');
+      const guides = result.data || [];
+      historyList.innerHTML = guides.length
+        ? guides.map((guide) => `<button type="button" data-guide-date="${guide.pickup_date}" class="${guide.pickup_date === dateInput.value ? 'is-active' : ''}" title="${guide.title || ''}">${formatDateLabel(guide.pickup_date)}</button>`).join('')
+        : '<p>아직 저장된 수령 안내가 없습니다.</p>';
+    } catch (error) {
+      historyList.innerHTML = `<p>${error.message}</p>`;
+    }
   }
 
   function readAsDataUrl(file) {
@@ -70,6 +107,7 @@
       isDirty = false;
       deleteButton.hidden = !savedGuide;
       renderImages();
+      loadGuideHistory();
       setStatus(savedGuide ? '저장된 안내를 불러왔습니다.' : '이 날짜에 저장된 안내가 없습니다. 새로 작성해 주세요.');
     } catch (error) {
       setStatus(error.message, 'error');
@@ -96,6 +134,8 @@
     isDirty = true;
     fileInput.value = '';
     renderImages();
+    fileInput.blur();
+    scrollGuidePanelToTop();
   });
 
   imageList.addEventListener('click', (event) => {
@@ -143,7 +183,10 @@
       isDirty = false;
       deleteButton.hidden = false;
       renderImages();
+      await loadGuideHistory();
       setStatus(result.warning ? `저장됨 · ${result.warning}` : '수령 안내를 저장했습니다.', result.warning ? '' : 'success');
+      submit.blur();
+      scrollGuidePanelToTop();
     } catch (error) {
       setStatus(error.message, 'error');
     } finally {
@@ -168,6 +211,7 @@
       contentInput.value = '';
       deleteButton.hidden = true;
       renderImages();
+      await loadGuideHistory();
       setStatus('수령 안내와 사용하지 않는 사진을 삭제했습니다.', 'success');
     } catch (error) {
       setStatus(error.message, 'error');
@@ -183,7 +227,15 @@
     isDirty = false;
     loadGuide(true);
   });
+  historyList?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-guide-date]');
+    if (!button) return;
+    dateInput.value = button.dataset.guideDate;
+    loadedDate = '';
+    isDirty = false;
+    loadGuide(true);
+  });
   dateInput.value = today();
-  window.loadPickupGuideAdmin = loadGuide;
+  window.loadPickupGuideAdmin = () => Promise.all([loadGuide(), loadGuideHistory()]);
   renderImages();
 })();

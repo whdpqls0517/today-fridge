@@ -3405,6 +3405,17 @@ app.get('/api/pickup-guides', requireAuth, async (req, res) => {
   res.json({ success: true, data: data || [] });
 });
 
+app.get('/api/admin/pickup-guides', ...adminOnly, async (_req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('pickup_guides')
+    .select('id, pickup_date, title, updated_at')
+    .eq('is_active', true)
+    .order('pickup_date', { ascending: false })
+    .limit(60);
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.json({ success: true, data: data || [] });
+});
+
 app.get('/api/admin/pickup-guides/:date', ...adminOnly, async (req, res) => {
   if (!isIsoDate(req.params.date)) return res.status(400).json({ success: false, error: '수령일을 확인해 주세요.' });
   const { data, error } = await supabaseAdmin
