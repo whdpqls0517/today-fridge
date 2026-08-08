@@ -1137,6 +1137,10 @@
       document.body.style.overflow = '';
     };
 
+    document.getElementById('bundle-option-sheet')?.addEventListener('click', (event) => {
+      if (event.target === event.currentTarget) closeBundleOptions();
+    });
+
     window.changeBundleOption = function (optionId, change) {
       const option = currentProduct.options.find((item) => item.id === optionId);
       if (!option) return;
