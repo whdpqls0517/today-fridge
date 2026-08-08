@@ -69,8 +69,8 @@
     list.innerHTML = items.length ? items.map((item) => {
       const [symbol, category] = kindLabel(item.type);
       return `
-        <a class="notification-card ${item.read ? "" : "is-unread"}"
-           href="${escapeHTML(item.href || "./index.html")}" data-id="${escapeHTML(item.id)}">
+        <button type="button" class="notification-card ${item.read ? "" : "is-unread"}"
+           data-id="${escapeHTML(item.id)}" aria-label="${escapeHTML(item.title)} 알림 자세히 보기">
           <span class="notification-kind">${symbol}</span>
           <div class="notification-copy">
             <span class="notification-category">${category} 알림</span>
@@ -79,7 +79,7 @@
             <small>${escapeHTML(item.date)}</small>
           </div>
           <b>›</b>
-        </a>`;
+        </button>`;
     }).join("") : `
       <div class="notification-empty">
         <strong>새로운 알림이 없어요</strong>

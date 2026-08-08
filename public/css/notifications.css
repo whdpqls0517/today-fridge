@@ -54,8 +54,16 @@ body { min-height: 100vh; background: #eef1ef; }
   align-items: flex-start;
   gap: 12px;
   padding: 19px 4px 18px;
+  width: 100%;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
   border-bottom: 1px solid #e8ecea;
+  background: transparent;
   color: #26352e;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .notification-card:last-child { border-bottom: 0; }
