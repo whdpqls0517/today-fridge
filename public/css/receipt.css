@@ -117,6 +117,11 @@
   display: none !important;
 }
 
+.receipt-sheet.is-guide-tab .receipt-list,
+.receipt-sheet.is-guide-tab .receipt-item {
+  display: none !important;
+}
+
 .receipt-item {
   border-radius: 16px;
   background: #ffffff;

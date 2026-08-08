@@ -287,9 +287,11 @@
     if (!receiptListContainer) return;
 
     const isGuideTab = currentReceiptTab === "guide";
+    receiptLayer?.querySelector('.receipt-sheet')?.classList.toggle('is-guide-tab', isGuideTab);
     receiptListContainer.hidden = isGuideTab;
     if (pickupGuideContainer) pickupGuideContainer.hidden = !isGuideTab;
     if (isGuideTab) {
+      receiptListContainer.replaceChildren();
       renderPickupGuides();
       return;
     }
@@ -678,6 +680,12 @@
   receiptLayer?.querySelectorAll("[data-receipt-tab]").forEach((tab) => {
     tab.addEventListener("click", () => {
       currentReceiptTab = tab.dataset.receiptTab;
+      const isGuideTab = currentReceiptTab === "guide";
+      receiptLayer.querySelector('.receipt-sheet')?.classList.toggle('is-guide-tab', isGuideTab);
+      if (isGuideTab) {
+        receiptListContainer?.replaceChildren();
+        if (receiptListContainer) receiptListContainer.hidden = true;
+      }
       receiptLayer.querySelectorAll("[data-receipt-tab]").forEach((button) => {
         button.classList.toggle("active", button === tab);
       });
