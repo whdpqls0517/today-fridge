@@ -113,6 +113,10 @@
   gap: 12px;
 }
 
+.receipt-list[hidden] {
+  display: none !important;
+}
+
 .receipt-item {
   border-radius: 16px;
   background: #ffffff;
