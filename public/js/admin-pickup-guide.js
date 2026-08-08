@@ -12,6 +12,9 @@
   const deleteButton = document.getElementById('pickup-guide-delete');
   let images = [];
   let savedGuide = null;
+  let loadedDate = '';
+  let isDirty = false;
+  let isLoading = false;
 
   function token() {
     return window.FridgeAuth?.getAccessToken?.() || localStorage.getItem('todayFridgeAccessToken') || '';
@@ -46,8 +49,12 @@
     });
   }
 
-  async function loadGuide() {
+  async function loadGuide(force = false) {
     if (!dateInput.value) return;
+    if (isLoading) return;
+    if (!force && (isDirty || loadedDate === dateInput.value)) return;
+    isLoading = true;
+    fileInput.disabled = true;
     setStatus('저장된 안내를 불러오고 있어요.');
     try {
       const response = await fetch(`/api/admin/pickup-guides/${dateInput.value}`, {
@@ -59,11 +66,16 @@
       titleInput.value = savedGuide?.title || '보따리 7시 이후 수령 안내';
       contentInput.value = savedGuide?.content || '';
       images = (savedGuide?.image_urls || []).map((url) => ({ url }));
+      loadedDate = dateInput.value;
+      isDirty = false;
       deleteButton.hidden = !savedGuide;
       renderImages();
       setStatus(savedGuide ? '저장된 안내를 불러왔습니다.' : '이 날짜에 저장된 안내가 없습니다. 새로 작성해 주세요.');
     } catch (error) {
       setStatus(error.message, 'error');
+    } finally {
+      isLoading = false;
+      fileInput.disabled = false;
     }
   }
 
@@ -81,6 +93,7 @@
       }
       images.push({ dataUrl: await readAsDataUrl(file), preview: URL.createObjectURL(file) });
     }
+    isDirty = true;
     fileInput.value = '';
     renderImages();
   });
@@ -90,6 +103,7 @@
     if (!button) return;
     const [removed] = images.splice(Number(button.dataset.removeGuideImage), 1);
     if (removed?.preview) URL.revokeObjectURL(removed.preview);
+    isDirty = true;
     renderImages();
   });
 
@@ -125,6 +139,8 @@
       if (!response.ok || !result.success) throw new Error(result.error || '수령 안내를 저장하지 못했습니다.');
       savedGuide = result.data;
       images = imageUrls.map((url) => ({ url }));
+      loadedDate = dateInput.value;
+      isDirty = false;
       deleteButton.hidden = false;
       renderImages();
       setStatus(result.warning ? `저장됨 · ${result.warning}` : '수령 안내를 저장했습니다.', result.warning ? '' : 'success');
@@ -146,6 +162,8 @@
       if (!response.ok || !result.success) throw new Error(result.error || '수령 안내를 삭제하지 못했습니다.');
       savedGuide = null;
       images = [];
+      loadedDate = dateInput.value;
+      isDirty = false;
       titleInput.value = '보따리 7시 이후 수령 안내';
       contentInput.value = '';
       deleteButton.hidden = true;
@@ -158,7 +176,13 @@
     }
   });
 
-  dateInput.addEventListener('change', loadGuide);
+  titleInput.addEventListener('input', () => { isDirty = true; });
+  contentInput.addEventListener('input', () => { isDirty = true; });
+  dateInput.addEventListener('change', () => {
+    loadedDate = '';
+    isDirty = false;
+    loadGuide(true);
+  });
   dateInput.value = today();
   window.loadPickupGuideAdmin = loadGuide;
   renderImages();
