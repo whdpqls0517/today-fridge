@@ -249,7 +249,7 @@
       margin: 0;
       color: #17231d;
       font-size: 25px;
-      font-weight: 500;
+      font-weight: 600;
       line-height: 1.2;
     }
 
@@ -868,7 +868,7 @@
       } else {
         priceSection = `
           <h2>
-            ${(priceView.current || currentProduct.price).toLocaleString()}원${currentProduct.options?.length ? '부터' : ''}
+            ${(priceView.current || currentProduct.price).toLocaleString()}원${currentProduct.options?.length ? '~' : ''}
             ${priceView.showOriginal ? `<span class="price-strike">${currentProduct.originalPrice.toLocaleString()}원</span>` : ""}
           </h2>
         `;
