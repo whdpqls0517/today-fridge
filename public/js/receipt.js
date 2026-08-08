@@ -709,7 +709,7 @@
       if (!orderId) return;
 
       if (postponeBtn.classList.contains("store-contact")) {
-        showToast(TEXT.expiredContact);
+        window.location.assign(TEXT.expiredContact);
         return;
       }
 
