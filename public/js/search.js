@@ -229,7 +229,7 @@
           aria-pressed="${favorite}">${favorite ? "♥" : "♡"}</button>
       </div>
       <strong>${product.name}</strong>
-      ${price.hidden ? "" : `<p>${window.ProductRules.formatPrice(price.current)}${product.options?.length ? "부터" : ""}${price.showOriginal ? `<del>${window.ProductRules.formatPrice(price.original)}</del>` : ""}</p>`}
+      ${price.hidden ? "" : `<p>${window.ProductRules.formatPrice(price.current)}${product.options?.length ? "~" : ""}${price.showOriginal ? `<del>${window.ProductRules.formatPrice(price.original)}</del>` : ""}</p>`}
       <small>★ ${Number(product.rating || 0).toFixed(1)} · 후기 ${Number(product.reviewsCount || 0)}</small>
     `;
 

@@ -296,7 +296,7 @@
 .search-screen .popular-card > small {
   order: 2 !important;
   display: -webkit-box !important;
-  -webkit-line-clamp: 1 !important;
+  -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -323,7 +323,7 @@
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 
-  font-weight: 550 !important;
+  font-weight: 500 !important;
   color: #222222 !important;
   font-size: 14.5px !important;
   line-height: 1.35 !important;
@@ -368,7 +368,7 @@
 .product-master-price b {
   color: #2d3748;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 

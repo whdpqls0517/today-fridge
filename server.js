@@ -1466,7 +1466,7 @@ function productPayload(body) {
     name: String(body.name || '').trim(),
     category: body.category,
     category_label: body.categoryLabel || null,
-    description: body.description || null,
+    description: String(body.description || '').trim().slice(0, 50) || null,
     product_category: body.productCategory || 'etc',
     detail_description: body.detailDescription || null,
     detail_specs: Array.isArray(body.detailSpecs) ? body.detailSpecs : [],

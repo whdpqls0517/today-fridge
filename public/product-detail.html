@@ -615,7 +615,7 @@
       } else {
         priceSection = `
           <h2>
-            ${(priceView.current || currentProduct.price).toLocaleString()}원${currentProduct.options?.length ? '부터' : ''}
+            ${(priceView.current || currentProduct.price).toLocaleString()}원${currentProduct.options?.length ? '~' : ''}
             ${priceView.showOriginal ? `<span class="price-strike">${currentProduct.originalPrice.toLocaleString()}원</span>` : ""}
           </h2>
         `;

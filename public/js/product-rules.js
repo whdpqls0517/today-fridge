@@ -309,7 +309,7 @@
             ${hasDiscount ? `<del>${formatPrice(price.original)}</del>` : ""}
             <div class="price-main">
               ${hasDiscount ? `<span class="discount-rate">${discountRate}%</span>` : ""}
-              <b>${formatPrice(price.current)}${product.options?.length ? "부터" : ""}</b>
+              <b>${formatPrice(price.current)}${product.options?.length ? "~" : ""}</b>
             </div>
           </div>
         `}

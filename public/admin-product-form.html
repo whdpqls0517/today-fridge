@@ -40,7 +40,7 @@
             <input name="reviewGroupName" maxlength="80" placeholder="예: 제주 감귤 보따리" />
             <small>예전에 판매한 동일 보따리와 같은 이름을 입력하면 기존 후기가 함께 표시됩니다. 비워두면 상품명을 사용합니다.</small>
           </label>
-          <label class="wide"><span>상품 소개 * <small>최대 2줄</small></span><textarea name="description" rows="2" maxlength="120" required placeholder="상품의 핵심 특징을 최대 두 줄로 적어주세요"></textarea></label>
+          <label class="wide"><span>상품 소개 * <small>최대 2줄 · 50자</small></span><textarea name="description" rows="2" maxlength="50" required placeholder="상품의 핵심 특징을 최대 두 줄로 적어주세요"></textarea></label>
           <label class="wide"><span>상품 카테고리 *</span><select name="productCategory" required>
             <option value="">카테고리를 선택해 주세요</option>
             <option value="fruit">과일</option>
@@ -117,7 +117,7 @@
       </label>
       <div class="bundle-options-editor" id="bundle-options-editor" hidden>
         <div class="bundle-options-heading">
-          <div><strong>판매 옵션</strong><small>옵션별 가격과 재고를 입력하세요. 목록에는 가장 낮은 가격이 ‘원부터’로 표시됩니다.</small></div>
+          <div><strong>판매 옵션</strong><small>옵션마다 가격과 잔여수량을 따로 입력하세요. 목록에는 가장 낮은 가격 뒤에 ‘~’가 표시됩니다.</small></div>
           <button type="button" id="add-bundle-option-button">+ 옵션 추가</button>
         </div>
         <div id="bundle-option-rows" class="bundle-option-rows"></div>
