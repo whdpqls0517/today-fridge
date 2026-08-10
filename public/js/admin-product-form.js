@@ -250,13 +250,13 @@
         const image = new Image();
         image.onerror = reject;
         image.onload = () => {
-          const maxSize = 1000;
+          const maxSize = 1920;
           const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
           const canvas = document.createElement("canvas");
           canvas.width = Math.round(image.width * scale);
           canvas.height = Math.round(image.height * scale);
           canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL("image/webp", .78));
+          resolve(canvas.toDataURL("image/webp", .9));
         };
         image.src = reader.result;
       };
