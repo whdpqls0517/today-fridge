@@ -133,7 +133,7 @@
       const [title, rawPrice] = line.split("|").map((part) => part.trim());
       const price = Number(String(rawPrice || "").replace(/[^0-9]/g, ""));
       if (!title || price <= 0) throw new Error(`${productIndex}번째 과일의 가격 구성은 ‘규격 | 가격’ 형식으로 입력해 주세요.`);
-      return { title, price };
+      return { type: "price", title, price };
     });
   }
 
