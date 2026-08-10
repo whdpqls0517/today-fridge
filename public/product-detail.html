@@ -1035,7 +1035,9 @@
       currentImageIndex = 0;
       const isReservationProduct = currentProduct.purchaseMode === "reservation" || currentProduct.category === "bundle";
       const isFruitProduct = currentProduct.category === "fruit";
-      const fruitPriceOptions = (currentProduct.detailSpecs || []).filter((spec) => spec?.type === "price" && Number(spec.price) > 0);
+      const fruitPriceOptions = (currentProduct.detailSpecs || []).filter((spec) =>
+        Number(spec?.price) > 0 && (spec.type === "price" || (!spec.type && spec.title))
+      );
       
       const badgeListHTML = window.ProductRules?.renderBadgeChips ? window.ProductRules.renderBadgeChips(currentProduct) : "";
       const isSoldOut = window.ProductRules ? window.ProductRules.isSoldOut(currentProduct) : false;

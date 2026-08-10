@@ -45,7 +45,9 @@
       // 💡 Admin 양식 필드 매핑 보정:
       // description(한 줄 소개)이 비어있으면 detailDescription(상세내용)을 출력하도록 대체(fallback) 처리
       const descriptionText = product.description || product.detailDescription || "매장에서 직접 확인할 수 있는 오늘의 신선 과일입니다.";
-      const priceOptions = (product.detailSpecs || []).filter((spec) => spec?.type === "price" && Number(spec.price) > 0);
+      const priceOptions = (product.detailSpecs || []).filter((spec) =>
+        Number(spec?.price) > 0 && (spec.type === "price" || (!spec.type && spec.title))
+      );
       const priceHTML = priceOptions.length
         ? `<div class="fruit-list-price-options">${priceOptions.map((option) => `
             <div class="fruit-list-price-option"><span>${escapeHTML(option.title)}</span><strong>${Number(option.price).toLocaleString("ko-KR")}원</strong></div>

@@ -156,9 +156,15 @@ test("보따리는 선택한 과일 종류의 후기와 연결되고 오늘의 �
 
 test("오늘의 과일 일괄 등록 가격 구성은 상세·목록에서 인식되는 가격 형식으로 저장한다", () => {
   const bulkFruitScript = read("public/js/admin-fruit-bulk.js");
+  const fruitListScript = read("public/js/fruit-list.js");
+  const productDetail = read("public/product-detail.html");
   assert.match(bulkFruitScript, /return\s*\{\s*type:\s*["']price["'],\s*title,\s*price\s*\}/);
   assert.match(bulkFruitScript, /const\s+enteredPrice\s*=\s*Number\(value\(["']price["']\)\)\s*\|\|\s*0/);
   assert.match(bulkFruitScript, /const\s+price\s*=\s*enteredPrice\s*\|\|\s*Number\(priceOptions\[0\]\?\.price\s*\|\|\s*0\)/);
+  assert.match(fruitListScript, /priceOptions\.map/);
+  assert.match(productDetail, /fruitPriceOptions\.map/);
+  assert.match(fruitListScript, /!spec\.type\s*&&\s*spec\.title/);
+  assert.match(productDetail, /!spec\.type\s*&&\s*spec\.title/);
 });
 
 test("찜은 상세·목록·찜 페이지에서 동일한 서버 저장소를 사용한다", () => {
