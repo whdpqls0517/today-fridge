@@ -113,8 +113,12 @@
     const agreementText = document.getElementById("procurement-agreement-text");
     if (agreementText) {
       agreementText.textContent =
-        "신청 마감 후 취소 제한과, 대기 수량 배정 시 입력한 정보로 주문이 자동 접수되는 것을 확인했습니다.";
+        "주문 내용 및 대기 신청 유의사항을 확인했습니다. (필수)";
     }
+    document.getElementById("agreement-details")?.insertAdjacentHTML(
+      "beforeend",
+      "<li>취소 수량이 확보되면 입력한 정보와 선택 수량을 기준으로 먼저 신청한 순서대로 주문이 자동 접수됩니다.</li>"
+    );
     document.querySelector(".apply-submit").textContent = "대기 신청하기";
     document.getElementById("apply-message").textContent =
       "대기 신청은 재고를 확보하지 않으며, 먼저 신청한 순서대로 자동 전환됩니다.";
@@ -177,6 +181,15 @@
     });
   });
   renderAmount();
+
+  const agreementInput = document.getElementById("apply-agreement");
+  const submitButton = document.querySelector(".apply-submit");
+  function syncAgreementState() {
+    const noStock = !isWaitlist && (Number(product.stock) || 0) <= 0;
+    if (submitButton) submitButton.disabled = noStock || !agreementInput?.checked;
+  }
+  agreementInput?.addEventListener("change", syncAgreementState);
+  syncAgreementState();
 
   // 8. 품절 처리
   if (!isWaitlist && (Number(product.stock) || 0) <= 0) {

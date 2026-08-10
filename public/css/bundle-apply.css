@@ -247,21 +247,26 @@ body {
   background: #f7f9f8;
 }
 
-.agreement-panel > strong {
-  display: block;
-  margin-bottom: 10px;
+.agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
   color: #24312b;
-  font-size: 13px;
+  line-height: 1.5;
 }
 
-.agreement {
-    display: flex;
-    gap: 9px;
-    margin: 0;
-    color: #6e7973;
-    font-size: 11px;
-    line-height: 1.65;
-  }
+.agreement strong {
+  padding-top: 1px;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.agreement strong small {
+  color: #65736b;
+  font-size: 10px;
+  font-weight: 650;
+}
 
 .agreement + .agreement {
   margin-top: 12px;
@@ -269,12 +274,35 @@ body {
   border-top: 1px solid #e4e9e6;
 }
 
-  .agreement input {
+.agreement input {
   flex: 0 0 18px;
   width: 18px;
   height: 18px;
   accent-color: var(--brand);
-  }
+}
+
+.agreement-details {
+  display: grid;
+  gap: 6px;
+  margin: 13px 0 0 28px;
+  padding: 0;
+  color: #69756f;
+  font-size: 10px;
+  line-height: 1.65;
+  list-style: none;
+}
+
+.agreement-details li {
+  position: relative;
+  padding-left: 10px;
+}
+
+.agreement-details li::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: "·";
+}
 
 .agreement-link {
   display: inline-block;
@@ -293,6 +321,12 @@ body {
   color: #fff;
   font-size: 14px;
   font-weight: 850;
+}
+
+.apply-submit:disabled {
+  background: #cdd5d1;
+  color: #f7f9f8;
+  cursor: not-allowed;
 }
 
 .apply-message {
